@@ -250,8 +250,11 @@ const Main = (function() {
       case "flip-card":
         if (window.VocabScreen) window.VocabScreen.flip();
         break;
-      case "vocab-review":
+            case "vocab-review":
         if (window.VocabScreen) window.VocabScreen.review(data.known === "true");
+        break;
+      case "vocab-mini-pick":
+        if (window.VocabScreen) window.VocabScreen.pickMiniAnswer(parseInt(data.pickIndex, 10));
         break;
       case "speak-word":
         if (currentScreen === "wotd" && window.WotdScreen) {
