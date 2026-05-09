@@ -109,6 +109,7 @@ const Main = (function() {
       "contact":      window.ContactScreen,
       "premium":      window.PremiumScreen,
       "settings":     window.SettingsScreen,
+      "admin":        window.AdminScreen,
       "lesson":       window.HomeScreen
     };
 
