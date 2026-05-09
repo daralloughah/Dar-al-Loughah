@@ -452,6 +452,14 @@ const Main = (function() {
      ÉVÉNEMENTS GLOBAUX
      ========================================================= */
   function setupEventListeners() {
+ 
+    // Détecter l'admin Firebase
+    document.addEventListener("firebase-user-changed", function(e) {
+      const adminItem = document.getElementById("adminMenuItem");
+      if (adminItem) {
+        adminItem.hidden = !(e.detail && e.detail.isAdmin);
+      }
+    });
     // Badge débloqué → modale
     document.addEventListener("badge-unlocked", function(e) {
       const badge = e.detail;
