@@ -1486,4 +1486,62 @@ select.input{ appearance:none; cursor:pointer;
 }
 @media (min-width: 768px){
   .app{ padding-bottom: 110px; }
+}/* =========================================================
+   READING — MINI-QUIZ DE VALIDATION
+   ========================================================= */
+#letterMiniQuizCard{
+  text-align:center;
+  margin-top: 14px;
+  border-color: var(--gold-light);
+  box-shadow: 0 0 16px rgba(212,175,55,.15);
+}
+.letter-mini-prompt{
+  font-family:'Amiri',serif;
+  font-weight:700;
+  font-size: 56px;
+  background: linear-gradient(180deg, var(--gold-light), var(--gold-dark));
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+  direction:rtl;
+  margin: 6px 0;
+  text-shadow: 0 0 14px rgba(212,175,55,.2);
+}
+.letter-mini-prompt-translit{
+  font-family:'Cinzel',serif;
+  font-weight:600;
+  font-size: 28px;
+  letter-spacing: 4px;
+  color: var(--gold-light);
+  text-transform: uppercase;
+  text-shadow: 0 0 12px var(--gold-glow);
+  margin: 6px 0;
+}
+.letter-mini-question{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  color: var(--ink-muted);
+  font-size: 14px;
+  margin: 8px 0 12px;
+}
+.letter-mini-progress{
+  font-family:'Inter',sans-serif;
+  font-size:11px;
+  color:var(--ink-muted);
+  letter-spacing:1.5px;
+  margin-top:8px;
+}
+
+/* Le bouton-réponse "lettre" a un style spécial */
+.answer.letter-answer{
+  font-family:'Amiri',serif;
+  font-weight:700;
+  font-size: 28px;
+  direction: rtl;
+}
+.answer.translit-answer{
+  font-family:'Cinzel',serif;
+  font-weight:600;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
