@@ -55,7 +55,8 @@ const CONFIG = {
   // ===========================================
   ADMIN_EMAILS: [
     "daralloughah2@gmail.com"
-    // Ajouter d'autres emails admin ici si besoin
+    "hakimhakom543@gmail.com"
+     // Ajouter d'autres emails admin ici si besoin
   ],
 
 
