@@ -31,12 +31,33 @@ const CONFIG = {
   // ===========================================
   BACKEND_URL: "",
 
-  // ===========================================
+    // ===========================================
   // 🔐 AUTHENTIFICATION
-  // Crée tes IDs sur Google Cloud Console et Apple Developer
   // ===========================================
   GOOGLE_CLIENT_ID: "",
   APPLE_CLIENT_ID: "",
+
+  // ===========================================
+  // 🔥 FIREBASE (backend gratuit Google)
+  // ===========================================
+  FIREBASE: {
+    apiKey: "AIzaSyCs8NKBBAwXQ9CGmA1tQ4BamgY9ZmPHhSE",
+    authDomain: "dar-al-loughah.firebaseapp.com",
+    projectId: "dar-al-loughah",
+    storageBucket: "dar-al-loughah.firebasestorage.app",
+    messagingSenderId: "237210972802",
+    appId: "1:237210972802:web:e9e76a9c1ace0af4737a9b",
+    measurementId: "G-TDFNFVHZBF"
+  },
+
+  // ===========================================
+  // 👑 EMAILS ADMIN (reconnu auto admin)
+  // ===========================================
+  ADMIN_EMAILS: [
+    "daralloughah2@gmail.com"
+    // Ajouter d'autres emails admin ici si besoin
+  ],
+
 
   // ===========================================
   // 💳 PAIEMENTS
