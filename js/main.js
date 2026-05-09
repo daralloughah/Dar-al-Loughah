@@ -278,6 +278,15 @@ const Main = (function() {
       case "learn-milestone-word":
         if (window.ReadingScreen) window.ReadingScreen.learnMilestoneWord();
         break;
+      case "letter-mini-pick":
+        if (window.ReadingScreen) window.ReadingScreen.pickMiniAnswer(parseInt(data.pickIndex, 10));
+        break;
+      case "letter-quiz":
+        if (window.ReadingScreen) window.ReadingScreen.launchLetterQuiz();
+        break;
+      case "letter-rapid":
+        if (window.ReadingScreen) window.ReadingScreen.launchLetterRapid();
+        break;
 
       // ===== QUIZ =====
       case "quiz-pick":
