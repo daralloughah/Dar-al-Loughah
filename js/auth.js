@@ -354,6 +354,13 @@ if (token) {
 
 document.dispatchEvent(new CustomEvent("auth-login", { detail: user }));
 
+    // 👑 Détection admin : déclenche l'affichage du bouton ⚙️ Mode Admin
+    const adminEmails = (CFG.ADMIN_EMAILS || []).map(function(e) { return e.toLowerCase(); });
+    const isAdmin = user.email && adminEmails.indexOf(user.email.toLowerCase()) !== -1;
+    document.dispatchEvent(new CustomEvent("firebase-user-changed", {
+      detail: { user: user, isAdmin: isAdmin }
+    }));
+
 // Vérifier les badges (Early adopter en particulier)
 if (window.XP) {
   window.XP.checkBadges();
