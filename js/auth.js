@@ -3,7 +3,7 @@
    Gère les connexions :
    - Google (One Tap si CONFIG.GOOGLE_CLIENT_ID rempli)
    - Apple Sign In
-   - Email + mot de passe (local ou backend)
+   - Email + mot de passe (Firebase Auth en priorité)
    - Mode invité
    ========================================================= */
 
@@ -29,9 +29,34 @@ const Auth = (function() {
   }
 
   /* =========================================================
-     LOGIN : GOOGLE
+     HELPER : Firebase est-il prêt ?
+     ========================================================= */
+  function firebaseReady() {
+    return window.FB && window.FB.isReady && window.FB.isReady();
+  }
+
+  /* =========================================================
+     LOGIN : GOOGLE (Firebase prioritaire)
      ========================================================= */
   async function loginGoogle() {
+    // 1. PRIORITÉ Firebase Google Sign-In
+    if (firebaseReady()) {
+      const result = await window.FB.signInGoogle();
+      if (result.success) {
+        const user = {
+          pseudo: result.user.displayName || result.user.email.split("@")[0],
+          email: result.user.email,
+          avatar: result.user.photoURL || "",
+          method: "google",
+          uid: result.user.uid
+        };
+        completeLogin(user);
+        return { success: true, user: user };
+      }
+      return { success: false, error: result.error || "Erreur connexion Google" };
+    }
+
+    // 2. Fallback Google JS SDK classique
     if (!CFG.GOOGLE_CLIENT_ID) {
       return loginAsDemo("google", "Utilisateur Google");
     }
@@ -147,7 +172,7 @@ const Auth = (function() {
   }
 
   /* =========================================================
-     LOGIN : EMAIL + MOT DE PASSE
+     LOGIN : EMAIL + MOT DE PASSE (Firebase prioritaire)
      ========================================================= */
   async function loginEmail(email, password) {
     if (!email || !password) {
@@ -157,6 +182,24 @@ const Auth = (function() {
       return { success: false, error: "Email invalide" };
     }
 
+    // 1. PRIORITÉ Firebase Auth
+    if (firebaseReady()) {
+      const result = await window.FB.signIn(email, password);
+      if (result.success) {
+        const user = {
+          pseudo: result.user.displayName || email.split("@")[0],
+          email: email,
+          avatar: result.user.photoURL || "",
+          method: "email",
+          uid: result.user.uid
+        };
+        completeLogin(user);
+        return { success: true, user: user };
+      }
+      return { success: false, error: result.error || "Identifiants incorrects" };
+    }
+
+    // 2. Backend distant (si configuré)
     if (CFG.BACKEND_URL && navigator.onLine !== false) {
       try {
         const res = await fetch(CFG.BACKEND_URL + "/auth/login", {
@@ -181,6 +224,7 @@ const Auth = (function() {
       } catch (e) {}
     }
 
+    // 3. Fallback local (dernier recours)
     const stored = getStoredAccount(email);
     if (!stored) {
       return { success: false, error: "Aucun compte trouvé. Créez d'abord un compte." };
@@ -199,7 +243,7 @@ const Auth = (function() {
   }
 
   /* =========================================================
-     INSCRIPTION
+     INSCRIPTION (Firebase prioritaire)
      ========================================================= */
   async function register(data) {
     if (!data.pseudo || !data.email || !data.password) {
@@ -218,6 +262,27 @@ const Auth = (function() {
       return { success: false, error: "Vous devez accepter les conditions d'utilisation" };
     }
 
+    // 1. PRIORITÉ Firebase Auth
+    if (firebaseReady()) {
+      const result = await window.FB.signUp(data.email, data.password);
+      if (result.success) {
+        if (data.newsletter && window.Api) {
+          window.Api.subscribeNewsletter(data.email, data.pseudo);
+        }
+        const user = {
+          pseudo: data.pseudo,
+          email: data.email,
+          avatar: "",
+          method: "email",
+          uid: result.user.uid
+        };
+        completeLogin(user, null, !!data.newsletter);
+        return { success: true, user: user };
+      }
+      return { success: false, error: result.error || "Erreur d'inscription" };
+    }
+
+    // 2. Backend distant
     if (CFG.BACKEND_URL && navigator.onLine !== false) {
       try {
         const res = await fetch(CFG.BACKEND_URL + "/auth/register", {
@@ -247,6 +312,7 @@ const Auth = (function() {
       } catch (e) {}
     }
 
+    // 3. Fallback local
     if (getStoredAccount(data.email)) {
       return { success: false, error: "Un compte existe déjà avec cet email" };
     }
@@ -287,9 +353,14 @@ const Auth = (function() {
   }
 
   /* =========================================================
-     LOGOUT
+     LOGOUT (Firebase + local)
      ========================================================= */
-  function logout() {
+  async function logout() {
+    // Déconnexion Firebase
+    if (firebaseReady()) {
+      try { await window.FB.signOut(); } catch (e) {}
+    }
+
     if (window.State) {
       window.State.update({
         loggedIn: false,
@@ -318,6 +389,7 @@ const Auth = (function() {
       email: user.email,
       avatar: user.avatar || "",
       authMethod: user.method,
+      uid: user.uid || "",
       newsletter: !!newsletter,
       createdAt: window.State.get("createdAt") || Date.now()
     });
@@ -360,7 +432,7 @@ const Auth = (function() {
   }
 
   /* =========================================================
-     STOCKAGE LOCAL
+     STOCKAGE LOCAL (fallback uniquement si Firebase indisponible)
      ========================================================= */
   function getAccountsKey() {
     return "dar_accounts_v1";
@@ -419,6 +491,16 @@ const Auth = (function() {
     return { success: true };
   }
 
+  /* =========================================================
+     RESET PASSWORD (Firebase)
+     ========================================================= */
+  async function resetPassword(email) {
+    if (firebaseReady()) {
+      return await window.FB.resetPassword(email);
+    }
+    return { success: false, error: "Réinitialisation indisponible" };
+  }
+
   /* -------- API publique -------- */
   return {
     isLoggedIn: isLoggedIn,
@@ -430,7 +512,8 @@ const Auth = (function() {
     register: register,
     logout: logout,
     changePseudo: changePseudo,
-    validateEmail: validateEmail
+    validateEmail: validateEmail,
+    resetPassword: resetPassword
   };
 })();
 
