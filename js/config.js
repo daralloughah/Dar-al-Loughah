@@ -54,7 +54,7 @@ const CONFIG = {
   // 👑 EMAILS ADMIN (reconnu auto admin)
   // ===========================================
   ADMIN_EMAILS: [
-    "daralloughah2@gmail.com"
+    "daralloughah2@gmail.com",
     "hakimhakom543@gmail.com"
      // Ajouter d'autres emails admin ici si besoin
   ],
