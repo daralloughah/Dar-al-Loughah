@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Debug Dar Al Loughah</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { font-family: monospace; padding: 20px; background: #001; color: #0f0; }
+.ok { color: #0f0; }
+.err { color: #f55; }
+.warn { color: #ff0; }
+h2 { color: #fff; border-bottom: 1px solid #555; }
+pre { background: #000; padding: 10px; border-radius: 5px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+</style>
+</head>
+<body>
+<h1>🔍 Debug Dar Al Loughah</h1>
+<div id="results">Chargement...</div>
+
+<script src="js/config.js" onerror="logErr('config.js NE CHARGE PAS')"></script>
+<script src="js/firebase.js" onerror="logErr('firebase.js NE CHARGE PAS')"></script>
+<script src="js/audio.js" onerror="logErr('audio.js NE CHARGE PAS')"></script>
+<script src="js/state.js" onerror="logErr('state.js NE CHARGE PAS')"></script>
+<script src="js/api.js" onerror="logErr('api.js NE CHARGE PAS')"></script>
+<script src="js/xp.js" onerror="logErr('xp.js NE CHARGE PAS')"></script>
+<script src="js/auth.js" onerror="logErr('auth.js NE CHARGE PAS')"></script>
+
+<script>
+const errors = [];
+const original = window.onerror;
+window.onerror = function(msg, src, line, col, err) {
+  errors.push({ msg: msg, src: src, line: line });
+  if (original) original.apply(this, arguments);
+};
+
+function logErr(msg) {
+  errors.push({ msg: msg });
+}
+
+setTimeout(function() {
+  let html = '<h2>📦 Modules chargés</h2><pre>';
+  html += 'window.CONFIG : ' + (window.CONFIG ? '✅ OK' : '❌ ABSENT') + '\n';
+  html += 'window.FB : ' + (window.FB ? '✅ OK' : '❌ ABSENT') + '\n';
+  html += 'window.Audio2 : ' + (window.Audio2 ? '✅ OK' : '❌ ABSENT') + '\n';
+  html += 'window.State : ' + (window.State ? '✅ OK' : '❌ ABSENT') + '\n';
+  html += 'window.Api : ' + (window.Api ? '✅ OK' : '❌ ABSENT') + '\n';
+  html += 'window.XP : ' + (window.XP ? '✅ OK' : '❌ ABSENT') + '\n';
+  html += 'window.Auth : ' + (window.Auth ? '✅ OK' : '❌ ABSENT') + '\n';
+  html += '</pre>';
+
+  html += '<h2>🔧 Config admin</h2><pre>';
+  if (window.CONFIG) {
+    html += 'ADMIN_EMAILS : ' + JSON.stringify(window.CONFIG.ADMIN_EMAILS || 'ABSENT') + '\n';
+    html += 'FIREBASE config : ' + (window.CONFIG.FIREBASE ? '✅ présente' : '❌ ABSENTE') + '\n';
+    if (window.CONFIG.FIREBASE) {
+      html += '  - apiKey : ' + (window.CONFIG.FIREBASE.apiKey ? '✅' : '❌') + '\n';
+      html += '  - projectId : ' + (window.CONFIG.FIREBASE.projectId || 'ABSENT') + '\n';
+    }
+  }
+  html += '</pre>';
+
+  html += '<h2>🔐 Auth API</h2><pre>';
+  if (window.Auth) {
+    html += 'Auth.loginGoogle : ' + (typeof window.Auth.loginGoogle === 'function' ? '✅' : '❌') + '\n';
+    html += 'Auth.loginApple : ' + (typeof window.Auth.loginApple === 'function' ? '✅' : '❌') + '\n';
+    html += 'Auth.loginEmail : ' + (typeof window.Auth.loginEmail === 'function' ? '✅' : '❌') + '\n';
+    html += 'Auth.loginGuest : ' + (typeof window.Auth.loginGuest === 'function' ? '✅' : '❌') + '\n';
+    html += 'Auth.register : ' + (typeof window.Auth.register === 'function' ? '✅' : '❌') + '\n';
+  } else {
+    html += '❌ Auth NON CHARGÉ\n';
+  }
+  html += '</pre>';
+
+  html += '<h2>🚨 Erreurs JavaScript</h2><pre>';
+  if (errors.length === 0) {
+    html += '<span class="ok">✅ Aucune erreur</span>';
+  } else {
+    errors.forEach(function(e, i) {
+      html += '<span class="err">[' + (i+1) + '] ' + e.msg + '\n';
+      if (e.src) html += '   Source: ' + e.src + '\n';
+      if (e.line) html += '   Ligne: ' + e.line + '\n';
+      html += '</span>\n';
+    });
+  }
+  html += '</pre>';
+
+  document.getElementById('results').innerHTML = html;
+}, 1000);
+</script>
+</body>
+</html>
