@@ -70,7 +70,6 @@ const CONFIG = {
 
   // ===========================================
   // 🤖 AGENT IA POUR LE CHAT
-  // Tu peux brancher OpenAI, Claude, ton agent GitHub, etc.
   // ===========================================
   AI_AGENT: {
     ENDPOINT: "",
@@ -81,6 +80,12 @@ const CONFIG = {
     SYSTEM_PROMPT: "Tu es Mouallim, un professeur d'arabe patient et bienveillant. Tu aides l'utilisateur à apprendre l'arabe. Réponds toujours brièvement et corrige ses erreurs avec gentillesse.",
     USE_FALLBACK: true
   },
+
+  // ===========================================
+  // 🧠 IA - GROQ (Llama 4) - AJOUTÉ ICI ✅
+  // ===========================================
+  GROQ_API_KEY: "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", 
+  GROQ_MODEL: "llama-4-scout-8b-instruct", 
 
   // ===========================================
   // 🎤 LANGUES SUPPORTÉES
