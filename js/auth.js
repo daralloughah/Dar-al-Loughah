@@ -1,55 +1,39 @@
 /* =========================================================
    DAR AL LOUGHAH — AUTH (Firebase + fallback local)
-   - Si Firebase OK → utilise Firebase Auth
-   - Sinon → fallback local (ancien système)
+   Version compatible avec l'ancien main.js
    ========================================================= */
 
 const Auth = (function() {
 
   let currentUser = null;
-  let listeners = [];
+  let firebaseReady = false;
 
   /* =========================================================
-     INIT — Écoute Firebase
+     INIT — Écoute les événements Firebase
      ========================================================= */
   function init() {
-    // Écouter les changements Firebase Auth
     document.addEventListener("firebase-user-changed", function(e) {
       const fbUser = e.detail && e.detail.user;
       const isAdmin = e.detail && e.detail.isAdmin;
 
-      if (fbUser) {
-        // Connecté via Firebase
+      if (fbUser && fbUser.email) {
         currentUser = {
           email: fbUser.email,
-          uid: fbUser.uid,
-          pseudo: fbUser.displayName || fbUser.email.split("@")[0],
-          isAdmin: isAdmin,
-          source: "firebase"
+          uid: fbUser.uid || null,
+          pseudo: fbUser.pseudo || fbUser.displayName || fbUser.email.split("@")[0],
+          isAdmin: isAdmin || false,
+          source: fbUser.source || "firebase"
         };
-
-        // Sauvegarder en local pour relance rapide
-        try {
-          localStorage.setItem("dar_auth_user", JSON.stringify(currentUser));
-        } catch(e) {}
-
-        // Synchroniser avec State
+        try { localStorage.setItem("dar_auth_user", JSON.stringify(currentUser)); } catch(e) {}
         if (window.State && window.State.setUser) {
           window.State.setUser(currentUser);
         }
-
-        // Créer/Mettre à jour le profil utilisateur dans Firestore
         syncUserToFirestore(currentUser);
-
-        notify();
-      } else {
-        currentUser = null;
-        try { localStorage.removeItem("dar_auth_user"); } catch(e) {}
-        notify();
+        firebaseReady = true;
       }
     });
 
-    // Au chargement, si on a un user en cache, le restaurer en attendant Firebase
+    // Restaurer depuis le cache au démarrage
     try {
       const cached = localStorage.getItem("dar_auth_user");
       if (cached) {
@@ -62,7 +46,7 @@ const Auth = (function() {
   }
 
   /* =========================================================
-     SYNC USER → Firestore
+     SYNC FIRESTORE
      ========================================================= */
   async function syncUserToFirestore(user) {
     if (!window.FB || !window.FB.isReady()) return;
@@ -71,7 +55,6 @@ const Auth = (function() {
     try {
       const existing = await window.FB.getDocument("users", user.uid);
       if (!existing) {
-        // Premier login : créer profil
         await window.FB.setDocument("users", user.uid, {
           email: user.email,
           pseudo: user.pseudo,
@@ -84,55 +67,64 @@ const Auth = (function() {
           lastSeen: Date.now()
         });
       } else {
-        // Mise à jour lastSeen
         await window.FB.updateDocument("users", user.uid, {
-          lastSeen: Date.now(),
-          isAdmin: user.isAdmin || false
+          lastSeen: Date.now()
         });
       }
     } catch(e) {
-      console.warn("Sync Firestore err:", e);
+      console.warn("Sync user err:", e);
     }
   }
 
   /* =========================================================
-     AUTH METHODS — Email
+     LOGIN — méthodes appelées par main.js
      ========================================================= */
-  async function loginEmail(email, password) {
+  async function login(email, password, pseudo) {
     if (!email || !password) {
       return { success: false, error: "Email et mot de passe requis" };
     }
 
+    // Tentative Firebase d'abord
     if (window.FB && window.FB.isReady()) {
-      // Tentative login Firebase
       const result = await window.FB.signIn(email, password);
       if (result.success) {
-        return { success: true };
+        return { success: true, user: { email: email, pseudo: pseudo || email.split("@")[0] } };
       }
-      // Si user n'existe pas, on tente de l'inscrire
-      if (result.error && (result.error.indexOf("Aucun") !== -1 || result.error.indexOf("incorrect") !== -1)) {
-        return { success: false, error: result.error, canSignup: true };
-      }
-      return { success: false, error: result.error };
+      // Fallback local si Firebase refuse
+      console.warn("Firebase login échoué, fallback local:", result.error);
     }
 
     // Fallback local
     return loginLocal(email, password);
   }
 
-  async function signupEmail(email, password, pseudo) {
+  async function signup(email, password, pseudo) {
     if (!email || !password) {
       return { success: false, error: "Email et mot de passe requis" };
     }
     if (password.length < 6) {
-      return { success: false, error: "Mot de passe min 6 caractères" };
+      return { success: false, error: "Mot de passe : 6 caractères minimum" };
     }
 
+    // Tentative Firebase d'abord
     if (window.FB && window.FB.isReady()) {
       const result = await window.FB.signUp(email, password);
       if (result.success) {
-        return { success: true };
+        // Forcer le pseudo
+        currentUser = {
+          email: email,
+          uid: result.user.uid,
+          pseudo: pseudo || email.split("@")[0],
+          isAdmin: window.FB.isUserAdmin(email),
+          source: "firebase"
+        };
+        try { localStorage.setItem("dar_auth_user", JSON.stringify(currentUser)); } catch(e) {}
+        if (window.State && window.State.setUser) {
+          window.State.setUser(currentUser);
+        }
+        return { success: true, user: currentUser };
       }
+      console.warn("Firebase signup échoué, fallback local:", result.error);
       return { success: false, error: result.error };
     }
 
@@ -146,7 +138,11 @@ const Auth = (function() {
       if (result.success) return { success: true };
       return { success: false, error: result.error };
     }
-    return { success: false, error: "Google login indisponible" };
+    return { success: false, error: "Google indisponible" };
+  }
+
+  async function loginApple() {
+    return { success: false, error: "Apple bientôt disponible" };
   }
 
   async function logout() {
@@ -158,24 +154,26 @@ const Auth = (function() {
     if (window.State && window.State.clearUser) {
       window.State.clearUser();
     }
-    notify();
+    document.dispatchEvent(new CustomEvent("firebase-user-changed", {
+      detail: { user: null, isAdmin: false }
+    }));
   }
 
   async function resetPassword(email) {
     if (window.FB && window.FB.isReady()) {
       return await window.FB.resetPassword(email);
     }
-    return { success: false, error: "Reset indisponible" };
+    return { success: false, error: "Réinitialisation indisponible" };
   }
 
   /* =========================================================
-     FALLBACK LOCAL (mode déconnecté)
+     FALLBACK LOCAL (si Firebase pas dispo)
      ========================================================= */
   function loginLocal(email, password) {
     try {
       const users = JSON.parse(localStorage.getItem("dar_local_users") || "{}");
       const u = users[email.toLowerCase()];
-      if (!u) return { success: false, error: "Compte introuvable", canSignup: true };
+      if (!u) return { success: false, error: "Compte introuvable" };
       if (u.password !== password) return { success: false, error: "Mot de passe incorrect" };
 
       const admins = (window.CONFIG && window.CONFIG.ADMIN_EMAILS) || [];
@@ -185,16 +183,17 @@ const Auth = (function() {
         isAdmin: admins.indexOf(email.toLowerCase()) !== -1,
         source: "local"
       };
-      localStorage.setItem("dar_auth_user", JSON.stringify(currentUser));
-      if (window.State && window.State.setUser) window.State.setUser(currentUser);
+      try { localStorage.setItem("dar_auth_user", JSON.stringify(currentUser)); } catch(e) {}
+      if (window.State && window.State.setUser) {
+        window.State.setUser(currentUser);
+      }
 
-      // Forcer l'événement pour le bouton admin
+      // Important : déclencher l'événement pour le bouton admin
       document.dispatchEvent(new CustomEvent("firebase-user-changed", {
         detail: { user: currentUser, isAdmin: currentUser.isAdmin }
       }));
 
-      notify();
-      return { success: true };
+      return { success: true, user: currentUser };
     } catch(e) {
       return { success: false, error: "Erreur locale" };
     }
@@ -203,7 +202,9 @@ const Auth = (function() {
   function signupLocal(email, password, pseudo) {
     try {
       const users = JSON.parse(localStorage.getItem("dar_local_users") || "{}");
-      if (users[email.toLowerCase()]) return { success: false, error: "Email déjà utilisé" };
+      if (users[email.toLowerCase()]) {
+        return { success: false, error: "Email déjà utilisé" };
+      }
       users[email.toLowerCase()] = {
         password: password,
         pseudo: pseudo || email.split("@")[0],
@@ -221,20 +222,15 @@ const Auth = (function() {
      ========================================================= */
   function getCurrentUser() { return currentUser; }
   function isLoggedIn() { return !!currentUser; }
-  function isAdmin() { return !!(currentUser && currentUser.isAdmin); }
-
-  function onChange(callback) {
-    listeners.push(callback);
-  }
-
-  function notify() {
-    listeners.forEach(function(cb) {
-      try { cb(currentUser); } catch(e) {}
-    });
+  function isAdmin() {
+    if (!currentUser) return false;
+    if (currentUser.isAdmin) return true;
+    const admins = (window.CONFIG && window.CONFIG.ADMIN_EMAILS) || [];
+    return admins.indexOf((currentUser.email || "").toLowerCase()) !== -1;
   }
 
   /* =========================================================
-     INIT AU DEMARRAGE
+     INIT
      ========================================================= */
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
@@ -242,19 +238,20 @@ const Auth = (function() {
     init();
   }
 
+  /* -------- API publique -------- */
   return {
     init: init,
-    loginEmail: loginEmail,
-    signupEmail: signupEmail,
+    login: login,
+    signup: signup,
     loginGoogle: loginGoogle,
+    loginApple: loginApple,
     logout: logout,
     resetPassword: resetPassword,
     getCurrentUser: getCurrentUser,
     isLoggedIn: isLoggedIn,
-    isAdmin: isAdmin,
-    onChange: onChange
+    isAdmin: isAdmin
   };
 })();
 
 window.Auth = Auth;
-console.log("✓ Auth chargé (Firebase + fallback)");
+console.log("✓ Auth chargé");
