@@ -12,17 +12,45 @@ const AdminScreen = (function() {
   /* =========================================================
      ENTRÉE PRINCIPALE
      ========================================================= */
-  async function show() {
-    if (!window.FB || !window.FB.isCurrentUserAdmin()) {
+   /* =========================================================
+     ENTRÉE PRINCIPALE
+     ========================================================= */
+
+   async function show() {
+    // Vérifier si l'utilisateur est admin (Firebase OU local via Auth)
+    let isAdmin = false;
+
+    // Check 1 : Firebase
+    if (window.FB && window.FB.isCurrentUserAdmin && window.FB.isCurrentUserAdmin()) {
+      isAdmin = true;
+    }
+
+    // Check 2 : Auth local (basé sur l'email + ADMIN_EMAILS)
+    if (!isAdmin && window.Auth && window.Auth.getUser) {
+      const user = window.Auth.getUser();
+      if (user && user.email) {
+        const admins = (window.CONFIG && window.CONFIG.ADMIN_EMAILS) || [];
+        const adminsLower = admins.map(function(e) { return e.toLowerCase(); });
+        if (adminsLower.indexOf(user.email.toLowerCase()) !== -1) {
+          isAdmin = true;
+        }
+      }
+    }
+
+    // Si pas admin → refus
+    if (!isAdmin) {
       if (window.Main && window.Main.toast) {
         window.Main.toast("Accès admin réservé");
       }
       if (window.Main) window.Main.goto("home");
       return;
     }
+
+    // Sinon → afficher la console
     renderAdminUI();
     showTab("themes");
   }
+
 
   /* =========================================================
      UI PRINCIPALE
