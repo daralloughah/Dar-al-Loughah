@@ -1,7 +1,8 @@
 /* =========================================================
    DAR AL LOUGHAH — API LAYER
    Communique avec :
-   - les fichiers JSON locaux (data/*.json) en mode hors-ligne
+   - Firebase Firestore (PRIORITAIRE)
+   - les fichiers JSON locaux (data/*.json) en fallback
    - ton backend distant (si CONFIG.BACKEND_URL est rempli)
    - Formsubmit (pour les contacts sans backend)
    ========================================================= */
@@ -9,7 +10,7 @@
 const Api = (function() {
 
   const CFG = window.CONFIG || {};
-  const cache = {}; // mémoire pour ne pas refetcher la même chose
+  const cache = {};
 
   /* =========================================================
      UTILS
@@ -22,16 +23,16 @@ const Api = (function() {
     return CFG.BACKEND_URL && CFG.BACKEND_URL.length > 0;
   }
 
-  // Charge un JSON depuis une URL avec cache
+  function hasFirebase() {
+    return window.FB && window.FB.isReady && window.FB.isReady();
+  }
+
   async function fetchJSON(url, options) {
     options = options || {};
     const cacheKey = url + JSON.stringify(options);
-
-    // Cache local en mémoire
     if (!options.noCache && cache[cacheKey]) {
       return cache[cacheKey];
     }
-
     try {
       const res = await fetch(url, options);
       if (!res.ok) throw new Error("HTTP " + res.status);
@@ -45,36 +46,58 @@ const Api = (function() {
   }
 
   /* =========================================================
-     THÈMES
+     THÈMES — Firebase prioritaire
      ========================================================= */
   async function getThemesIndex() {
-    // 1. PRIORITÉ Firebase
-    if (window.FB && window.FB.isReady && window.FB.isReady()) {
+    if (hasFirebase()) {
       const data = await window.FB.getCollection("themes");
       if (data && data.length > 0) {
-        // Trier par order
         data.sort(function(a, b) { return (a.order || 99) - (b.order || 99); });
         console.log("✓ Thèmes chargés depuis Firebase:", data.length);
         return data;
       }
     }
-    // 2. Fallback backend distant
     if (hasBackend() && isOnline()) {
       const data = await fetchJSON(CFG.BACKEND_URL + "/themes");
       if (data) return data;
     }
-    // 3. Fallback fichier JSON local
     const localPath = (CFG.DATA_PATHS && CFG.DATA_PATHS.THEMES_INDEX) || "data/themes.json";
     const data = await fetchJSON(localPath);
     if (data) return data;
-    // 4. Fallback ultime
     return getDefaultThemes();
   }
- 
+
+  async function getTheme(themeId) {
+    if (hasFirebase()) {
+      const data = await window.FB.getDocument("themes", themeId);
+      if (data) {
+        console.log("✓ Thème chargé depuis Firebase:", themeId);
+        return data;
+      }
+    }
+    if (hasBackend() && isOnline()) {
+      const data = await fetchJSON(CFG.BACKEND_URL + "/themes/" + themeId);
+      if (data) return data;
+    }
+    const tpl = (CFG.DATA_PATHS && CFG.DATA_PATHS.THEME_FILE) || "data/themes/{id}.json";
+    const path = tpl.replace("{id}", themeId);
+    const data = await fetchJSON(path);
+    if (data) return data;
+    return getDefaultTheme(themeId);
+  }
+
   /* =========================================================
-     LETTRES (alphabet)
+     LETTRES — Firebase prioritaire
      ========================================================= */
   async function getLetters() {
+    if (hasFirebase()) {
+      const data = await window.FB.getCollection("letters");
+      if (data && data.length > 0) {
+        data.sort(function(a, b) { return (a.order || 99) - (b.order || 99); });
+        console.log("✓ Lettres chargées depuis Firebase:", data.length);
+        return data;
+      }
+    }
     if (hasBackend() && isOnline()) {
       const data = await fetchJSON(CFG.BACKEND_URL + "/letters");
       if (data) return data;
@@ -86,9 +109,16 @@ const Api = (function() {
   }
 
   /* =========================================================
-     BADGES
+     BADGES — Firebase prioritaire
      ========================================================= */
   async function getBadges() {
+    if (hasFirebase()) {
+      const data = await window.FB.getCollection("badges");
+      if (data && data.length > 0) {
+        console.log("✓ Badges chargés depuis Firebase:", data.length);
+        return data;
+      }
+    }
     if (hasBackend() && isOnline()) {
       const data = await fetchJSON(CFG.BACKEND_URL + "/badges");
       if (data) return data;
@@ -100,9 +130,17 @@ const Api = (function() {
   }
 
   /* =========================================================
-     MOT DU JOUR
+     MOT DU JOUR — Firebase prioritaire
      ========================================================= */
   async function getWordOfTheDay() {
+    if (hasFirebase()) {
+      const data = await window.FB.getCollection("wotd");
+      if (data && data.length > 0) {
+        const idx = new Date().getDate() % data.length;
+        console.log("✓ Mot du jour depuis Firebase");
+        return data[idx];
+      }
+    }
     if (hasBackend() && isOnline()) {
       const data = await fetchJSON(CFG.BACKEND_URL + "/wotd");
       if (data) return data;
@@ -120,7 +158,6 @@ const Api = (function() {
      CONTACT (formulaire)
      ========================================================= */
   async function sendContact(payload) {
-    // Option 1 : backend perso
     if (hasBackend() && isOnline()) {
       try {
         const res = await fetch(CFG.BACKEND_URL + "/contact", {
@@ -131,8 +168,6 @@ const Api = (function() {
         if (res.ok) return { success: true, method: "backend" };
       } catch (e) {}
     }
-
-    // Option 2 : Formsubmit (gratuit, juste avec ton email)
     const fsEmail = CFG.FORMSUBMIT_EMAIL || CFG.CONTACT_EMAIL;
     if (fsEmail && fsEmail.indexOf("@") > 0 && fsEmail !== "ton-email@exemple.com") {
       try {
@@ -143,7 +178,6 @@ const Api = (function() {
         formData.append("message", payload.message || "");
         formData.append("_subject", "Nouveau message — Dar Al Loughah");
         formData.append("_template", "table");
-
         const res = await fetch("https://formsubmit.co/ajax/" + encodeURIComponent(fsEmail), {
           method: "POST",
           body: formData
@@ -151,8 +185,6 @@ const Api = (function() {
         if (res.ok) return { success: true, method: "formsubmit" };
       } catch (e) {}
     }
-
-    // Option 3 : mailto fallback
     try {
       const target = CFG.CONTACT_EMAIL || "contact@dar-al-loughah.com";
       const subject = encodeURIComponent("[" + (payload.subject || "Contact") + "] de " + (payload.name || ""));
@@ -182,7 +214,6 @@ const Api = (function() {
         if (res.ok) return { success: true };
       } catch (e) {}
     }
-    // Fallback : utiliser Formsubmit
     const fsEmail = CFG.FORMSUBMIT_EMAIL || CFG.CONTACT_EMAIL;
     if (fsEmail && fsEmail.indexOf("@") > 0 && fsEmail !== "ton-email@exemple.com") {
       try {
@@ -201,9 +232,15 @@ const Api = (function() {
   }
 
   /* =========================================================
-     PROGRESSION (sync utilisateur si backend)
+     PROGRESSION (sync utilisateur)
      ========================================================= */
   async function syncProgress(userData) {
+    if (hasFirebase() && userData && userData.uid) {
+      try {
+        await window.FB.setDocument("users", userData.uid, userData);
+        return { success: true, method: "firebase" };
+      } catch (e) {}
+    }
     if (!hasBackend() || !isOnline()) return { success: false, offline: true };
     try {
       const res = await fetch(CFG.BACKEND_URL + "/users/sync", {
@@ -217,7 +254,7 @@ const Api = (function() {
   }
 
   /* =========================================================
-     IA CHAT (proxy)
+     IA CHAT
      ========================================================= */
   async function sendToAI(message, history) {
     const ai = CFG.AI_AGENT || {};
@@ -240,7 +277,6 @@ const Api = (function() {
         console.warn("Erreur agent IA :", e.message);
       }
     }
-    // Fallback local
     return { success: true, reply: getFallbackAIReply(message), fallback: true };
   }
 
@@ -343,7 +379,7 @@ const Api = (function() {
   }
 
   function getDefaultBadges() {
-    return null; // sera défini dans xp.js si besoin
+    return null;
   }
 
   function getDefaultWotd() {
@@ -381,9 +417,10 @@ const Api = (function() {
     verifyPayment: verifyPayment,
     isOnline: isOnline,
     hasBackend: hasBackend,
+    hasFirebase: hasFirebase,
     clearCache: clearCache
   };
 })();
 
 window.Api = Api;
-console.log("✓ API layer chargée (backend: " + (Api.hasBackend() ? "ON" : "OFF — fallback JSON local") + ")");
+console.log("✓ API layer chargée");
