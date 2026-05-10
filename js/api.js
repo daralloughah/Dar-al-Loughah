@@ -48,32 +48,29 @@ const Api = (function() {
      THÈMES
      ========================================================= */
   async function getThemesIndex() {
-    // 1. Essai backend
+    // 1. PRIORITÉ Firebase
+    if (window.FB && window.FB.isReady && window.FB.isReady()) {
+      const data = await window.FB.getCollection("themes");
+      if (data && data.length > 0) {
+        // Trier par order
+        data.sort(function(a, b) { return (a.order || 99) - (b.order || 99); });
+        console.log("✓ Thèmes chargés depuis Firebase:", data.length);
+        return data;
+      }
+    }
+    // 2. Fallback backend distant
     if (hasBackend() && isOnline()) {
       const data = await fetchJSON(CFG.BACKEND_URL + "/themes");
       if (data) return data;
     }
-    // 2. Fallback fichier JSON local
+    // 3. Fallback fichier JSON local
     const localPath = (CFG.DATA_PATHS && CFG.DATA_PATHS.THEMES_INDEX) || "data/themes.json";
     const data = await fetchJSON(localPath);
     if (data) return data;
-    // 3. Fallback ultime : thèmes hardcodés
+    // 4. Fallback ultime
     return getDefaultThemes();
   }
-
-  async function getTheme(themeId) {
-    if (hasBackend() && isOnline()) {
-      const data = await fetchJSON(CFG.BACKEND_URL + "/themes/" + themeId);
-      if (data) return data;
-    }
-    const tpl = (CFG.DATA_PATHS && CFG.DATA_PATHS.THEME_FILE) || "data/themes/{id}.json";
-    const path = tpl.replace("{id}", themeId);
-    const data = await fetchJSON(path);
-    if (data) return data;
-    // Fallback : thème vide
-    return getDefaultTheme(themeId);
-  }
-
+ 
   /* =========================================================
      LETTRES (alphabet)
      ========================================================= */
