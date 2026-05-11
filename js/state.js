@@ -219,11 +219,17 @@ const State = (function() {
 
 
   function getChatRemaining() {
+    /* === PHASE 1 — Masquage Premium === */
+    if (window.CONFIG && window.CONFIG.FEATURES && window.CONFIG.FEATURES.PREMIUM_VISIBLE === false) {
+      return Infinity;
+    }
+
     if (state.isPremium) return Infinity;
     checkChatQuota();
     const limit = (window.CONFIG && window.CONFIG.CHAT_DAILY_LIMIT) || 10;
     return Math.max(0, limit - state.chatCount);
   }
+
 
   /* =========================================================
      DATA BINDING (data-bind="pseudo" -> mis à jour automatiquement)
