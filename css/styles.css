@@ -1589,3 +1589,47 @@ select.input{ appearance:none; cursor:pointer;
     padding: 11px 12px;
   }
 }
+/* =========================================================
+   PHASE 1 — Masquage Premium + fix affichage quiz
+   Pour réactiver premium : CONFIG.FEATURES.PREMIUM_VISIBLE = true
+   ========================================================= */
+
+body:not(.premium-on) [data-premium="true"] {
+  display: none !important;
+}
+
+/* === FIX BUG — Réponses longues quiz/rapid sur petit écran === */
+.answer{
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#quizAnswers .answer,
+#rapidAnswers .answer{
+  font-family: 'Amiri', 'Cormorant Garamond', serif;
+  font-size: 20px;
+}
+
+@media (max-width: 380px){
+  .answer{
+    font-size: 17px;
+    padding: 12px 14px;
+  }
+  #quizAnswers .answer,
+  #rapidAnswers .answer{
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 340px){
+  .answer{
+    font-size: 16px;
+    padding: 11px 12px;
+  }
+}
