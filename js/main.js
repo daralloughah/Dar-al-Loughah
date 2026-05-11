@@ -528,13 +528,17 @@ const Main = (function() {
   /* =========================================================
      INITIALISATION
      ========================================================= */
-  function init() {
+ function init() {
     buildStarfield();
     bindActions();
     setupEventListeners();
 
+    /* === PHASE 1 — Masquage Premium === */
+    applyPremiumVisibility();
+
     // Démarrer sur login si pas connecté, sinon home
     const isLoggedIn = window.State && window.State.get("loggedIn");
+
 
     if (isLoggedIn) {
       goto("home");
