@@ -149,10 +149,12 @@ const CONFIG = {
     SOCIAL_SHARE: false,
     OFFLINE_CACHE: true,
     LEADERBOARD: false,
-    AMBIENT_SOUND: false
-  }
-};
+    AMBIENT_SOUND: false,
 
-// Ne pas toucher à ce qui est en dessous, c'est utilisé par les autres fichiers
-window.CONFIG = CONFIG;
-console.log("✓ Config chargée :", CONFIG.APP_NAME, "v" + CONFIG.APP_VERSION);
+    /* === PHASE 1 — Masquage Premium/Freemium ===
+       Passer à true pour réactiver tout le système premium. */
+    PREMIUM_VISIBLE: false,
+
+    /* === Préparation Phase 2 — Pubs récompensées === */
+    ADS_ENABLED: false
+  }
