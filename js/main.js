@@ -561,6 +561,18 @@ const Main = (function() {
     init();
   }
 
+    /* === PHASE 1 — Helper masquage premium === */
+  function applyPremiumVisibility() {
+    const visible = window.CONFIG &&
+                    window.CONFIG.FEATURES &&
+                    window.CONFIG.FEATURES.PREMIUM_VISIBLE === true;
+    if (visible) {
+      document.body.classList.add("premium-on");
+    } else {
+      document.body.classList.remove("premium-on");
+    }
+  }
+
   /* -------- API publique -------- */
   return {
     goto: goto,
@@ -569,8 +581,10 @@ const Main = (function() {
     showModal: showModal,
     closeModal: closeModal,
     floatXP: floatXP,
+    applyPremiumVisibility: applyPremiumVisibility,
     getCurrentScreen: function() { return currentScreen; }
   };
+
 })();
 
 window.Main = Main;
