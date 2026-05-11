@@ -1545,3 +1545,47 @@ select.input{ appearance:none; cursor:pointer;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
+/* =========================================================
+   FIX v2.1 — Affichage des réponses longues (quiz + rapid)
+   Ajout sans suppression — corrige le débordement sur petit écran
+   ========================================================= */
+
+.answer{
+  white-space: normal;
+  word-break: keep-all;          /* ne coupe pas au milieu d'un mot arabe */
+  overflow-wrap: anywhere;       /* coupe les phrases trop longues si nécessaire */
+  line-height: 1.4;
+  min-height: 52px;              /* hauteur minimum cohérente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Réponses contenant de l'arabe → meilleure police + meilleure taille */
+.answer[dir="rtl"],
+#quizAnswers .answer,
+#rapidAnswers .answer{
+  font-family: 'Amiri', 'Cormorant Garamond', serif;
+  font-size: 20px;
+}
+
+/* Petits écrans (≤ 380px) */
+@media (max-width: 380px){
+  .answer{
+    font-size: 17px;
+    padding: 12px 14px;
+  }
+  .answer[dir="rtl"],
+  #quizAnswers .answer,
+  #rapidAnswers .answer{
+    font-size: 18px;
+  }
+}
+
+/* Très petits écrans (≤ 340px) */
+@media (max-width: 340px){
+  .answer{
+    font-size: 16px;
+    padding: 11px 12px;
+  }
+}
