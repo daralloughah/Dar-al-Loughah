@@ -1,521 +1,303 @@
-/* =========================================================
-   DAR AL LOUGHAH — AUTHENTICATION
-   Gère les connexions :
-   - Google (One Tap si CONFIG.GOOGLE_CLIENT_ID rempli)
-   - Apple Sign In
-   - Email + mot de passe (Firebase Auth en priorité)
-   - Mode invité
-   ========================================================= */
+const State = (function() {
 
-const Auth = (function() {
+  const STORAGE_KEY = (window.CONFIG && window.CONFIG.STORAGE_KEY) || "dar_al_loughah_v2";
 
-  const CFG = window.CONFIG || {};
-
-  /* =========================================================
-     CHECK SI L'UTILISATEUR EST CONNECTÉ
-     ========================================================= */
-  function isLoggedIn() {
-    return window.State && window.State.get("loggedIn") === true;
-  }
-
-  function getUser() {
-    if (!window.State) return null;
-    return {
-      pseudo: window.State.get("pseudo"),
-      email: window.State.get("email"),
-      avatar: window.State.get("avatar"),
-      method: window.State.get("authMethod")
-    };
-  }
-
-  /* =========================================================
-     HELPER : Firebase est-il prêt ?
-     ========================================================= */
-  function firebaseReady() {
-    return window.FB && window.FB.isReady && window.FB.isReady();
-  }
-
-  /* =========================================================
-     LOGIN : GOOGLE (Firebase prioritaire)
-     ========================================================= */
-  async function loginGoogle() {
-    // 1. PRIORITÉ Firebase Google Sign-In
-    if (firebaseReady()) {
-      const result = await window.FB.signInGoogle();
-      if (result.success) {
-        const user = {
-          pseudo: result.user.displayName || result.user.email.split("@")[0],
-          email: result.user.email,
-          avatar: result.user.photoURL || "",
-          method: "google",
-          uid: result.user.uid
-        };
-        completeLogin(user);
-        return { success: true, user: user };
-      }
-      return { success: false, error: result.error || "Erreur connexion Google" };
+  const DEFAULT_STATE = {
+    loggedIn: false,
+    pseudo: "Apprenti",
+    email: "",
+    avatar: "",
+    authMethod: "guest",
+    uid: "",
+    newsletter: false,
+    createdAt: null,
+    xp: 0,
+    level: 1,
+    streak: 0,
+    lastActiveDay: null,
+    isPremium: false,
+    premiumSince: null,
+    premiumPaymentRef: "",
+    wordsLearned: [],
+    lettersLearned: [],
+    masteredWords: 0,
+    reviewCounts: {},
+    quizValidations: {},
+    themeProgress: {},
+    lists: [],
+    chatCount: 0,
+    chatDate: null,
+    unlockedBadges: [],
+    settings: {
+      tapSound: true, feedbackSound: true, ambientSound: false,
+      streakNotif: true, wotdNotif: true, showTranslit: true,
+      offlineCache: true, shareProgress: false,
+      chatLanguage: "fr", chatReadAloud: true
+    },
+    stats: {
+      totalQuizAnswered: 0, totalCorrect: 0,
+      perfectQuizzes: 0, bestRapidCombo: 0, themesCompleted: 0
     }
+  };
 
-    // 2. Fallback Google JS SDK classique
-    if (!CFG.GOOGLE_CLIENT_ID) {
-      return loginAsDemo("google", "Utilisateur Google");
-    }
+  let state = loadState();
 
-    if (!window.google || !window.google.accounts) {
-      await loadGoogleSDK();
-    }
-
-    return new Promise(function(resolve) {
-      try {
-        window.google.accounts.id.initialize({
-          client_id: CFG.GOOGLE_CLIENT_ID,
-          callback: function(response) {
-            const profile = parseJWT(response.credential);
-            const user = {
-              pseudo: profile.name || profile.given_name || "Utilisateur Google",
-              email: profile.email || "",
-              avatar: profile.picture || "",
-              method: "google"
-            };
-            completeLogin(user, response.credential);
-            resolve({ success: true, user: user });
-          }
-        });
-        window.google.accounts.id.prompt();
-      } catch (e) {
-        console.warn("Google Sign-In error :", e);
-        resolve(loginAsDemo("google", "Utilisateur Google"));
-      }
-    });
-  }
-
-  function loadGoogleSDK() {
-    return new Promise(function(resolve) {
-      if (document.querySelector('script[src*="accounts.google.com"]')) {
-        return resolve();
-      }
-      const script = document.createElement("script");
-      script.src = "https://accounts.google.com/gsi/client";
-      script.async = true;
-      script.defer = true;
-      script.onload = resolve;
-      script.onerror = function() { resolve(); };
-      document.head.appendChild(script);
-    });
-  }
-
-  function parseJWT(token) {
+  function loadState() {
     try {
-      const base64Url = token.split(".")[1];
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      const jsonPayload = decodeURIComponent(atob(base64).split("").map(function(c) {
-        return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(""));
-      return JSON.parse(jsonPayload);
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return deepMerge(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
+      }
     } catch (e) {
-      return {};
+      console.warn("State load fail");
+    }
+    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+  }
+
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch (e) { console.warn("State save fail"); }
+  }
+
+  function deepMerge(target, source) {
+    for (const key in source) {
+      if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key])) {
+        target[key] = deepMerge(target[key] || {}, source[key]);
+      } else {
+        target[key] = source[key];
+      }
+    }
+    return target;
+  }
+
+  function get(key) {
+    if (!key) return state;
+    const parts = key.split(".");
+    let val = state;
+    for (const part of parts) {
+      if (val == null) return undefined;
+      val = val[part];
+    }
+    return val;
+  }
+
+  function set(key, value) {
+    const parts = key.split(".");
+    let obj = state;
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (!obj[parts[i]]) obj[parts[i]] = {};
+      obj = obj[parts[i]];
+    }
+    obj[parts[parts.length - 1]] = value;
+    saveState();
+    refreshBindings();
+  }
+
+  function update(updater) {
+    if (typeof updater === "function") updater(state);
+    else if (typeof updater === "object") Object.assign(state, updater);
+    saveState();
+    refreshBindings();
+  }
+
+  function reset() {
+    state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    saveState();
+    refreshBindings();
+  }
+
+  function todayKey() {
+    const d = new Date();
+    return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+  }
+
+  function yesterdayKey() {
+    const y = new Date();
+    y.setDate(y.getDate() - 1);
+    return y.getFullYear() + "-" + (y.getMonth() + 1) + "-" + y.getDate();
+  }
+
+  function updateStreak() {
+    const tk = todayKey();
+    if (state.lastActiveDay === tk) return;
+    if (state.lastActiveDay === yesterdayKey()) state.streak += 1;
+    else state.streak = 1;
+    state.lastActiveDay = tk;
+    saveState();
+    refreshBindings();
+  }
+
+  function checkChatQuota() {
+    const tk = todayKey();
+    if (state.chatDate !== tk) {
+      state.chatDate = tk;
+      state.chatCount = 0;
+      saveState();
     }
   }
 
-  /* =========================================================
-     LOGIN : APPLE
-     ========================================================= */
-  async function loginApple() {
-    if (!CFG.APPLE_CLIENT_ID) {
-      return loginAsDemo("apple", "Utilisateur Apple");
-    }
+  function incrementChatCount() {
+    checkChatQuota();
+    state.chatCount += 1;
+    saveState();
+  }
 
-    if (!window.AppleID) {
-      await loadAppleSDK();
-    }
+  function canSendChat() {
+    if (window.CONFIG && window.CONFIG.FEATURES && window.CONFIG.FEATURES.PREMIUM_VISIBLE === false) return true;
+    if (state.isPremium) return true;
+    checkChatQuota();
+    const limit = (window.CONFIG && window.CONFIG.CHAT_DAILY_LIMIT) || 10;
+    return state.chatCount < limit;
+  }
 
-    return new Promise(function(resolve) {
-      try {
-        window.AppleID.auth.init({
-          clientId: CFG.APPLE_CLIENT_ID,
-          scope: "name email",
-          redirectURI: window.location.href,
-          state: "auth_" + Date.now(),
-          usePopup: true
-        });
+  function getChatRemaining() {
+    if (window.CONFIG && window.CONFIG.FEATURES && window.CONFIG.FEATURES.PREMIUM_VISIBLE === false) return Infinity;
+    if (state.isPremium) return Infinity;
+    checkChatQuota();
+    const limit = (window.CONFIG && window.CONFIG.CHAT_DAILY_LIMIT) || 10;
+    return Math.max(0, limit - state.chatCount);
+  }
 
-        window.AppleID.auth.signIn().then(function(data) {
-          const user = {
-            pseudo: (data.user && data.user.name && data.user.name.firstName) || "Utilisateur Apple",
-            email: (data.user && data.user.email) || "",
-            avatar: "",
-            method: "apple"
-          };
-          completeLogin(user, data.authorization && data.authorization.id_token);
-          resolve({ success: true, user: user });
-        }).catch(function(e) {
-          console.warn("Apple Sign-In error :", e);
-          resolve(loginAsDemo("apple", "Utilisateur Apple"));
-        });
-      } catch (e) {
-        resolve(loginAsDemo("apple", "Utilisateur Apple"));
-      }
+  function refreshBindings() {
+    document.querySelectorAll("[data-bind]").forEach(function(el) {
+      const key = el.getAttribute("data-bind");
+      const value = resolveBinding(key);
+      if (value !== undefined && value !== null) el.textContent = value;
     });
   }
 
-  function loadAppleSDK() {
-    return new Promise(function(resolve) {
-      if (document.querySelector('script[src*="appleid.auth"]')) return resolve();
-      const script = document.createElement("script");
-      script.src = "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
-      script.async = true;
-      script.defer = true;
-      script.onload = resolve;
-      script.onerror = function() { resolve(); };
-      document.head.appendChild(script);
+  function resolveBinding(key) {
+    switch (key) {
+      case "pseudo": return state.pseudo;
+      case "email": return state.email;
+      case "xp": return state.xp.toLocaleString("fr-FR");
+      case "level": return state.level;
+      case "streak": return state.streak;
+      case "premium-price": return ((window.CONFIG && window.CONFIG.PREMIUM_PRICE) || 7.99) + "EUR";
+      default: return get(key);
+    }
+  }
+
+  function createList(name) {
+    const list = { id: "list_" + Date.now(), name: name, words: [], createdAt: Date.now() };
+    state.lists.push(list);
+    saveState();
+    return list;
+  }
+
+  function deleteList(id) {
+    state.lists = state.lists.filter(function(l) { return l.id !== id; });
+    saveState();
+  }
+
+  function getList(id) {
+    return state.lists.find(function(l) { return l.id === id; });
+  }
+
+  function addWordToList(listId, word) {
+    const list = getList(listId);
+    if (!list) return false;
+    const newWord = {
+      id: "word_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+      ar: word.ar || "", translit: word.translit || "",
+      fr: word.fr || "", example: word.example || "",
+      addedAt: Date.now(), reviews: 0
+    };
+    list.words.push(newWord);
+    saveState();
+    return newWord;
+  }
+
+  function removeWordFromList(listId, wordId) {
+    const list = getList(listId);
+    if (!list) return false;
+    list.words = list.words.filter(function(w) { return w.id !== wordId; });
+    saveState();
+    return true;
+  }
+
+  function recordReview(wordId, isKnown) {
+    if (!state.reviewCounts[wordId]) state.reviewCounts[wordId] = 0;
+    if (isKnown) {
+      state.reviewCounts[wordId] += 1;
+      const threshold = (window.CONFIG && window.CONFIG.WORD_MASTERY_REVIEWS) || 10;
+      if (state.reviewCounts[wordId] === threshold && !state.wordsLearned.includes(wordId)) {
+        state.wordsLearned.push(wordId);
+        state.masteredWords = state.wordsLearned.length;
+      }
+    }
+    saveState();
+  }
+
+  function getReviewCount(wordId) { return state.reviewCounts[wordId] || 0; }
+  function isWordMastered(wordId) { return state.wordsLearned.includes(wordId); }
+
+  function unlockBadge(badgeId) {
+    if (!state.unlockedBadges.includes(badgeId)) {
+      state.unlockedBadges.push(badgeId);
+      saveState();
+      return true;
+    }
+    return false;
+  }
+
+  function isBadgeUnlocked(badgeId) {
+    return state.unlockedBadges.indexOf(badgeId) !== -1;
+  }
+
+  function isAdmin() {
+    const email = state.email;
+    if (!email || !window.CONFIG || !window.CONFIG.ADMIN_EMAILS) return false;
+    const lowerEmail = email.toLowerCase();
+    return window.CONFIG.ADMIN_EMAILS.some(function(e) {
+      return e.toLowerCase() === lowerEmail;
     });
   }
 
-  /* =========================================================
-     LOGIN : EMAIL + MOT DE PASSE (Firebase prioritaire)
-     ========================================================= */
-  async function loginEmail(email, password) {
-    if (!email || !password) {
-      return { success: false, error: "Email et mot de passe requis" };
-    }
-    if (!validateEmail(email)) {
-      return { success: false, error: "Email invalide" };
-    }
+  function exportData() { return JSON.stringify(state, null, 2); }
 
-    // 1. PRIORITÉ Firebase Auth
-    if (firebaseReady()) {
-      const result = await window.FB.signIn(email, password);
-      if (result.success) {
-        const user = {
-          pseudo: result.user.displayName || email.split("@")[0],
-          email: email,
-          avatar: result.user.photoURL || "",
-          method: "email",
-          uid: result.user.uid
-        };
-        completeLogin(user);
-        return { success: true, user: user };
-      }
-      return { success: false, error: result.error || "Identifiants incorrects" };
-    }
-
-    // 2. Backend distant (si configuré)
-    if (CFG.BACKEND_URL && navigator.onLine !== false) {
-      try {
-        const res = await fetch(CFG.BACKEND_URL + "/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email, password: password })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const user = {
-            pseudo: data.pseudo || email.split("@")[0],
-            email: email,
-            avatar: data.avatar || "",
-            method: "email"
-          };
-          completeLogin(user, data.token);
-          return { success: true, user: user };
-        } else {
-          const err = await res.json().catch(function() { return {}; });
-          return { success: false, error: err.message || "Identifiants incorrects" };
-        }
-      } catch (e) {}
-    }
-
-    // 3. Fallback local (dernier recours)
-    const stored = getStoredAccount(email);
-    if (!stored) {
-      return { success: false, error: "Aucun compte trouvé. Créez d'abord un compte." };
-    }
-    if (stored.passwordHash !== simpleHash(password)) {
-      return { success: false, error: "Mot de passe incorrect" };
-    }
-    const user = {
-      pseudo: stored.pseudo,
-      email: email,
-      avatar: stored.avatar || "",
-      method: "email"
-    };
-    completeLogin(user);
-    return { success: true, user: user };
-  }
-
-  /* =========================================================
-     INSCRIPTION (Firebase prioritaire)
-     ========================================================= */
-  async function register(data) {
-    if (!data.pseudo || !data.email || !data.password) {
-      return { success: false, error: "Tous les champs sont requis" };
-    }
-    if (!validateEmail(data.email)) {
-      return { success: false, error: "Email invalide" };
-    }
-    if (data.password.length < 6) {
-      return { success: false, error: "Le mot de passe doit faire au moins 6 caractères" };
-    }
-    if (data.password !== data.passwordConfirm) {
-      return { success: false, error: "Les mots de passe ne correspondent pas" };
-    }
-    if (!data.terms) {
-      return { success: false, error: "Vous devez accepter les conditions d'utilisation" };
-    }
-
-    // 1. PRIORITÉ Firebase Auth
-    if (firebaseReady()) {
-      const result = await window.FB.signUp(data.email, data.password);
-      if (result.success) {
-        if (data.newsletter && window.Api) {
-          window.Api.subscribeNewsletter(data.email, data.pseudo);
-        }
-        const user = {
-          pseudo: data.pseudo,
-          email: data.email,
-          avatar: "",
-          method: "email",
-          uid: result.user.uid
-        };
-        completeLogin(user, null, !!data.newsletter);
-        return { success: true, user: user };
-      }
-      return { success: false, error: result.error || "Erreur d'inscription" };
-    }
-
-    // 2. Backend distant
-    if (CFG.BACKEND_URL && navigator.onLine !== false) {
-      try {
-        const res = await fetch(CFG.BACKEND_URL + "/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            pseudo: data.pseudo,
-            email: data.email,
-            password: data.password,
-            newsletter: !!data.newsletter
-          })
-        });
-        if (res.ok) {
-          const json = await res.json();
-          const user = {
-            pseudo: data.pseudo,
-            email: data.email,
-            avatar: "",
-            method: "email"
-          };
-          completeLogin(user, json.token, !!data.newsletter);
-          return { success: true, user: user };
-        } else {
-          const err = await res.json().catch(function() { return {}; });
-          return { success: false, error: err.message || "Erreur d'inscription" };
-        }
-      } catch (e) {}
-    }
-
-    // 3. Fallback local
-    if (getStoredAccount(data.email)) {
-      return { success: false, error: "Un compte existe déjà avec cet email" };
-    }
-    storeAccount({
-      email: data.email,
-      pseudo: data.pseudo,
-      passwordHash: simpleHash(data.password),
-      newsletter: !!data.newsletter,
-      createdAt: Date.now()
-    });
-
-    if (data.newsletter && window.Api) {
-      window.Api.subscribeNewsletter(data.email, data.pseudo);
-    }
-
-    const user = {
-      pseudo: data.pseudo,
-      email: data.email,
-      avatar: "",
-      method: "email"
-    };
-    completeLogin(user, null, !!data.newsletter);
-    return { success: true, user: user };
-  }
-
-  /* =========================================================
-     LOGIN : INVITÉ
-     ========================================================= */
-  function loginGuest() {
-    const user = {
-      pseudo: "Invité",
-      email: "",
-      avatar: "",
-      method: "guest"
-    };
-    completeLogin(user);
-    return { success: true, user: user };
-  }
-
-  /* =========================================================
-     LOGOUT (Firebase + local)
-     ========================================================= */
-  async function logout() {
-    // Déconnexion Firebase
-    if (firebaseReady()) {
-      try { await window.FB.signOut(); } catch (e) {}
-    }
-
-    if (window.State) {
-      window.State.update({
-        loggedIn: false,
-        authMethod: "guest"
-      });
-    }
+  function importData(jsonString) {
     try {
-      if (window.google && window.google.accounts && window.google.accounts.id) {
-        window.google.accounts.id.disableAutoSelect();
-      }
-    } catch (e) {}
-    document.dispatchEvent(new CustomEvent("auth-logout"));
+      const parsed = JSON.parse(jsonString);
+      state = deepMerge(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
+      saveState();
+      refreshBindings();
+      return true;
+    } catch (e) { return false; }
   }
 
-  /* =========================================================
-     COMPLÈTE LE LOGIN (mise à jour du state)
-     ========================================================= */
-  function completeLogin(user, token, newsletter) {
-    if (!window.State) return;
-
-    const isFirstLogin = !window.State.get("createdAt");
-
-    window.State.update({
-      loggedIn: true,
-      pseudo: user.pseudo,
-      email: user.email,
-      avatar: user.avatar || "",
-      authMethod: user.method,
-      uid: user.uid || "",
-      newsletter: !!newsletter,
-      createdAt: window.State.get("createdAt") || Date.now()
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function() {
+      updateStreak();
+      checkChatQuota();
+      refreshBindings();
     });
-
-    if (token) {
-      try { localStorage.setItem("dar_auth_token", token); } catch (e) {}
-    }
-
-    document.dispatchEvent(new CustomEvent("auth-login", { detail: user }));
-
-    // Detection admin : declenche l'affichage du bouton Mode Admin
-    const adminEmails = (CFG.ADMIN_EMAILS || []).map(function(e) { return e.toLowerCase(); });
-    const isAdmin = user.email && adminEmails.indexOf(user.email.toLowerCase()) !== -1;
-    document.dispatchEvent(new CustomEvent("firebase-user-changed", {
-      detail: { user: user, isAdmin: isAdmin }
-    }));
-
-    if (window.XP) {
-      window.XP.checkBadges();
-    }
+  } else {
+    updateStreak();
+    checkChatQuota();
+    refreshBindings();
   }
 
-  /* =========================================================
-     FALLBACK DEMO
-     ========================================================= */
-  function loginAsDemo(method, defaultName) {
-    const pseudo = prompt(
-      "Mode demo (" + method + ") - entrez votre pseudo :",
-      defaultName
-    );
-    if (!pseudo) return { success: false, error: "Annule" };
-    const user = {
-      pseudo: pseudo,
-      email: "",
-      avatar: "",
-      method: method
-    };
-    completeLogin(user);
-    return { success: true, user: user };
-  }
-
-  /* =========================================================
-     STOCKAGE LOCAL (fallback uniquement si Firebase indisponible)
-     ========================================================= */
-  function getAccountsKey() {
-    return "dar_accounts_v1";
-  }
-
-  function getAllAccounts() {
-    try {
-      const raw = localStorage.getItem(getAccountsKey());
-      return raw ? JSON.parse(raw) : {};
-    } catch (e) {
-      return {};
-    }
-  }
-
-  function getStoredAccount(email) {
-    const all = getAllAccounts();
-    return all[email.toLowerCase()] || null;
-  }
-
-  function storeAccount(account) {
-    const all = getAllAccounts();
-    all[account.email.toLowerCase()] = account;
-    try {
-      localStorage.setItem(getAccountsKey(), JSON.stringify(all));
-    } catch (e) {}
-  }
-
-  /* =========================================================
-     UTILS
-     ========================================================= */
-  function validateEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }
-
-  function simpleHash(str) {
-    let hash = 0;
-    if (!str) return "0";
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    return "h_" + Math.abs(hash).toString(36);
-  }
-
-  /* =========================================================
-     CHANGEMENT DE PSEUDO
-     ========================================================= */
-  function changePseudo(newPseudo) {
-    if (!newPseudo || newPseudo.trim().length < 2) {
-      return { success: false, error: "Pseudo trop court" };
-    }
-    if (window.State) {
-      window.State.set("pseudo", newPseudo.trim());
-    }
-    return { success: true };
-  }
-
-  /* =========================================================
-     RESET PASSWORD (Firebase)
-     ========================================================= */
-  async function resetPassword(email) {
-    if (firebaseReady()) {
-      return await window.FB.resetPassword(email);
-    }
-    return { success: false, error: "Réinitialisation indisponible" };
-  }
-
-  /* -------- API publique -------- */
   return {
-    isLoggedIn: isLoggedIn,
-    getUser: getUser,
-    loginGoogle: loginGoogle,
-    loginApple: loginApple,
-    loginEmail: loginEmail,
-    loginGuest: loginGuest,
-    register: register,
-    logout: logout,
-    changePseudo: changePseudo,
-    validateEmail: validateEmail,
-    resetPassword: resetPassword
+    get: get, set: set, update: update, reset: reset,
+    refreshBindings: refreshBindings,
+    updateStreak: updateStreak,
+    checkChatQuota: checkChatQuota,
+    incrementChatCount: incrementChatCount,
+    canSendChat: canSendChat,
+    getChatRemaining: getChatRemaining,
+    createList: createList, deleteList: deleteList, getList: getList,
+    addWordToList: addWordToList, removeWordFromList: removeWordFromList,
+    recordReview: recordReview,
+    getReviewCount: getReviewCount,
+    isWordMastered: isWordMastered,
+    unlockBadge: unlockBadge,
+    isBadgeUnlocked: isBadgeUnlocked,
+    isAdmin: isAdmin,
+    exportData: exportData,
+    importData: importData
   };
 })();
 
-window.Auth = Auth;
-console.log("✓ Auth chargé");
+window.State = State;
