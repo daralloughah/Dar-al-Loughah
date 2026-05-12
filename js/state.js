@@ -219,7 +219,7 @@ const State = (function() {
   }
 
   /* =========================================================
-     DATA BINDING (data-bind="pseudo" -> mis à jour automatiquement)
+     DATA BINDING
      ========================================================= */
   function refreshBindings() {
     const elements = document.querySelectorAll("[data-bind]");
@@ -313,14 +313,6 @@ const State = (function() {
     saveState();
   }
 
-  function getReviewCount(wordId) {
-    return state.reviewCounts[wordId] || 0;
-  }
-
-  function isWordMastered(wordId) {
-    return state.wordsLearned.includes(wordId);
-  }
-
   /* =========================================================
      BADGES
      ========================================================= */
@@ -333,12 +325,8 @@ const State = (function() {
     return false;
   }
 
-  function isBadgeUnlocked(badgeId) {
-    return state.unlockedBadges.includes(badgeId);
-  }
-
   /* =========================================================
-     EXPORT / IMPORT (sauvegarde manuelle)
+     EXPORT / IMPORT
      ========================================================= */
   function exportData() {
     return JSON.stringify(state, null, 2);
@@ -356,9 +344,7 @@ const State = (function() {
     }
   }
 
-  /* =========================================================
-     INITIALISATION
-     ========================================================= */
+  // Initialisation auto
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function() {
       updateStreak();
@@ -373,39 +359,31 @@ const State = (function() {
 
   /* -------- API publique -------- */
   return {
-    // Get/Set
     get: get,
     set: set,
     update: update,
     reset: reset,
     refreshBindings: refreshBindings,
-
-    // Streak & quota
     updateStreak: updateStreak,
     checkChatQuota: checkChatQuota,
     incrementChatCount: incrementChatCount,
     canSendChat: canSendChat,
     getChatRemaining: getChatRemaining,
-
-    // Listes
     createList: createList,
     deleteList: deleteList,
     getList: getList,
     addWordToList: addWordToList,
     removeWordFromList: removeWordFromList,
-
-    // Révisions
     recordReview: recordReview,
-    getReviewCount: getReviewCount,
-    isWordMastered: isWordMastered,
-
-    // Badges
     unlockBadge: unlockBadge,
-    isBadgeUnlocked: isBadgeUnlocked,
-
-    // Export/Import
     exportData: exportData,
-    importData: importData
+    importData: importData,
+    // LA FONCTION ADMIN CRUCIALE
+    isAdmin: function() {
+      const email = state.email;
+      if (!email || !window.CONFIG || !window.CONFIG.ADMIN_EMAILS) return false;
+      return window.CONFIG.ADMIN_EMAILS.indexOf(email) !== -1;
+    }
   };
 })();
 
