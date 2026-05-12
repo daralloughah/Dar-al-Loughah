@@ -1,303 +1,172 @@
-const State = (function() {
+const Auth = (function() {
 
-  const STORAGE_KEY = (window.CONFIG && window.CONFIG.STORAGE_KEY) || "dar_al_loughah_v2";
+  const CFG = window.CONFIG || {};
 
-  const DEFAULT_STATE = {
-    loggedIn: false,
-    pseudo: "Apprenti",
-    email: "",
-    avatar: "",
-    authMethod: "guest",
-    uid: "",
-    newsletter: false,
-    createdAt: null,
-    xp: 0,
-    level: 1,
-    streak: 0,
-    lastActiveDay: null,
-    isPremium: false,
-    premiumSince: null,
-    premiumPaymentRef: "",
-    wordsLearned: [],
-    lettersLearned: [],
-    masteredWords: 0,
-    reviewCounts: {},
-    quizValidations: {},
-    themeProgress: {},
-    lists: [],
-    chatCount: 0,
-    chatDate: null,
-    unlockedBadges: [],
-    settings: {
-      tapSound: true, feedbackSound: true, ambientSound: false,
-      streakNotif: true, wotdNotif: true, showTranslit: true,
-      offlineCache: true, shareProgress: false,
-      chatLanguage: "fr", chatReadAloud: true
-    },
-    stats: {
-      totalQuizAnswered: 0, totalCorrect: 0,
-      perfectQuizzes: 0, bestRapidCombo: 0, themesCompleted: 0
-    }
-  };
-
-  let state = loadState();
-
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        return deepMerge(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
-      }
-    } catch (e) {
-      console.warn("State load fail");
-    }
-    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+  function isLoggedIn() {
+    return window.State && window.State.get("loggedIn") === true;
   }
 
-  function saveState() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    catch (e) { console.warn("State save fail"); }
-  }
-
-  function deepMerge(target, source) {
-    for (const key in source) {
-      if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key])) {
-        target[key] = deepMerge(target[key] || {}, source[key]);
-      } else {
-        target[key] = source[key];
-      }
-    }
-    return target;
-  }
-
-  function get(key) {
-    if (!key) return state;
-    const parts = key.split(".");
-    let val = state;
-    for (const part of parts) {
-      if (val == null) return undefined;
-      val = val[part];
-    }
-    return val;
-  }
-
-  function set(key, value) {
-    const parts = key.split(".");
-    let obj = state;
-    for (let i = 0; i < parts.length - 1; i++) {
-      if (!obj[parts[i]]) obj[parts[i]] = {};
-      obj = obj[parts[i]];
-    }
-    obj[parts[parts.length - 1]] = value;
-    saveState();
-    refreshBindings();
-  }
-
-  function update(updater) {
-    if (typeof updater === "function") updater(state);
-    else if (typeof updater === "object") Object.assign(state, updater);
-    saveState();
-    refreshBindings();
-  }
-
-  function reset() {
-    state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-    saveState();
-    refreshBindings();
-  }
-
-  function todayKey() {
-    const d = new Date();
-    return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
-  }
-
-  function yesterdayKey() {
-    const y = new Date();
-    y.setDate(y.getDate() - 1);
-    return y.getFullYear() + "-" + (y.getMonth() + 1) + "-" + y.getDate();
-  }
-
-  function updateStreak() {
-    const tk = todayKey();
-    if (state.lastActiveDay === tk) return;
-    if (state.lastActiveDay === yesterdayKey()) state.streak += 1;
-    else state.streak = 1;
-    state.lastActiveDay = tk;
-    saveState();
-    refreshBindings();
-  }
-
-  function checkChatQuota() {
-    const tk = todayKey();
-    if (state.chatDate !== tk) {
-      state.chatDate = tk;
-      state.chatCount = 0;
-      saveState();
-    }
-  }
-
-  function incrementChatCount() {
-    checkChatQuota();
-    state.chatCount += 1;
-    saveState();
-  }
-
-  function canSendChat() {
-    if (window.CONFIG && window.CONFIG.FEATURES && window.CONFIG.FEATURES.PREMIUM_VISIBLE === false) return true;
-    if (state.isPremium) return true;
-    checkChatQuota();
-    const limit = (window.CONFIG && window.CONFIG.CHAT_DAILY_LIMIT) || 10;
-    return state.chatCount < limit;
-  }
-
-  function getChatRemaining() {
-    if (window.CONFIG && window.CONFIG.FEATURES && window.CONFIG.FEATURES.PREMIUM_VISIBLE === false) return Infinity;
-    if (state.isPremium) return Infinity;
-    checkChatQuota();
-    const limit = (window.CONFIG && window.CONFIG.CHAT_DAILY_LIMIT) || 10;
-    return Math.max(0, limit - state.chatCount);
-  }
-
-  function refreshBindings() {
-    document.querySelectorAll("[data-bind]").forEach(function(el) {
-      const key = el.getAttribute("data-bind");
-      const value = resolveBinding(key);
-      if (value !== undefined && value !== null) el.textContent = value;
-    });
-  }
-
-  function resolveBinding(key) {
-    switch (key) {
-      case "pseudo": return state.pseudo;
-      case "email": return state.email;
-      case "xp": return state.xp.toLocaleString("fr-FR");
-      case "level": return state.level;
-      case "streak": return state.streak;
-      case "premium-price": return ((window.CONFIG && window.CONFIG.PREMIUM_PRICE) || 7.99) + "EUR";
-      default: return get(key);
-    }
-  }
-
-  function createList(name) {
-    const list = { id: "list_" + Date.now(), name: name, words: [], createdAt: Date.now() };
-    state.lists.push(list);
-    saveState();
-    return list;
-  }
-
-  function deleteList(id) {
-    state.lists = state.lists.filter(function(l) { return l.id !== id; });
-    saveState();
-  }
-
-  function getList(id) {
-    return state.lists.find(function(l) { return l.id === id; });
-  }
-
-  function addWordToList(listId, word) {
-    const list = getList(listId);
-    if (!list) return false;
-    const newWord = {
-      id: "word_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
-      ar: word.ar || "", translit: word.translit || "",
-      fr: word.fr || "", example: word.example || "",
-      addedAt: Date.now(), reviews: 0
+  function getUser() {
+    if (!window.State) return null;
+    return {
+      pseudo: window.State.get("pseudo"),
+      email: window.State.get("email"),
+      avatar: window.State.get("avatar"),
+      method: window.State.get("authMethod")
     };
-    list.words.push(newWord);
-    saveState();
-    return newWord;
   }
 
-  function removeWordFromList(listId, wordId) {
-    const list = getList(listId);
-    if (!list) return false;
-    list.words = list.words.filter(function(w) { return w.id !== wordId; });
-    saveState();
-    return true;
+  function firebaseReady() {
+    return window.FB && window.FB.isReady && window.FB.isReady();
   }
 
-  function recordReview(wordId, isKnown) {
-    if (!state.reviewCounts[wordId]) state.reviewCounts[wordId] = 0;
-    if (isKnown) {
-      state.reviewCounts[wordId] += 1;
-      const threshold = (window.CONFIG && window.CONFIG.WORD_MASTERY_REVIEWS) || 10;
-      if (state.reviewCounts[wordId] === threshold && !state.wordsLearned.includes(wordId)) {
-        state.wordsLearned.push(wordId);
-        state.masteredWords = state.wordsLearned.length;
-      }
+  async function ensureFirebase() {
+    if (firebaseReady()) return true;
+    if (window.FB && window.FB.init) {
+      try { await window.FB.init(); } catch (e) { return false; }
     }
-    saveState();
+    return firebaseReady();
   }
 
-  function getReviewCount(wordId) { return state.reviewCounts[wordId] || 0; }
-  function isWordMastered(wordId) { return state.wordsLearned.includes(wordId); }
+  async function loginGoogle() {
+    const ok = await ensureFirebase();
+    if (!ok) return { success: false, error: "Firebase non disponible" };
+    const result = await window.FB.signInGoogle();
+    if (!result.success) return { success: false, error: result.error || "Erreur Google" };
+    const user = {
+      pseudo: result.user.displayName || result.user.email.split("@")[0],
+      email: result.user.email,
+      avatar: result.user.photoURL || "",
+      method: "google",
+      uid: result.user.uid
+    };
+    completeLogin(user);
+    return { success: true, user: user };
+  }
 
-  function unlockBadge(badgeId) {
-    if (!state.unlockedBadges.includes(badgeId)) {
-      state.unlockedBadges.push(badgeId);
-      saveState();
-      return true;
+  async function loginApple() {
+    return { success: false, error: "Apple login non configure" };
+  }
+
+  async function loginEmail(email, password) {
+    if (!email || !password) return { success: false, error: "Email et mot de passe requis" };
+    if (!validateEmail(email)) return { success: false, error: "Email invalide" };
+
+    const ok = await ensureFirebase();
+    if (!ok) return { success: false, error: "Firebase non disponible" };
+
+    const result = await window.FB.signIn(email, password);
+    if (!result.success) return { success: false, error: result.error || "Identifiants incorrects" };
+
+    const user = {
+      pseudo: result.user.displayName || email.split("@")[0],
+      email: email,
+      avatar: result.user.photoURL || "",
+      method: "email",
+      uid: result.user.uid
+    };
+    completeLogin(user);
+    return { success: true, user: user };
+  }
+
+  async function register(data) {
+    if (!data.pseudo || !data.email || !data.password) return { success: false, error: "Tous les champs sont requis" };
+    if (!validateEmail(data.email)) return { success: false, error: "Email invalide" };
+    if (data.password.length < 6) return { success: false, error: "Mot de passe trop court (min 6 caracteres)" };
+    if (data.password !== data.passwordConfirm) return { success: false, error: "Mots de passe differents" };
+    if (!data.terms) return { success: false, error: "Acceptez les conditions" };
+
+    const ok = await ensureFirebase();
+    if (!ok) return { success: false, error: "Firebase non disponible" };
+
+    const result = await window.FB.signUp(data.email, data.password);
+    if (!result.success) return { success: false, error: result.error || "Erreur inscription" };
+
+    const user = {
+      pseudo: data.pseudo,
+      email: data.email,
+      avatar: "",
+      method: "email",
+      uid: result.user.uid
+    };
+    completeLogin(user, null, !!data.newsletter);
+    return { success: true, user: user };
+  }
+
+  function loginGuest() {
+    const user = { pseudo: "Invite", email: "", avatar: "", method: "guest" };
+    completeLogin(user);
+    return { success: true, user: user };
+  }
+
+  async function logout() {
+    if (firebaseReady()) {
+      try { await window.FB.signOut(); } catch (e) {}
     }
-    return false;
+    if (window.State) window.State.update({ loggedIn: false, authMethod: "guest" });
+    document.dispatchEvent(new CustomEvent("auth-logout"));
   }
 
-  function isBadgeUnlocked(badgeId) {
-    return state.unlockedBadges.indexOf(badgeId) !== -1;
-  }
+  function completeLogin(user, token, newsletter) {
+    if (!window.State) return;
 
-  function isAdmin() {
-    const email = state.email;
-    if (!email || !window.CONFIG || !window.CONFIG.ADMIN_EMAILS) return false;
-    const lowerEmail = email.toLowerCase();
-    return window.CONFIG.ADMIN_EMAILS.some(function(e) {
-      return e.toLowerCase() === lowerEmail;
+    window.State.update({
+      loggedIn: true,
+      pseudo: user.pseudo,
+      email: user.email,
+      avatar: user.avatar || "",
+      authMethod: user.method,
+      uid: user.uid || "",
+      newsletter: !!newsletter,
+      createdAt: window.State.get("createdAt") || Date.now()
     });
+
+    if (token) {
+      try { localStorage.setItem("dar_auth_token", token); } catch (e) {}
+    }
+
+    document.dispatchEvent(new CustomEvent("auth-login", { detail: user }));
+
+    const adminEmails = (CFG.ADMIN_EMAILS || []).map(function(e) { return e.toLowerCase(); });
+    const isAdmin = user.email && adminEmails.indexOf(user.email.toLowerCase()) !== -1;
+    document.dispatchEvent(new CustomEvent("firebase-user-changed", {
+      detail: { user: user, isAdmin: isAdmin }
+    }));
+
+    if (window.XP && window.XP.checkBadges) {
+      try { window.XP.checkBadges(); } catch (e) { console.warn("checkBadges error:", e); }
+    }
   }
 
-  function exportData() { return JSON.stringify(state, null, 2); }
-
-  function importData(jsonString) {
-    try {
-      const parsed = JSON.parse(jsonString);
-      state = deepMerge(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
-      saveState();
-      refreshBindings();
-      return true;
-    } catch (e) { return false; }
+  function validateEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function() {
-      updateStreak();
-      checkChatQuota();
-      refreshBindings();
-    });
-  } else {
-    updateStreak();
-    checkChatQuota();
-    refreshBindings();
+  function changePseudo(newPseudo) {
+    if (!newPseudo || newPseudo.trim().length < 2) return { success: false, error: "Pseudo trop court" };
+    if (window.State) window.State.set("pseudo", newPseudo.trim());
+    return { success: true };
+  }
+
+  async function resetPassword(email) {
+    const ok = await ensureFirebase();
+    if (!ok) return { success: false, error: "Firebase non disponible" };
+    return await window.FB.resetPassword(email);
   }
 
   return {
-    get: get, set: set, update: update, reset: reset,
-    refreshBindings: refreshBindings,
-    updateStreak: updateStreak,
-    checkChatQuota: checkChatQuota,
-    incrementChatCount: incrementChatCount,
-    canSendChat: canSendChat,
-    getChatRemaining: getChatRemaining,
-    createList: createList, deleteList: deleteList, getList: getList,
-    addWordToList: addWordToList, removeWordFromList: removeWordFromList,
-    recordReview: recordReview,
-    getReviewCount: getReviewCount,
-    isWordMastered: isWordMastered,
-    unlockBadge: unlockBadge,
-    isBadgeUnlocked: isBadgeUnlocked,
-    isAdmin: isAdmin,
-    exportData: exportData,
-    importData: importData
+    isLoggedIn: isLoggedIn,
+    getUser: getUser,
+    loginGoogle: loginGoogle,
+    loginApple: loginApple,
+    loginEmail: loginEmail,
+    loginGuest: loginGuest,
+    register: register,
+    logout: logout,
+    changePseudo: changePseudo,
+    validateEmail: validateEmail,
+    resetPassword: resetPassword
   };
 })();
 
-window.State = State;
+window.Auth = Auth;
