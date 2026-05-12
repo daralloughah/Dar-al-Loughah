@@ -1,21 +1,12 @@
 /* =========================================================
-DAR AL LOUGHAH — MAIN ORCHESTRATOR
-
-- Génère les étoiles
-- Gère la navigation entre écrans
-- Intercepte tous les data-action des boutons
-- Affiche modales et toasts
-- Démarre l’app
-  ========================================================= */
+DAR AL LOUGHAH - MAIN ORCHESTRATOR
+========================================================= */
 
 const Main = (function() {
 
 let currentScreen = null;
 let toastTimeout = null;
 
-/* =========================================================
-STARFIELD (génération des 120 étoiles scintillantes)
-========================================================= */
 function buildStarfield() {
 const sf = document.getElementById(“starfield”);
 if (!sf || sf.childElementCount > 0) return;
@@ -45,14 +36,10 @@ for (let i = 0; i < count; i++) {
 
 }
 
-/* =========================================================
-NAVIGATION ENTRE ÉCRANS
-========================================================= */
 function goto(screenName) {
 if (!screenName) return;
 
 ```
-// Quitter proprement l'écran actuel
 if (currentScreen === "chat" && window.ChatScreen && window.ChatScreen.leave) {
   window.ChatScreen.leave();
 }
@@ -60,39 +47,34 @@ if (currentScreen === "rapid" && window.RapidScreen && window.RapidScreen.stop) 
   window.RapidScreen.stop();
 }
 
-// Cacher tous les écrans
 document.querySelectorAll(".screen").forEach(function(s) {
   s.classList.remove("active");
 });
 
-// Afficher le nouveau
 const target = document.getElementById("screen-" + screenName);
 if (target) {
   target.classList.add("active");
   currentScreen = screenName;
   window.scrollTo({ top: 0, behavior: "smooth" });
 } else {
-  console.warn("Écran inconnu :", screenName);
+  console.warn("Ecran inconnu :", screenName);
   return;
 }
 
-// Mettre à jour la nav du bas
 document.querySelectorAll(".nav-item").forEach(function(item) {
-  const target = item.getAttribute("data-target");
+  const t = item.getAttribute("data-target");
   item.classList.toggle("active",
-    target === screenName ||
-    (target === "themes" && (screenName === "vocab" || screenName === "theme-levels" || screenName === "lesson")) ||
-    (target === "profile" && (screenName === "badges" || screenName === "settings"))
+    t === screenName ||
+    (t === "themes" && (screenName === "vocab" || screenName === "theme-levels" || screenName === "lesson")) ||
+    (t === "profile" && (screenName === "badges" || screenName === "settings"))
   );
 });
 
-// Cacher la nav sur login/register
 const navBar = document.getElementById("navBar");
 if (navBar) {
   navBar.style.display = (screenName === "login" || screenName === "register") ? "none" : "grid";
 }
 
-// Appeler la fonction show() de l'écran
 callScreenShow(screenName);
 ```
 
@@ -124,7 +106,6 @@ const map = {
 const screenObj = map[screenName];
 if (!screenObj) return;
 
-// Cas spécial : list-detail appelle showDetail()
 if (screenName === "list-detail" && screenObj.showDetail) {
   screenObj.showDetail();
 } else if (screenObj.show) {
@@ -136,12 +117,8 @@ if (screenName === "list-detail" && screenObj.showDetail) {
 
 }
 
-/* =========================================================
-INTERCEPTEUR DE BOUTONS (data-action)
-========================================================= */
 function bindActions() {
 document.addEventListener(“click”, function(e) {
-// Trouver l’élément le plus proche avec data-action
 const target = e.target.closest(”[data-action]”);
 if (!target) return;
 
@@ -149,7 +126,6 @@ if (!target) return;
   const action = target.getAttribute("data-action");
   const data = target.dataset;
 
-  // Son tap au clic (sauf sur certains boutons spéciaux)
   const noTapSound = ["chat-mic", "chat-send", "quiz-pick", "rapid-pick"];
   if (window.Audio && noTapSound.indexOf(action) === -1) {
     window.Audio.tap();
@@ -158,7 +134,6 @@ if (!target) return;
   handleAction(action, data, target, e);
 });
 
-// Soumission des formulaires
 document.addEventListener("submit", function(e) {
   const form = e.target;
   const submitBtn = form.querySelector('[type="submit"]');
@@ -179,12 +154,10 @@ if (event && event.preventDefault) event.preventDefault();
 
 ```
 switch (action) {
-  // ===== NAVIGATION =====
   case "goto":
     goto(data.target);
     break;
 
-  // ===== AUTH =====
   case "login-google":
     if (window.Auth) {
       window.Auth.loginGoogle().then(function(r) {
@@ -250,7 +223,6 @@ switch (action) {
     if (window.ProfileScreen) window.ProfileScreen.exportData();
     break;
 
-  // ===== THÈMES & NIVEAUX =====
   case "open-theme":
     if (window.ThemesScreen) window.ThemesScreen.openTheme(data.themeId);
     break;
@@ -261,7 +233,6 @@ switch (action) {
     if (window.ThemesScreen) window.ThemesScreen.practiceTheme(data.mode);
     break;
 
-  // ===== VOCAB =====
   case "flip-card":
     if (window.VocabScreen) window.VocabScreen.flip();
     break;
@@ -279,7 +250,6 @@ switch (action) {
     }
     break;
 
-  // ===== READING =====
   case "select-letter":
     if (window.ReadingScreen) {
       window.ReadingScreen.selectLetter(parseInt(data.letterIndex, 10));
@@ -303,7 +273,6 @@ switch (action) {
     if (window.ReadingScreen) window.ReadingScreen.launchLetterRapid();
     break;
 
-  // ===== QUIZ =====
   case "quiz-pick":
     if (window.QuizScreen) {
       window.QuizScreen.pickAnswer(parseInt(data.pickIndex, 10));
@@ -313,7 +282,6 @@ switch (action) {
     if (window.QuizScreen) window.QuizScreen.nextOrCheck();
     break;
 
-  // ===== RAPID =====
   case "start-rapid":
     if (window.RapidScreen) window.RapidScreen.start();
     break;
@@ -323,7 +291,6 @@ switch (action) {
     }
     break;
 
-  // ===== CHAT =====
   case "chat-send":
     if (window.ChatScreen) window.ChatScreen.sendMessage();
     break;
@@ -334,7 +301,6 @@ switch (action) {
     if (window.ChatScreen) window.ChatScreen.toggleLanguage();
     break;
 
-  // ===== LISTES =====
   case "create-list":
     if (window.ListsScreen) window.ListsScreen.createList();
     break;
@@ -357,22 +323,18 @@ switch (action) {
     if (window.ListsScreen) window.ListsScreen.learnList(data.mode);
     break;
 
-  // ===== BADGES =====
   case "show-badge-detail":
     if (window.BadgesScreen) window.BadgesScreen.showBadgeDetail(data.badgeId);
     break;
 
-  // ===== WOTD =====
   case "add-wotd-to-list":
     if (window.WotdScreen) window.WotdScreen.addToList();
     break;
 
-  // ===== CONTACT =====
   case "send-contact":
     if (window.ContactScreen) window.ContactScreen.send();
     break;
 
-  // ===== PREMIUM =====
   case "pay-stripe":
     if (window.PremiumScreen) window.PremiumScreen.payStripe();
     break;
@@ -389,12 +351,10 @@ switch (action) {
     if (window.PremiumScreen) window.PremiumScreen.redeemCode();
     break;
 
-  // ===== SETTINGS =====
   case "reset-data":
     if (window.SettingsScreen) window.SettingsScreen.resetData();
     break;
 
-  // ===== MODALES =====
   case "close-modal":
     closeModal(data.modal);
     break;
@@ -416,9 +376,6 @@ const el = document.getElementById(id);
 return el ? el.checked : false;
 }
 
-/* =========================================================
-TOAST
-========================================================= */
 function toast(msg, duration) {
 const t = document.getElementById(“toast”);
 if (!t) return;
@@ -430,9 +387,6 @@ t.classList.remove(“show”);
 }, duration || 2000);
 }
 
-/* =========================================================
-MODALES
-========================================================= */
 function showModal(modalId) {
 const modal = document.getElementById(modalId);
 if (modal) modal.hidden = false;
@@ -467,21 +421,15 @@ modal.hidden = false;
 
 }
 
-/* =========================================================
-ÉVÉNEMENTS GLOBAUX
-========================================================= */
 function setupEventListeners() {
-
-```
-// Détecter l'admin Firebase
-document.addEventListener("firebase-user-changed", function(e) {
-  const adminItem = document.getElementById("adminMenuItem");
-  if (adminItem) {
-    adminItem.hidden = !(e.detail && e.detail.isAdmin);
-  }
+document.addEventListener(“firebase-user-changed”, function(e) {
+const adminItem = document.getElementById(“adminMenuItem”);
+if (adminItem) {
+adminItem.hidden = !(e.detail && e.detail.isAdmin);
+}
 });
 
-// Badge débloqué → modale
+```
 document.addEventListener("badge-unlocked", function(e) {
   const badge = e.detail;
   if (!badge || !window.XP) return;
@@ -504,7 +452,6 @@ document.addEventListener("badge-unlocked", function(e) {
   showModal("modalBadgeUnlock");
 });
 
-// Level up → modale
 document.addEventListener("level-up", function(e) {
   const detail = e.detail;
   if (!detail) return;
@@ -520,21 +467,17 @@ document.addEventListener("level-up", function(e) {
   showModal("modalLevelUp");
 });
 
-// XP gagnée → animation flottante
 document.addEventListener("xp-gained", function(e) {
   const detail = e.detail;
   if (!detail || !detail.gained) return;
   floatXP(detail.gained);
 });
 
-// Premium activé → toast
 document.addEventListener("premium-activated", function() {
-  toast("✦ Premium activé — bienvenue !");
+  toast("Premium active - bienvenue !");
 });
 
-// Auth login
 document.addEventListener("auth-login", function() {
-  // Le pseudo est mis à jour automatiquement via les bindings
 });
 ```
 
@@ -548,10 +491,6 @@ document.body.appendChild(el);
 setTimeout(function() { el.remove(); }, 1300);
 }
 
-/* =========================================================
-PHASE 1 — Helper masquage premium
-(DÉFINIE ICI, AVANT init(), pour éviter tout problème d’ordre)
-========================================================= */
 function applyPremiumVisibility() {
 const visible = window.CONFIG &&
 window.CONFIG.FEATURES &&
@@ -563,19 +502,14 @@ document.body.classList.remove(“premium-on”);
 }
 }
 
-/* =========================================================
-INITIALISATION
-========================================================= */
 function init() {
 buildStarfield();
 bindActions();
 setupEventListeners();
 
 ```
-// Appliquer visibilité premium (Phase 1)
 applyPremiumVisibility();
 
-// Démarrer sur login si pas connecté, sinon home
 const isLoggedIn = window.State && window.State.get("loggedIn");
 
 if (isLoggedIn) {
@@ -584,24 +518,21 @@ if (isLoggedIn) {
   goto("login");
 }
 
-// Forcer un refresh des bindings
 if (window.State && window.State.refreshBindings) {
   window.State.refreshBindings();
 }
 
-console.log("🌙 Dar Al Loughah — App prête");
+console.log("Dar Al Loughah - App prete");
 ```
 
 }
 
-// Démarrer quand le DOM est chargé
 if (document.readyState === “loading”) {
 document.addEventListener(“DOMContentLoaded”, init);
 } else {
 init();
 }
 
-/* –––– API publique –––– */
 return {
 goto: goto,
 toast: toast,
@@ -616,4 +547,4 @@ getCurrentScreen: function() { return currentScreen; }
 })();
 
 window.Main = Main;
-console.log(“✓ Main orchestrator chargé”);
+console.log(“Main orchestrator charge”);
