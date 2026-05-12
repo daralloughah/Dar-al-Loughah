@@ -1,106 +1,63 @@
-/* =========================================================
-   DAR AL LOUGHAH — STATE MANAGER
-   La mémoire de l'app : sauvegarde + chargement + binding UI
-   ========================================================= */
-
 const State = (function() {
 
   const STORAGE_KEY = (window.CONFIG && window.CONFIG.STORAGE_KEY) || "dar_al_loughah_v2";
 
-  /* =========================================================
-     STATE PAR DÉFAUT (nouveau utilisateur)
-     ========================================================= */
   const DEFAULT_STATE = {
-    // Identité
     loggedIn: false,
     pseudo: "Apprenti",
     email: "",
     avatar: "",
     authMethod: "guest",
+    uid: "",
     newsletter: false,
     createdAt: null,
-
-    // Progression
     xp: 0,
     level: 1,
     streak: 0,
     lastActiveDay: null,
-
-    // Premium
     isPremium: false,
     premiumSince: null,
     premiumPaymentRef: "",
-
-    // Apprentissage
     wordsLearned: [],
     lettersLearned: [],
     masteredWords: 0,
-
-    // Mots vus (mot.id -> nombre de révisions)
     reviewCounts: {},
-
-    // Thèmes en cours (themeId -> { level: "debutant", progress: 0 })
+    quizValidations: {},
     themeProgress: {},
-
-    // Listes personnelles
     lists: [],
-
-    // Quota IA quotidien
     chatCount: 0,
     chatDate: null,
-
-    // Badges débloqués (liste d'IDs)
     unlockedBadges: [],
-
-    // Préférences
     settings: {
-      tapSound: true,
-      feedbackSound: true,
-      ambientSound: false,
-      streakNotif: true,
-      wotdNotif: true,
-      showTranslit: true,
-      offlineCache: true,
-      shareProgress: false,
-      chatLanguage: "fr",
-      chatReadAloud: true
+      tapSound: true, feedbackSound: true, ambientSound: false,
+      streakNotif: true, wotdNotif: true, showTranslit: true,
+      offlineCache: true, shareProgress: false,
+      chatLanguage: "fr", chatReadAloud: true
     },
-
-    // Stats
     stats: {
-      totalQuizAnswered: 0,
-      totalCorrect: 0,
-      perfectQuizzes: 0,
-      bestRapidCombo: 0,
-      themesCompleted: 0
+      totalQuizAnswered: 0, totalCorrect: 0,
+      perfectQuizzes: 0, bestRapidCombo: 0, themesCompleted: 0
     }
   };
 
   let state = loadState();
 
-  /* =========================================================
-     LOAD / SAVE
-     ========================================================= */
   function loadState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        // Fusionner avec defaults pour ajouter les nouvelles clés en cas d'update
         return deepMerge(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
       }
     } catch (e) {
-      console.warn("Impossible de charger le state, utilisation des valeurs par défaut");
+      console.warn("State load fail");
     }
     return JSON.parse(JSON.stringify(DEFAULT_STATE));
   }
 
   function saveState() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (e) {
-      console.warn("Impossible de sauvegarder le state");
-    }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch (e) { console.warn("State save fail"); }
   }
 
   function deepMerge(target, source) {
@@ -114,9 +71,6 @@ const State = (function() {
     return target;
   }
 
-  /* =========================================================
-     GETTERS / SETTERS
-     ========================================================= */
   function get(key) {
     if (!key) return state;
     const parts = key.split(".");
@@ -141,11 +95,8 @@ const State = (function() {
   }
 
   function update(updater) {
-    if (typeof updater === "function") {
-      updater(state);
-    } else if (typeof updater === "object") {
-      Object.assign(state, updater);
-    }
+    if (typeof updater === "function") updater(state);
+    else if (typeof updater === "object") Object.assign(state, updater);
     saveState();
     refreshBindings();
   }
@@ -156,9 +107,6 @@ const State = (function() {
     refreshBindings();
   }
 
-  /* =========================================================
-     STREAK QUOTIDIEN
-     ========================================================= */
   function todayKey() {
     const d = new Date();
     return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
@@ -173,22 +121,13 @@ const State = (function() {
   function updateStreak() {
     const tk = todayKey();
     if (state.lastActiveDay === tk) return;
-
-    if (state.lastActiveDay === yesterdayKey()) {
-      state.streak += 1;
-    } else if (state.lastActiveDay !== null) {
-      state.streak = 1;
-    } else {
-      state.streak = 1;
-    }
+    if (state.lastActiveDay === yesterdayKey()) state.streak += 1;
+    else state.streak = 1;
     state.lastActiveDay = tk;
     saveState();
     refreshBindings();
   }
 
-  /* =========================================================
-     QUOTA CHAT IA (réinitialisé chaque jour)
-     ========================================================= */
   function checkChatQuota() {
     const tk = todayKey();
     if (state.chatDate !== tk) {
@@ -205,6 +144,7 @@ const State = (function() {
   }
 
   function canSendChat() {
+    if (window.CONFIG && window.CONFIG.FEATURES && window.CONFIG.FEATURES.PREMIUM_VISIBLE === false) return true;
     if (state.isPremium) return true;
     checkChatQuota();
     const limit = (window.CONFIG && window.CONFIG.CHAT_DAILY_LIMIT) || 10;
@@ -212,48 +152,35 @@ const State = (function() {
   }
 
   function getChatRemaining() {
+    if (window.CONFIG && window.CONFIG.FEATURES && window.CONFIG.FEATURES.PREMIUM_VISIBLE === false) return Infinity;
     if (state.isPremium) return Infinity;
     checkChatQuota();
     const limit = (window.CONFIG && window.CONFIG.CHAT_DAILY_LIMIT) || 10;
     return Math.max(0, limit - state.chatCount);
   }
 
-  /* =========================================================
-     DATA BINDING
-     ========================================================= */
   function refreshBindings() {
-    const elements = document.querySelectorAll("[data-bind]");
-    elements.forEach(function(el) {
+    document.querySelectorAll("[data-bind]").forEach(function(el) {
       const key = el.getAttribute("data-bind");
       const value = resolveBinding(key);
-      if (value !== undefined && value !== null) {
-        el.textContent = value;
-      }
+      if (value !== undefined && value !== null) el.textContent = value;
     });
   }
 
   function resolveBinding(key) {
     switch (key) {
-      case "pseudo":          return state.pseudo;
-      case "email":           return state.email;
-      case "xp":              return state.xp.toLocaleString("fr-FR");
-      case "level":           return state.level;
-      case "streak":          return state.streak;
-      case "premium-price":   return ((window.CONFIG && window.CONFIG.PREMIUM_PRICE) || 7.99) + "€";
-      default:                return get(key);
+      case "pseudo": return state.pseudo;
+      case "email": return state.email;
+      case "xp": return state.xp.toLocaleString("fr-FR");
+      case "level": return state.level;
+      case "streak": return state.streak;
+      case "premium-price": return ((window.CONFIG && window.CONFIG.PREMIUM_PRICE) || 7.99) + "EUR";
+      default: return get(key);
     }
   }
 
-  /* =========================================================
-     LISTES PERSONNELLES (CRUD)
-     ========================================================= */
   function createList(name) {
-    const list = {
-      id: "list_" + Date.now(),
-      name: name,
-      words: [],
-      createdAt: Date.now()
-    };
+    const list = { id: "list_" + Date.now(), name: name, words: [], createdAt: Date.now() };
     state.lists.push(list);
     saveState();
     return list;
@@ -273,12 +200,9 @@ const State = (function() {
     if (!list) return false;
     const newWord = {
       id: "word_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
-      ar: word.ar || "",
-      translit: word.translit || "",
-      fr: word.fr || "",
-      example: word.example || "",
-      addedAt: Date.now(),
-      reviews: 0
+      ar: word.ar || "", translit: word.translit || "",
+      fr: word.fr || "", example: word.example || "",
+      addedAt: Date.now(), reviews: 0
     };
     list.words.push(newWord);
     saveState();
@@ -293,29 +217,22 @@ const State = (function() {
     return true;
   }
 
-  /* =========================================================
-     RÉVISIONS DE MOTS (mastery system)
-     ========================================================= */
   function recordReview(wordId, isKnown) {
-    if (!state.reviewCounts[wordId]) {
-      state.reviewCounts[wordId] = 0;
-    }
+    if (!state.reviewCounts[wordId]) state.reviewCounts[wordId] = 0;
     if (isKnown) {
       state.reviewCounts[wordId] += 1;
       const threshold = (window.CONFIG && window.CONFIG.WORD_MASTERY_REVIEWS) || 10;
-      if (state.reviewCounts[wordId] === threshold) {
-        if (!state.wordsLearned.includes(wordId)) {
-          state.wordsLearned.push(wordId);
-          state.masteredWords = state.wordsLearned.length;
-        }
+      if (state.reviewCounts[wordId] === threshold && !state.wordsLearned.includes(wordId)) {
+        state.wordsLearned.push(wordId);
+        state.masteredWords = state.wordsLearned.length;
       }
     }
     saveState();
   }
 
-  /* =========================================================
-     BADGES
-     ========================================================= */
+  function getReviewCount(wordId) { return state.reviewCounts[wordId] || 0; }
+  function isWordMastered(wordId) { return state.wordsLearned.includes(wordId); }
+
   function unlockBadge(badgeId) {
     if (!state.unlockedBadges.includes(badgeId)) {
       state.unlockedBadges.push(badgeId);
@@ -325,12 +242,20 @@ const State = (function() {
     return false;
   }
 
-  /* =========================================================
-     EXPORT / IMPORT
-     ========================================================= */
-  function exportData() {
-    return JSON.stringify(state, null, 2);
+  function isBadgeUnlocked(badgeId) {
+    return state.unlockedBadges.indexOf(badgeId) !== -1;
   }
+
+  function isAdmin() {
+    const email = state.email;
+    if (!email || !window.CONFIG || !window.CONFIG.ADMIN_EMAILS) return false;
+    const lowerEmail = email.toLowerCase();
+    return window.CONFIG.ADMIN_EMAILS.some(function(e) {
+      return e.toLowerCase() === lowerEmail;
+    });
+  }
+
+  function exportData() { return JSON.stringify(state, null, 2); }
 
   function importData(jsonString) {
     try {
@@ -339,12 +264,9 @@ const State = (function() {
       saveState();
       refreshBindings();
       return true;
-    } catch (e) {
-      return false;
-    }
+    } catch (e) { return false; }
   }
 
-  // Initialisation auto
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function() {
       updateStreak();
@@ -357,35 +279,25 @@ const State = (function() {
     refreshBindings();
   }
 
-  /* -------- API publique -------- */
   return {
-    get: get,
-    set: set,
-    update: update,
-    reset: reset,
+    get: get, set: set, update: update, reset: reset,
     refreshBindings: refreshBindings,
     updateStreak: updateStreak,
     checkChatQuota: checkChatQuota,
     incrementChatCount: incrementChatCount,
     canSendChat: canSendChat,
     getChatRemaining: getChatRemaining,
-    createList: createList,
-    deleteList: deleteList,
-    getList: getList,
-    addWordToList: addWordToList,
-    removeWordFromList: removeWordFromList,
+    createList: createList, deleteList: deleteList, getList: getList,
+    addWordToList: addWordToList, removeWordFromList: removeWordFromList,
     recordReview: recordReview,
+    getReviewCount: getReviewCount,
+    isWordMastered: isWordMastered,
     unlockBadge: unlockBadge,
+    isBadgeUnlocked: isBadgeUnlocked,
+    isAdmin: isAdmin,
     exportData: exportData,
-    importData: importData,
-    // LA FONCTION ADMIN CRUCIALE
-    isAdmin: function() {
-      const email = state.email;
-      if (!email || !window.CONFIG || !window.CONFIG.ADMIN_EMAILS) return false;
-      return window.CONFIG.ADMIN_EMAILS.indexOf(email) !== -1;
-    }
+    importData: importData
   };
 })();
 
 window.State = State;
-console.log("✓ State manager chargé");
