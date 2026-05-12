@@ -1,8 +1,3 @@
-/* =========================================================
-   DAR AL LOUGHAH — FIREBASE CONNECTOR
-   Pont entre l'app et Firebase (Firestore + Auth)
-   ========================================================= */
-
 const FB = (function() {
 
   let app = null;
@@ -10,97 +5,100 @@ const FB = (function() {
   let auth = null;
   let isReady = false;
   let readyCallbacks = [];
+  let initPromise = null;
 
-  /* =========================================================
-     INITIALISATION
-     ========================================================= */
+  function showFatalError(msg) {
+    document.body.innerHTML =
+      "<div style=\"padding:40px;color:#fff;background:#0a1535;font-family:sans-serif;min-height:100vh;text-align:center\">" +
+      "<h2 style=\"color:#D4AF37\">Erreur Firebase</h2>" +
+      "<p style=\"margin-top:20px;color:#ccc\">" + msg + "</p>" +
+      "<p style=\"margin-top:30px;font-size:13px;color:#888\">Rechargez la page ou contactez l'administrateur.</p>" +
+      "</div>";
+  }
+
   async function init() {
     if (isReady) return true;
-    const cfg = window.CONFIG && window.CONFIG.FIREBASE;
-    if (!cfg || !cfg.apiKey) {
-      console.warn("⚠️ Firebase non configuré — mode local uniquement");
-      return false;
-    }
+    if (initPromise) return initPromise;
 
-    try {
-      // Charger les SDK Firebase via CDN
-      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js");
-      const firestoreModule = await import("https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js");
-      const authModule = await import("https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js");
+    initPromise = (async function() {
+      const cfg = window.CONFIG && window.CONFIG.FIREBASE;
+      if (!cfg || !cfg.apiKey) {
+        showFatalError("Configuration Firebase manquante dans config.js");
+        throw new Error("Firebase configuration manquante");
+      }
 
-      app = initializeApp(cfg);
-      db = firestoreModule.getFirestore(app);
-      auth = authModule.getAuth(app);
+      try {
+        const appMod = await import("https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js");
+        const fsMod = await import("https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js");
+        const authMod = await import("https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js");
 
-      // Stocker les fonctions Firestore globalement
-      window._firestoreFns = {
-        collection: firestoreModule.collection,
-        doc: firestoreModule.doc,
-        getDoc: firestoreModule.getDoc,
-        getDocs: firestoreModule.getDocs,
-        setDoc: firestoreModule.setDoc,
-        updateDoc: firestoreModule.updateDoc,
-        deleteDoc: firestoreModule.deleteDoc,
-        addDoc: firestoreModule.addDoc,
-        query: firestoreModule.query,
-        where: firestoreModule.where,
-        orderBy: firestoreModule.orderBy,
-        limit: firestoreModule.limit,
-        onSnapshot: firestoreModule.onSnapshot,
-        serverTimestamp: firestoreModule.serverTimestamp
-      };
+        app = appMod.initializeApp(cfg);
+        db = fsMod.getFirestore(app);
+        auth = authMod.getAuth(app);
 
-      // Stocker les fonctions Auth globalement
-      window._authFns = {
-        signInWithEmailAndPassword: authModule.signInWithEmailAndPassword,
-        createUserWithEmailAndPassword: authModule.createUserWithEmailAndPassword,
-        signOut: authModule.signOut,
-        onAuthStateChanged: authModule.onAuthStateChanged,
-        GoogleAuthProvider: authModule.GoogleAuthProvider,
-        signInWithPopup: authModule.signInWithPopup,
-        sendPasswordResetEmail: authModule.sendPasswordResetEmail
-      };
+        window._firestoreFns = {
+          collection: fsMod.collection, doc: fsMod.doc,
+          getDoc: fsMod.getDoc, getDocs: fsMod.getDocs,
+          setDoc: fsMod.setDoc, updateDoc: fsMod.updateDoc,
+          deleteDoc: fsMod.deleteDoc, addDoc: fsMod.addDoc,
+          query: fsMod.query, where: fsMod.where,
+          orderBy: fsMod.orderBy, limit: fsMod.limit,
+          onSnapshot: fsMod.onSnapshot,
+          serverTimestamp: fsMod.serverTimestamp
+        };
 
-      isReady = true;
-      console.log("✅ Firebase initialisé");
+        window._authFns = {
+          signInWithEmailAndPassword: authMod.signInWithEmailAndPassword,
+          createUserWithEmailAndPassword: authMod.createUserWithEmailAndPassword,
+          signOut: authMod.signOut,
+          onAuthStateChanged: authMod.onAuthStateChanged,
+          GoogleAuthProvider: authMod.GoogleAuthProvider,
+          signInWithPopup: authMod.signInWithPopup,
+          signInWithRedirect: authMod.signInWithRedirect,
+          getRedirectResult: authMod.getRedirectResult,
+          sendPasswordResetEmail: authMod.sendPasswordResetEmail
+        };
 
-      // Détecter quand l'utilisateur se connecte/déconnecte
-      window._authFns.onAuthStateChanged(auth, function(user) {
-        if (user) {
-          const isAdmin = isUserAdmin(user.email);
-          console.log("👤 Connecté:", user.email, isAdmin ? "(ADMIN)" : "");
-          document.dispatchEvent(new CustomEvent("firebase-user-changed", {
-            detail: { user: user, isAdmin: isAdmin }
-          }));
-        } else {
-          document.dispatchEvent(new CustomEvent("firebase-user-changed", {
-            detail: { user: null, isAdmin: false }
-          }));
-        }
-      });
+        isReady = true;
+        console.log("Firebase initialise");
 
-      readyCallbacks.forEach(function(cb) { try { cb(); } catch (e) {} });
-      readyCallbacks = [];
+        window._authFns.onAuthStateChanged(auth, function(user) {
+          if (user) {
+            const isAdmin = isUserAdmin(user.email);
+            document.dispatchEvent(new CustomEvent("firebase-user-changed", {
+              detail: { user: user, isAdmin: isAdmin }
+            }));
+          } else {
+            document.dispatchEvent(new CustomEvent("firebase-user-changed", {
+              detail: { user: null, isAdmin: false }
+            }));
+          }
+        });
 
-      return true;
-    } catch (e) {
-      console.error("❌ Erreur init Firebase:", e);
-      return false;
-    }
+        readyCallbacks.forEach(function(cb) {
+          try { cb(); } catch (e) { console.error(e); }
+        });
+        readyCallbacks = [];
+
+        return true;
+      } catch (e) {
+        showFatalError("Impossible de charger Firebase : " + (e.message || e));
+        throw e;
+      }
+    })();
+
+    return initPromise;
   }
 
-  function onReady(callback) {
-    if (isReady) callback();
-    else readyCallbacks.push(callback);
+  function onReady(cb) {
+    if (isReady) cb();
+    else readyCallbacks.push(cb);
   }
 
-  /* =========================================================
-     ADMIN CHECK
-     ========================================================= */
   function isUserAdmin(email) {
     if (!email) return false;
     const admins = (window.CONFIG && window.CONFIG.ADMIN_EMAILS) || [];
-    return admins.indexOf(email.toLowerCase()) !== -1;
+    return admins.map(function(e) { return e.toLowerCase(); }).indexOf(email.toLowerCase()) !== -1;
   }
 
   function isCurrentUserAdmin() {
@@ -108,11 +106,8 @@ const FB = (function() {
     return isUserAdmin(auth.currentUser.email);
   }
 
-  /* =========================================================
-     AUTH
-     ========================================================= */
   async function signIn(email, password) {
-    if (!isReady) await init();
+    await init();
     try {
       const result = await window._authFns.signInWithEmailAndPassword(auth, email, password);
       return { success: true, user: result.user };
@@ -122,7 +117,7 @@ const FB = (function() {
   }
 
   async function signUp(email, password) {
-    if (!isReady) await init();
+    await init();
     try {
       const result = await window._authFns.createUserWithEmailAndPassword(auth, email, password);
       return { success: true, user: result.user };
@@ -132,7 +127,7 @@ const FB = (function() {
   }
 
   async function signInGoogle() {
-    if (!isReady) await init();
+    await init();
     try {
       const provider = new window._authFns.GoogleAuthProvider();
       const result = await window._authFns.signInWithPopup(auth, provider);
@@ -143,12 +138,12 @@ const FB = (function() {
   }
 
   async function signOutUser() {
-    if (!isReady) return;
+    await init();
     try { await window._authFns.signOut(auth); } catch (e) {}
   }
 
   async function resetPassword(email) {
-    if (!isReady) await init();
+    await init();
     try {
       await window._authFns.sendPasswordResetEmail(auth, email);
       return { success: true };
@@ -163,123 +158,75 @@ const FB = (function() {
 
   function translateError(code) {
     const errors = {
-      "auth/email-already-in-use": "Cet email est déjà utilisé",
+      "auth/email-already-in-use": "Cet email est deja utilise",
       "auth/invalid-email": "Email invalide",
-      "auth/weak-password": "Mot de passe trop faible (min 6 caractères)",
+      "auth/weak-password": "Mot de passe trop faible (min 6 caracteres)",
       "auth/user-not-found": "Aucun compte avec cet email",
       "auth/wrong-password": "Mot de passe incorrect",
       "auth/invalid-credential": "Identifiants incorrects",
-      "auth/too-many-requests": "Trop de tentatives, réessayez plus tard",
-      "auth/network-request-failed": "Pas de connexion internet"
+      "auth/too-many-requests": "Trop de tentatives, reessayez plus tard",
+      "auth/network-request-failed": "Pas de connexion internet",
+      "auth/popup-blocked": "Popup bloquee, autorisez les popups",
+      "auth/popup-closed-by-user": "Connexion annulee"
     };
-    return errors[code] || "Erreur de connexion";
+    return errors[code] || ("Erreur : " + code);
   }
 
-  /* =========================================================
-     FIRESTORE — LIRE
-     ========================================================= */
-  async function getCollection(collectionName) {
-    if (!isReady) await init();
-    if (!isReady) return null;
-    try {
-      const fns = window._firestoreFns;
-      const snap = await fns.getDocs(fns.collection(db, collectionName));
-      const items = [];
-      snap.forEach(function(doc) {
-        items.push({ _id: doc.id, ...doc.data() });
-      });
-      return items;
-    } catch (e) {
-      console.warn("Erreur getCollection:", collectionName, e.message);
-      return null;
-    }
+  async function getCollection(name) {
+    await init();
+    const fns = window._firestoreFns;
+    const snap = await fns.getDocs(fns.collection(db, name));
+    const items = [];
+    snap.forEach(function(d) { items.push(Object.assign({ _id: d.id }, d.data())); });
+    return items;
   }
 
-  async function getDocument(collectionName, docId) {
-    if (!isReady) await init();
-    if (!isReady) return null;
-    try {
-      const fns = window._firestoreFns;
-      const ref = fns.doc(db, collectionName, docId);
-      const snap = await fns.getDoc(ref);
-      if (snap.exists()) {
-        return { _id: snap.id, ...snap.data() };
-      }
-      return null;
-    } catch (e) {
-      console.warn("Erreur getDocument:", e.message);
-      return null;
-    }
+  async function getDocument(name, id) {
+    await init();
+    const fns = window._firestoreFns;
+    const ref = fns.doc(db, name, id);
+    const snap = await fns.getDoc(ref);
+    if (snap.exists()) return Object.assign({ _id: snap.id }, snap.data());
+    return null;
   }
 
-  /* =========================================================
-     FIRESTORE — ÉCRIRE
-     ========================================================= */
-  async function setDocument(collectionName, docId, data) {
-    if (!isReady) await init();
-    if (!isReady) return false;
-    try {
-      const fns = window._firestoreFns;
-      const ref = fns.doc(db, collectionName, docId);
-      await fns.setDoc(ref, data, { merge: true });
-      return true;
-    } catch (e) {
-      console.warn("Erreur setDocument:", e.message);
-      return false;
-    }
+  async function setDocument(name, id, data) {
+    await init();
+    const fns = window._firestoreFns;
+    const ref = fns.doc(db, name, id);
+    await fns.setDoc(ref, data, { merge: true });
+    return true;
   }
 
-  async function updateDocument(collectionName, docId, data) {
-    if (!isReady) await init();
-    if (!isReady) return false;
-    try {
-      const fns = window._firestoreFns;
-      const ref = fns.doc(db, collectionName, docId);
-      await fns.updateDoc(ref, data);
-      return true;
-    } catch (e) {
-      console.warn("Erreur updateDocument:", e.message);
-      return false;
-    }
+  async function updateDocument(name, id, data) {
+    await init();
+    const fns = window._firestoreFns;
+    const ref = fns.doc(db, name, id);
+    await fns.setDoc(ref, data, { merge: true });
+    return true;
   }
 
-  async function deleteDocument(collectionName, docId) {
-    if (!isReady) await init();
-    if (!isReady) return false;
-    try {
-      const fns = window._firestoreFns;
-      const ref = fns.doc(db, collectionName, docId);
-      await fns.deleteDoc(ref);
-      return true;
-    } catch (e) {
-      console.warn("Erreur deleteDocument:", e.message);
-      return false;
-    }
+  async function deleteDocument(name, id) {
+    await init();
+    const fns = window._firestoreFns;
+    const ref = fns.doc(db, name, id);
+    await fns.deleteDoc(ref);
+    return true;
   }
 
-  async function addDocument(collectionName, data) {
-    if (!isReady) await init();
-    if (!isReady) return null;
-    try {
-      const fns = window._firestoreFns;
-      const ref = await fns.addDoc(fns.collection(db, collectionName), data);
-      return ref.id;
-    } catch (e) {
-      console.warn("Erreur addDocument:", e.message);
-      return null;
-    }
+  async function addDocument(name, data) {
+    await init();
+    const fns = window._firestoreFns;
+    const ref = await fns.addDoc(fns.collection(db, name), data);
+    return ref.id;
   }
 
-  /* =========================================================
-     INIT AUTOMATIQUE AU DEMARRAGE
-     ========================================================= */
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded", function() { init(); });
   } else {
     init();
   }
 
-  /* -------- API publique -------- */
   return {
     init: init,
     onReady: onReady,
@@ -287,13 +234,11 @@ const FB = (function() {
     isUserAdmin: isUserAdmin,
     isCurrentUserAdmin: isCurrentUserAdmin,
     getCurrentUser: getCurrentUser,
-    // Auth
     signIn: signIn,
     signUp: signUp,
     signInGoogle: signInGoogle,
     signOut: signOutUser,
     resetPassword: resetPassword,
-    // Firestore
     getCollection: getCollection,
     getDocument: getDocument,
     setDocument: setDocument,
@@ -304,4 +249,4 @@ const FB = (function() {
 })();
 
 window.FB = FB;
-console.log("✓ Firebase connector chargé");
+console.log("Firebase connector charge");
