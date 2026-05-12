@@ -87,8 +87,19 @@ const Main = (function() {
       navBar.style.display = (screenName === "login" || screenName === "register") ? "none" : "grid";
     }
 
+    // --- CORRECTION : Mise à jour de la visibilité Admin lors de la navigation ---
+    checkAdminVisibility();
+
     // Appeler la fonction show() de l'écran
     callScreenShow(screenName);
+  }
+
+  // Fonction ajoutée pour gérer l'affichage du bouton Admin
+  function checkAdminVisibility() {
+    const adminBtn = document.getElementById("admin-menu-item"); 
+    if (adminBtn && window.State && typeof window.State.isAdmin === "function") {
+       adminBtn.style.display = window.State.isAdmin() ? "flex" : "none";
+    }
   }
 
   function callScreenShow(screenName) {
@@ -115,7 +126,6 @@ const Main = (function() {
     const screenObj = map[screenName];
     if (!screenObj) return;
 
-    // Cas spécial : list-detail appelle showDetail()
     if (screenName === "list-detail" && screenObj.showDetail) {
       screenObj.showDetail();
     } else if (screenObj.show) {
@@ -130,14 +140,12 @@ const Main = (function() {
      ========================================================= */
   function bindActions() {
     document.addEventListener("click", function(e) {
-      // Trouver l'élément le plus proche avec data-action
       const target = e.target.closest("[data-action]");
       if (!target) return;
 
       const action = target.getAttribute("data-action");
       const data = target.dataset;
 
-      // Son tap au clic (sauf sur certains boutons spéciaux)
       const noTapSound = ["chat-mic", "chat-send", "quiz-pick", "rapid-pick"];
       if (window.Audio && noTapSound.indexOf(action) === -1) {
         window.Audio.tap();
@@ -146,7 +154,6 @@ const Main = (function() {
       handleAction(action, data, target, e);
     });
 
-    // Soumission des formulaires
     document.addEventListener("submit", function(e) {
       const form = e.target;
       const submitBtn = form.querySelector('[type="submit"]');
@@ -439,60 +446,34 @@ const Main = (function() {
      ÉVÉNEMENTS GLOBAUX
      ========================================================= */
   function setupEventListeners() {
-    // Badge débloqué → modale
     document.addEventListener("badge-unlocked", function(e) {
       const badge = e.detail;
       if (!badge || !window.XP) return;
-
       const visualEl = document.getElementById("unlockBadgeVisual");
       const nameEl = document.getElementById("unlockBadgeName");
       const descEl = document.getElementById("unlockBadgeDesc");
       const modal = document.getElementById("modalBadgeUnlock");
-      const titleEl = modal ? modal.querySelector(".panel-title") : null;
-
       if (visualEl) visualEl.innerHTML = window.XP.getBadgeSVG(badge);
       if (nameEl) nameEl.textContent = badge.name;
       if (descEl) descEl.textContent = badge.desc;
-      if (titleEl) titleEl.textContent = "Nouveau badge !";
-      if (visualEl) {
-        visualEl.style.opacity = "1";
-        visualEl.style.filter = "";
-      }
-
       showModal("modalBadgeUnlock");
     });
 
-    // Level up → modale
     document.addEventListener("level-up", function(e) {
       const detail = e.detail;
-      if (!detail) return;
-
       const numEl = document.getElementById("levelUpNum");
       const titleEl = document.getElementById("levelUpTitle");
-
       if (numEl) numEl.textContent = detail.newLevel;
-      if (titleEl && window.XP) {
-        titleEl.textContent = window.XP.levelTitle(detail.newLevel);
-      }
-
+      if (titleEl && window.XP) titleEl.textContent = window.XP.levelTitle(detail.newLevel);
       showModal("modalLevelUp");
     });
 
-    // XP gagnée → animation flottante
     document.addEventListener("xp-gained", function(e) {
-      const detail = e.detail;
-      if (!detail || !detail.gained) return;
-      floatXP(detail.gained);
+      if (e.detail && e.detail.gained) floatXP(e.detail.gained);
     });
 
-    // Premium activé → toast
     document.addEventListener("premium-activated", function() {
       toast("✦ Premium activé — bienvenue !");
-    });
-
-    // Auth login
-    document.addEventListener("auth-login", function() {
-      // Le pseudo est mis à jour automatiquement via les bindings
     });
   }
 
@@ -512,16 +493,9 @@ const Main = (function() {
     bindActions();
     setupEventListeners();
 
-    // Démarrer sur login si pas connecté, sinon home
     const isLoggedIn = window.State && window.State.get("loggedIn");
+    goto(isLoggedIn ? "home" : "login");
 
-    if (isLoggedIn) {
-      goto("home");
-    } else {
-      goto("login");
-    }
-
-    // Forcer un refresh des bindings
     if (window.State && window.State.refreshBindings) {
       window.State.refreshBindings();
     }
@@ -529,14 +503,12 @@ const Main = (function() {
     console.log("🌙 Dar Al Loughah — App prête");
   }
 
-  // Démarrer quand le DOM est chargé
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
     init();
   }
 
-  /* -------- API publique -------- */
   return {
     goto: goto,
     toast: toast,
