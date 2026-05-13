@@ -23,6 +23,62 @@
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
+  <!-- LOADING SCREEN -->
+  <div class="loading-screen" id="loadingScreen" aria-hidden="true">
+    <div class="loading-bg-stars" aria-hidden="true"></div>
+
+    <div class="loading-frame">
+      <span class="loading-corner tl" aria-hidden="true"></span>
+      <span class="loading-corner tr" aria-hidden="true"></span>
+      <span class="loading-corner bl" aria-hidden="true"></span>
+      <span class="loading-corner br" aria-hidden="true"></span>
+
+      <div class="loading-crescent" aria-hidden="true">
+        <svg viewBox="0 0 100 100">
+          <path d="M 70 20 A 35 35 0 1 0 70 80 A 28 28 0 1 1 70 20 Z" fill="url(#goldGradV)"/>
+          <circle cx="25" cy="25" r="1.5" fill="#F4D77A" opacity=".8"/>
+          <circle cx="80" cy="85" r="1" fill="#F4D77A" opacity=".6"/>
+        </svg>
+      </div>
+
+      <h1 class="loading-title">دار اللغة</h1>
+
+      <div class="loading-hourglass-wrap" aria-hidden="true">
+        <div class="loading-mandala">
+          <svg viewBox="0 0 200 200">
+            <g fill="none" stroke="url(#goldGrad)" stroke-width="1.2" stroke-linecap="round">
+              <circle cx="100" cy="100" r="80" opacity=".4"/>
+              <circle cx="100" cy="100" r="60" opacity=".5"/>
+              <path d="M100 30 L106 50 L100 45 L94 50 Z" fill="url(#goldGrad)" opacity=".7"/>
+              <path d="M100 170 L106 150 L100 155 L94 150 Z" fill="url(#goldGrad)" opacity=".7"/>
+              <path d="M30 100 L50 106 L45 100 L50 94 Z" fill="url(#goldGrad)" opacity=".7"/>
+              <path d="M170 100 L150 106 L155 100 L150 94 Z" fill="url(#goldGrad)" opacity=".7"/>
+              <path d="M50 50 L62 62 M150 50 L138 62 M50 150 L62 138 M150 150 L138 138" opacity=".5"/>
+              <circle cx="100" cy="100" r="40" opacity=".3" stroke-dasharray="3 3"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="loading-hourglass">
+          <div class="hg-top">
+            <div class="hg-sand-top"></div>
+          </div>
+          <div class="hg-middle"></div>
+          <div class="hg-bottom">
+            <div class="hg-sand-bottom"></div>
+          </div>
+          <div class="hg-stream"></div>
+        </div>
+      </div>
+
+      <div class="loading-text-wrap">
+        <p class="loading-text">Chargement</p>
+        <div class="loading-dots" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
