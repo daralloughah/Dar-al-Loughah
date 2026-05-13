@@ -175,18 +175,18 @@ const AdminScreen = (function() {
       { id:"temps",      name:"Le Temps & le Ciel",      nameAr:"الزمن والسماء",    icon:"🌙", description:"Jour, nuit, saisons",          order:8 },
       { id:"couleurs",   name:"Couleurs & Formes",       nameAr:"الألوان والأشكال", icon:"🎨", description:"Voir le monde en arabe",       order:9 },
       { id:"travail",    name:"Travail & Savoir",        nameAr:"العمل والعلم",     icon:"💼", description:"Metiers, ecole",               order:10 },
-      { id:"nature",     name:"La Nature",               nameAr:"الطبيعة",          icon:"🌿", description:"Animaux, plantes",             order:11 },
-      { id:"coran",      name:"Le Coran",                nameAr:"القرآن",           icon:"📖", description:"Mots sacres",                  order:12, special:true }
+      { id:"nature",     name:"La Nature",               nameAr:"الطبيعة",          icon:"🌿", description:"Animaux, plantes",             order:      { id:"coran",      name:"Le Coran",                nameAr:"القرآن",           icon:"📖", description:"Mots sacres",                  order:12 }
     ];
     toast("Initialisation...");
     try {
       for (const t of defaults) {
         await window.FB.setDocument("themes", t.id, Object.assign({}, t, {
           levels:{debutant:[],intermediaire:[],avance:[],expert:[],mouallim:[]},
-          chunks:[], words: t.special ? [] : null, imageUrl:"",
+          chunks:[], imageUrl:"",
           createdAt: Date.now()
         }));
       }
+
       toast("12 themes crees");
       await loadThemesList();
     } catch (e) { toast("Erreur: " + e.message); }
