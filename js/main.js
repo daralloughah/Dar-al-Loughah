@@ -21,6 +21,28 @@ const Main = (function() {
       sf.appendChild(s);
     }
   }
+  let loaderTimer = null;
+  let loaderShownAt = 0;
+  const LOADER_MIN_DURATION = 500;
+
+  function showLoader() {
+    const el = document.getElementById("loadingScreen");
+    if (!el) return;
+    if (loaderTimer) { clearTimeout(loaderTimer); loaderTimer = null; }
+    el.classList.remove("hide");
+    loaderShownAt = Date.now();
+  }
+
+  function hideLoader() {
+    const el = document.getElementById("loadingScreen");
+    if (!el) return;
+    const elapsed = Date.now() - loaderShownAt;
+    const remaining = Math.max(0, LOADER_MIN_DURATION - elapsed);
+    if (loaderTimer) clearTimeout(loaderTimer);
+    loaderTimer = setTimeout(function() {
+      el.classList.add("hide");
+    }, remaining);
+  }
 
     function goto(screenName) {
     if (!screenName) return;
@@ -45,8 +67,10 @@ const Main = (function() {
     });
     const navBar = document.getElementById("navBar");
     if (navBar) navBar.style.display = (screenName === "login" || screenName === "register") ? "none" : "grid";
-    callScreenShow(screenName);
+        callScreenShow(screenName);
+    hideLoader();
   }
+
 
   function callScreenShow(screenName) {
     const map = {
@@ -281,11 +305,13 @@ const Main = (function() {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 
-  return {
+    return {
     goto: goto, toast: toast, confirm: confirm,
     showModal: showModal, closeModal: closeModal, floatXP: floatXP,
+    showLoader: showLoader, hideLoader: hideLoader,
     getCurrentScreen: function() { return currentScreen; }
   };
+
 })();
 
 window.Main = Main;
