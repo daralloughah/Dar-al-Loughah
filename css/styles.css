@@ -1897,3 +1897,271 @@ body:not(.premium-on) [data-premium="true"] {
 #screen-admin .panel:first-of-type{
   margin-top: 0;
 }
+/* =========================================================
+   LOADING SCREEN - design soufi premium
+   ========================================================= */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 20% 10%, #1b2c6a 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 90%, #3b2a5a 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, #0a1535 0%, #050a1f 80%);
+  opacity: 1;
+  transition: opacity .5s ease;
+  overflow: hidden;
+}
+.loading-screen.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-bg-stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, rgba(244,215,122,.9), transparent),
+    radial-gradient(1px 1px at 28% 42%, rgba(255,255,255,.7), transparent),
+    radial-gradient(1.5px 1.5px at 78% 25%, rgba(244,215,122,.8), transparent),
+    radial-gradient(1px 1px at 65% 70%, rgba(255,255,255,.6), transparent),
+    radial-gradient(1px 1px at 88% 85%, rgba(244,215,122,.7), transparent),
+    radial-gradient(1px 1px at 18% 75%, rgba(255,255,255,.5), transparent),
+    radial-gradient(1.5px 1.5px at 92% 50%, rgba(244,215,122,.6), transparent),
+    radial-gradient(1px 1px at 45% 12%, rgba(255,255,255,.8), transparent),
+    radial-gradient(1px 1px at 55% 88%, rgba(244,215,122,.5), transparent),
+    radial-gradient(1px 1px at 8% 55%, rgba(255,255,255,.6), transparent);
+  animation: loadingStarsTwinkle 4s ease-in-out infinite;
+}
+@keyframes loadingStarsTwinkle {
+  0%, 100% { opacity: .6; }
+  50% { opacity: 1; }
+}
+
+.loading-frame {
+  position: relative;
+  width: min(88vw, 380px);
+  padding: 70px 32px 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  animation: loadingFadeIn 1.2s ease both;
+}
+@keyframes loadingFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.loading-corner {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: .85;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23F4D77A'/><stop offset='1' stop-color='%23A07A1C'/></linearGradient></defs><g fill='none' stroke='url(%23g)' stroke-width='1.5' stroke-linecap='round'><path d='M4 50 V20 Q4 4 20 4 H50'/><path d='M12 14 Q22 6 32 14'/><circle cx='12' cy='12' r='1.8' fill='url(%23g)' stroke='none'/></g></svg>");
+}
+.loading-corner.tl { top: 0; left: 0; }
+.loading-corner.tr { top: 0; right: 0; transform: scaleX(-1); }
+.loading-corner.bl { bottom: 0; left: 0; transform: scaleY(-1); }
+.loading-corner.br { bottom: 0; right: 0; transform: scale(-1,-1); }
+
+.loading-crescent {
+  width: 60px;
+  height: 60px;
+  animation: loadingCrescentSpin 18s linear infinite, loadingCrescentGlow 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(244,215,122,.5));
+}
+.loading-crescent svg { width: 100%; height: 100%; }
+@keyframes loadingCrescentSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes loadingCrescentGlow {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(244,215,122,.4)); }
+  50% { filter: drop-shadow(0 0 18px rgba(244,215,122,.7)); }
+}
+
+.loading-title {
+  font-family: 'Amiri', 'Reem Kufi', serif;
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 1;
+  direction: rtl;
+  background: linear-gradient(180deg, #FCE89A 0%, #F4D77A 30%, #D4AF37 60%, #A07A1C 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: 0 0 28px rgba(212,175,55,.25);
+  letter-spacing: 2px;
+  animation: loadingTitleAppear 1.6s ease both;
+  margin: 0;
+  padding: 0 6px;
+}
+@keyframes loadingTitleAppear {
+  0% { opacity: 0; transform: scale(.88) translateY(8px); filter: blur(6px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+.loading-hourglass-wrap {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0;
+}
+
+.loading-mandala {
+  position: absolute;
+  inset: 0;
+  animation: loadingMandalaSpin 24s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(244,215,122,.3));
+}
+.loading-mandala svg { width: 100%; height: 100%; }
+@keyframes loadingMandalaSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+.loading-hourglass {
+  position: relative;
+  width: 60px;
+  height: 90px;
+  animation: loadingHourglassFlip 6s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px rgba(244,215,122,.5));
+}
+@keyframes loadingHourglassFlip {
+  0%, 45% { transform: rotate(0deg); }
+  50%, 95% { transform: rotate(180deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-hourglass .hg-top,
+.loading-hourglass .hg-bottom {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 38px;
+  border: 2px solid;
+  border-image: linear-gradient(180deg, #F4D77A, #A07A1C) 1;
+  background: linear-gradient(180deg, rgba(244,215,122,.08), rgba(160,122,28,.05));
+  overflow: hidden;
+}
+.loading-hourglass .hg-top {
+  top: 0;
+  border-radius: 4px 4px 24px 24px / 4px 4px 28px 28px;
+  border-bottom: none;
+}
+.loading-hourglass .hg-bottom {
+  bottom: 0;
+  border-radius: 24px 24px 4px 4px / 28px 28px 4px 4px;
+  border-top: none;
+}
+.loading-hourglass .hg-middle {
+  position: absolute;
+  top: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(180deg, #D4AF37, #A07A1C);
+  border-radius: 2px;
+}
+
+.loading-hourglass .hg-sand-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(180deg, #F4D77A 0%, #D4AF37 100%);
+  transform-origin: top;
+  animation: loadingSandDrain 3s ease-in-out infinite;
+}
+@keyframes loadingSandDrain {
+  0%, 5% { transform: scaleY(1); }
+  45%, 50% { transform: scaleY(0); }
+  55%, 100% { transform: scaleY(0); }
+}
+
+.loading-hourglass .hg-sand-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0%;
+  background: linear-gradient(180deg, #F4D77A 0%, #D4AF37 100%);
+  animation: loadingSandFill 3s ease-in-out infinite;
+}
+@keyframes loadingSandFill {
+  0%, 5% { height: 0%; }
+  45%, 50% { height: 100%; }
+  55%, 100% { height: 100%; }
+}
+
+.loading-hourglass .hg-stream {
+  position: absolute;
+  top: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 0;
+  background: linear-gradient(180deg, #F4D77A, #D4AF37);
+  box-shadow: 0 0 4px rgba(244,215,122,.7);
+  animation: loadingStreamFlow 3s ease-in-out infinite;
+}
+@keyframes loadingStreamFlow {
+  0%, 5% { height: 0; opacity: 0; }
+  10%, 45% { height: 38px; opacity: 1; }
+  50%, 100% { height: 0; opacity: 0; }
+}
+
+.loading-text-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.loading-text {
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
+  font-size: 16px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #F4D77A 0%, #D4AF37 70%, #A07A1C 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 10px rgba(212,175,55,.2);
+  margin: 0;
+}
+.loading-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-bottom: 2px;
+}
+.loading-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #F4D77A, #D4AF37);
+  box-shadow: 0 0 6px rgba(244,215,122,.6);
+  opacity: .3;
+  animation: loadingDot 1.4s ease-in-out infinite;
+}
+.loading-dots span:nth-child(1) { animation-delay: 0s; }
+.loading-dots span:nth-child(2) { animation-delay: .25s; }
+.loading-dots span:nth-child(3) { animation-delay: .5s; }
+@keyframes loadingDot {
+  0%, 100% { opacity: .3; transform: scale(.85); }
+  50% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 10px rgba(244,215,122,1); }
+}
