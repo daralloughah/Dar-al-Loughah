@@ -22,11 +22,13 @@ const Main = (function() {
     }
   }
 
-  function goto(screenName) {
+    function goto(screenName) {
     if (!screenName) return;
+    showLoader();
     if (currentScreen === "chat" && window.ChatScreen && window.ChatScreen.leave) window.ChatScreen.leave();
     if (currentScreen === "rapid" && window.RapidScreen && window.RapidScreen.stop) window.RapidScreen.stop();
     document.querySelectorAll(".screen").forEach(function(s) { s.classList.remove("active"); });
+
     const target = document.getElementById("screen-" + screenName);
     if (target) {
       target.classList.add("active");
