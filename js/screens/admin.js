@@ -175,7 +175,8 @@ const AdminScreen = (function() {
       { id:"temps",      name:"Le Temps & le Ciel",      nameAr:"الزمن والسماء",    icon:"🌙", description:"Jour, nuit, saisons",          order:8 },
       { id:"couleurs",   name:"Couleurs & Formes",       nameAr:"الألوان والأشكال", icon:"🎨", description:"Voir le monde en arabe",       order:9 },
       { id:"travail",    name:"Travail & Savoir",        nameAr:"العمل والعلم",     icon:"💼", description:"Metiers, ecole",               order:10 },
-      { id:"nature",     name:"La Nature",               nameAr:"الطبيعة",          icon:"🌿", description:"Animaux, plantes",             order:      { id:"coran",      name:"Le Coran",                nameAr:"القرآن",           icon:"📖", description:"Mots sacres",                  order:12 }
+      { id:"nature",     name:"La Nature",               nameAr:"الطبيعة",          icon:"🌿", description:"Animaux, plantes",             order:11 }, 
+       { id:"coran",      name:"Le Coran",                nameAr:"القرآن",           icon:"📖", description:"Mots sacres",                  order:12 }
     ];
     toast("Initialisation...");
     try {
