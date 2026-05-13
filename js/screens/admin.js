@@ -114,13 +114,20 @@ const AdminScreen = (function() {
              (t._id || "").toLowerCase().indexOf(query) !== -1;
     });
     if (count) count.textContent = filtered.length + " theme" + (filtered.length > 1 ? "s" : "") + (query ? " (filtre)" : "");
-    if (themes.length === 0) {
+        if (themes.length === 0) {
       list.innerHTML =
         '<div class="admin-empty">Aucun theme en base.<br>' +
-        '<button class="btn btn-outline mt-8" id="initThemesBtn">Initialiser les 12 themes par defaut</button></div>';
+        '<button class="btn btn-outline mt-8" id="initThemesBtn">Initialiser les 12 themes par defaut</button>' +
+        '<div class="admin-meta-tiny" style="margin-top:10px; color:#ff9aa5;">Attention : action irreversible. Cree 12 themes vides.</div></div>';
       const ib = document.getElementById("initThemesBtn");
-      if (ib) ib.onclick = initDefaultThemes;
+      if (ib) ib.onclick = async function() {
+        if (!await confirmAction("ATTENTION : Cette action va creer 12 nouveaux themes vides. Si des themes existent deja, ils seront ecrases. Continuer ?")) return;
+        if (!await confirmAction("Derniere chance ! Confirmer l initialisation des 12 themes ?")) return;
+        await initDefaultThemes();
+      };
       return;
+    }
+
     }
     if (filtered.length === 0) {
       list.innerHTML = '<div class="admin-empty">Aucun resultat pour "' + escapeHTML(query) + '"</div>';
