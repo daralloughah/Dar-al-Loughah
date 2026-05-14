@@ -1,5 +1,5 @@
 /* =========================================================
-   DAR AL LOUGHAH - SCREEN: GROUPES
+   DAR AL LOUGHAH - SCREEN: GROUPES (v2 fix auth)
    - Creer/rejoindre/quitter des groupes
    - Top membres + classement inter-groupes
    - Code d'invitation
@@ -11,6 +11,46 @@ const GroupsScreen = (function() {
   let userGroups = [];
   let allGroupsCache = [];
 
+  function getCurrentUserId() {
+    if (window.FB && window.FB.getCurrentUser) {
+      try {
+        const fbUser = window.FB.getCurrentUser();
+        if (fbUser && fbUser.uid) return fbUser.uid;
+      } catch (e) {}
+    }
+    if (window.Auth && window.Auth.getUser) {
+      try {
+        const u = window.Auth.getUser();
+        if (u && u.uid) return u.uid;
+      } catch (e) {}
+    }
+    if (window.State) {
+      const uid = window.State.get("uid") || window.State.get("userId");
+      if (uid) return uid;
+    }
+    return null;
+  }
+
+  function getCurrentPseudo() {
+    if (window.State) {
+      const p = window.State.get("pseudo");
+      if (p) return p;
+    }
+    if (window.Auth && window.Auth.getUser) {
+      try {
+        const u = window.Auth.getUser();
+        if (u && u.displayName) return u.displayName;
+        if (u && u.email) return u.email.split("@")[0];
+      } catch (e) {}
+    }
+    return "Anonyme";
+  }
+
+  function getCurrentXP() {
+    if (window.State) return window.State.get("xp") || 0;
+    return 0;
+  }
+
   async function show() {
     const container = document.getElementById("groupsContent");
     if (!container) return;
@@ -20,8 +60,8 @@ const GroupsScreen = (function() {
   }
 
   async function loadUserGroups() {
-    const user = window.Auth && window.Auth.getUser ? window.Auth.getUser() : null;
-    if (!user || !user.uid) {
+    const uid = getCurrentUserId();
+    if (!uid) {
       userGroups = [];
       return;
     }
@@ -29,7 +69,7 @@ const GroupsScreen = (function() {
       const all = await window.FB.getCollection("groups") || [];
       allGroupsCache = all;
       userGroups = all.filter(function(g) {
-        return Array.isArray(g.members) && g.members.indexOf(user.uid) !== -1;
+        return Array.isArray(g.members) && g.members.indexOf(uid) !== -1;
       });
     } catch (e) {
       console.warn("Erreur chargement groupes :", e);
@@ -181,8 +221,8 @@ const GroupsScreen = (function() {
     members.sort(function(a, b) { return (b.xp || 0) - (a.xp || 0); });
     const totalXP = members.reduce(function(s, m) { return s + (m.xp || 0); }, 0);
 
-    const currentUser = window.Auth && window.Auth.getUser ? window.Auth.getUser() : null;
-    const isCreator = currentUser && group.createdBy === currentUser.uid;
+    const currentUid = getCurrentUserId();
+    const isCreator = currentUid && group.createdBy === currentUid;
 
     content.innerHTML =
       '<div class="panel">' +
@@ -228,8 +268,18 @@ const GroupsScreen = (function() {
     if (!name) { toast("Donne un nom au groupe"); return; }
     if (name.length < 3) { toast("Nom trop court (min 3 caracteres)"); return; }
 
-    const user = window.Auth && window.Auth.getUser ? window.Auth.getUser() : null;
-    if (!user || !user.uid) { toast("Tu dois etre connecte"); return; }
+    const uid = getCurrentUserId();
+    if (!uid) {
+      toast("Tu dois etre connecte pour creer un groupe");
+      console.warn("getCurrentUserId() returned null", {
+        FB: !!window.FB,
+        FBgetCurrentUser: !!(window.FB && window.FB.getCurrentUser),
+        Auth: !!window.Auth,
+        AuthgetUser: !!(window.Auth && window.Auth.getUser),
+        State: !!window.State
+      });
+      return;
+    }
 
     if (userGroups.length >= 5) {
       toast("Limite atteinte : 5 groupes max par utilisateur");
@@ -244,11 +294,11 @@ const GroupsScreen = (function() {
         name: name,
         description: desc,
         type: type,
-        createdBy: user.uid,
-        createdByPseudo: window.State ? window.State.get("pseudo") : "Anonyme",
-        members: [user.uid],
+        createdBy: uid,
+        createdByPseudo: getCurrentPseudo(),
+        members: [uid],
         invitCode: invitCode,
-        totalXP: window.State ? (window.State.get("xp") || 0) : 0,
+        totalXP: getCurrentXP(),
         totalWords: 0,
         createdAt: Date.now()
       });
@@ -264,8 +314,8 @@ const GroupsScreen = (function() {
   async function joinGroup() {
     const code = getVal("joinCode").toUpperCase().trim();
     if (!code || code.length !== 6) { toast("Code invalide (6 caracteres)"); return; }
-    const user = window.Auth && window.Auth.getUser ? window.Auth.getUser() : null;
-    if (!user || !user.uid) { toast("Tu dois etre connecte"); return; }
+    const uid = getCurrentUserId();
+    if (!uid) { toast("Tu dois etre connecte"); return; }
     if (userGroups.length >= 5) { toast("Limite atteinte : 5 groupes max"); return; }
 
     try {
@@ -273,9 +323,9 @@ const GroupsScreen = (function() {
       const group = allGroups.find(function(g) { return g.invitCode === code; });
       if (!group) { toast("Code invalide ou groupe introuvable"); return; }
       const members = group.members || [];
-      if (members.indexOf(user.uid) !== -1) { toast("Tu es deja membre de ce groupe"); return; }
-      members.push(user.uid);
-      const myXP = window.State ? (window.State.get("xp") || 0) : 0;
+      if (members.indexOf(uid) !== -1) { toast("Tu es deja membre de ce groupe"); return; }
+      members.push(uid);
+      const myXP = getCurrentXP();
       await window.FB.setDocument("groups", group._id, Object.assign({}, group, {
         members: members,
         totalXP: (group.totalXP || 0) + myXP
@@ -291,13 +341,13 @@ const GroupsScreen = (function() {
 
   async function leaveGroup(groupId) {
     if (!await confirmAction("Quitter ce groupe ?")) return;
-    const user = window.Auth && window.Auth.getUser ? window.Auth.getUser() : null;
-    if (!user || !user.uid) return;
+    const uid = getCurrentUserId();
+    if (!uid) return;
     try {
       const group = await window.FB.getDocument("groups", groupId);
       if (!group) { toast("Groupe introuvable"); return; }
-      const members = (group.members || []).filter(function(uid) { return uid !== user.uid; });
-      const myXP = window.State ? (window.State.get("xp") || 0) : 0;
+      const members = (group.members || []).filter(function(memberId) { return memberId !== uid; });
+      const myXP = getCurrentXP();
       await window.FB.setDocument("groups", groupId, Object.assign({}, group, {
         members: members,
         totalXP: Math.max(0, (group.totalXP || 0) - myXP)
