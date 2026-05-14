@@ -66,7 +66,7 @@ const XP = (function() {
   /* =========================================================
      AJOUTER DE L'XP
      ========================================================= */
-  function addXP(amount, reason) {
+    function addXP(amount, reason) {
     if (!window.State) return { gained: 0, levelUp: false };
 
     let gained = amount;
@@ -80,7 +80,37 @@ const XP = (function() {
     const newXP = oldXP + gained;
     const newLevel = levelFromXP(newXP);
 
-    window.State.update({ xp: newXP, level: newLevel });
+    // === Compteurs hebdo / mensuel (avec auto-reset si periode changee) ===
+    let xpThisWeek = window.State.get("xpThisWeek") || 0;
+    let xpThisMonth = window.State.get("xpThisMonth") || 0;
+    let weekKey = window.State.get("weekKey") || "";
+    let monthKey = window.State.get("monthKey") || "";
+
+    if (window.PeriodReset) {
+      const currentWeek = window.PeriodReset.getCurrentWeekKey();
+      const currentMonth = window.PeriodReset.getCurrentMonthKey();
+      if (weekKey !== currentWeek) {
+        xpThisWeek = 0;
+        weekKey = currentWeek;
+      }
+      if (monthKey !== currentMonth) {
+        xpThisMonth = 0;
+        monthKey = currentMonth;
+      }
+    }
+
+    xpThisWeek += gained;
+    xpThisMonth += gained;
+
+    window.State.update({
+      xp: newXP,
+      level: newLevel,
+      xpThisWeek: xpThisWeek,
+      xpThisMonth: xpThisMonth,
+      weekKey: weekKey,
+      monthKey: monthKey
+    });
+
 
     const result = {
       gained: gained,
