@@ -1005,28 +1005,40 @@ const AdminScreen = (function() {
   }
 
   // ============ ONGLET 9 : REGLAGES ============
-  async function renderConfigTab(container) {
+    async function renderConfigTab(container) {
     let cfg = {};
     try { cfg = await window.FB.getDocument("config", "global") || {}; }
     catch (e) {}
     container.innerHTML =
       '<div class="panel">' +
-        '<div class="panel-title">REGLAGES GLOBAUX</div>' +
+        '<div class="panel-title">CONTROLE IA</div>' +
+        '<div class="form-grid">' +
+          '<label class="admin-label">IA activee globalement (kill switch)<select class="input" id="cfgAiEnabled"><option value="true">OUI - IA active</option><option value="false">NON - IA desactivee</option></select></label>' +
+          '<label class="admin-label">Limite messages / user gratuit / jour<input class="input" id="cfgChat" type="number" value="' + (cfg.chatDailyLimit || 10) + '"/></label>' +
+          '<label class="admin-label">Limite messages / user premium / jour<input class="input" id="cfgChatPremium" type="number" value="' + (cfg.chatDailyLimitPremium || 100) + '"/></label>' +
+          '<label class="admin-label">Limite globale tous users / jour (securite)<input class="input" id="cfgChatGlobal" type="number" value="' + (cfg.chatGlobalDailyLimit || 5000) + '"/></label>' +
+        '</div>' +
+      '</div>' +
+      '<div class="panel mt-12">' +
+        '<div class="panel-title">REGLAGES APPLICATION</div>' +
         '<div class="form-grid">' +
           '<label class="admin-label">Prix Premium (EUR)<input class="input" id="cfgPrice" type="number" step="0.01" value="' + (cfg.premiumPrice || 7.99) + '"/></label>' +
-          '<label class="admin-label">Limite chat IA / jour<input class="input" id="cfgChat" type="number" value="' + (cfg.chatDailyLimit || 10) + '"/></label>' +
           '<label class="admin-label">XP par bonne reponse QCM<input class="input" id="cfgQcm" type="number" value="' + (cfg.xpQcm || 10) + '"/></label>' +
           '<label class="admin-label">Multiplicateur XP Premium<input class="input" id="cfgMult" type="number" step="0.5" value="' + (cfg.premiumMultiplier || 2) + '"/></label>' +
           '<label class="admin-label">Message accueil (Home)<input class="input" id="cfgWelcome" placeholder="ex: Bienvenue" value="' + escapeHTML(cfg.welcomeMessage||"") + '"/></label>' +
           '<label class="admin-label">Texte methode (longue page)<textarea class="textarea admin-textarea" id="cfgMethode" placeholder="Texte affiche dans A propos de notre methode">' + escapeHTML(cfg.methodeText||"") + '</textarea></label>' +
         '</div>' +
-        '<button class="btn btn-gold mt-12" id="saveCfgBtn">Enregistrer</button>' +
-      '</div>';
+      '</div>' +
+      '<button class="btn btn-gold mt-12" id="saveCfgBtn" style="width:100%; padding:14px;">ENREGISTRER TOUS LES REGLAGES</button>';
+    document.getElementById("cfgAiEnabled").value = (cfg.aiEnabled === false) ? "false" : "true";
     document.getElementById("saveCfgBtn").onclick = async function() {
       try {
         await window.FB.setDocument("config", "global", {
-          premiumPrice: parseFloat(getVal("cfgPrice")),
+          aiEnabled: getVal("cfgAiEnabled") === "true",
           chatDailyLimit: parseInt(getVal("cfgChat"), 10),
+          chatDailyLimitPremium: parseInt(getVal("cfgChatPremium"), 10),
+          chatGlobalDailyLimit: parseInt(getVal("cfgChatGlobal"), 10),
+          premiumPrice: parseFloat(getVal("cfgPrice")),
           xpQcm: parseInt(getVal("cfgQcm"), 10),
           premiumMultiplier: parseFloat(getVal("cfgMult")),
           welcomeMessage: getVal("cfgWelcome"),
@@ -1035,6 +1047,8 @@ const AdminScreen = (function() {
         toast("Reglages sauvegardes");
       } catch (e) { toast("Erreur: " + e.message); }
     };
+  }
+
   }
 
   // ============ ONGLET 10 : OUTILS ============
