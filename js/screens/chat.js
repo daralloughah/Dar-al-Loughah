@@ -1,10 +1,11 @@
 /* =========================================================
-   DAR AL LOUGHAH — SCREEN: AI CHAT
+   DAR AL LOUGHAH - SCREEN: AI CHAT
    - Chat conversationnel
    - Reconnaissance vocale (Web Speech API)
-   - Synthèse vocale (lecture à voix haute)
+   - Synthese vocale (lecture a voix haute)
    - Bilingue FR / AR
-   - Quota freemium 10 msg/jour
+   - Quota freemium pilote depuis admin
+   - Kill switch + limites globales
    ========================================================= */
 
 const ChatScreen = (function() {
@@ -12,22 +13,109 @@ const ChatScreen = (function() {
   let recognition = null;
   let isRecording = false;
   let history = [];
-  let chatLanguage = "fr"; // "fr" ou "ar"
+  let chatLanguage = "fr";
+  let aiConfig = null;
+  let aiConfigLoadedAt = 0;
 
   /* =========================================================
      SHOW
      ========================================================= */
-  function show() {
+  async function show() {
     setupRecognition();
     loadLanguagePreference();
-    refreshQuota();
+    await loadAiConfig();
+    await refreshQuota();
     refreshChatTools();
 
     if (history.length === 0) {
-      // Message de bienvenue
       addMessage("bot", chatLanguage === "ar"
         ? "مرحباً! تكلم معي بالعربية أو الفرنسية. سأصحح لك بلطف."
-        : "Marhaba ! Écris ou parle-moi en arabe ou en français. Je te corrigerai avec bienveillance.");
+        : "Marhaba ! Ecris ou parle-moi en arabe ou en francais. Je te corrigerai avec bienveillance.");
+    }
+  }
+
+  /* =========================================================
+     CONFIG IA (depuis admin)
+     ========================================================= */
+  async function loadAiConfig() {
+    const now = Date.now();
+    if (aiConfig && (now - aiConfigLoadedAt) < 60000) return aiConfig;
+    try {
+      if (window.FB && window.FB.getDocument) {
+        const cfg = await window.FB.getDocument("config", "global");
+        aiConfig = cfg || {};
+        aiConfigLoadedAt = now;
+      }
+    } catch (e) {
+      console.warn("Impossible de charger config IA :", e);
+      aiConfig = aiConfig || {};
+    }
+    return aiConfig;
+  }
+
+  function getAiEnabled() {
+    return !aiConfig || aiConfig.aiEnabled !== false;
+  }
+
+  function getUserLimit() {
+    const isPremium = window.State && window.State.get("isPremium");
+    if (isPremium) {
+      return (aiConfig && aiConfig.chatDailyLimitPremium) || 100;
+    }
+    return (aiConfig && aiConfig.chatDailyLimit) || 10;
+  }
+
+  function getGlobalLimit() {
+    return (aiConfig && aiConfig.chatGlobalDailyLimit) || 5000;
+  }
+
+  /* =========================================================
+     COMPTAGE FIRESTORE
+     ========================================================= */
+  function todayKey() {
+    const d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  async function getTodayGlobalCount() {
+    try {
+      const doc = await window.FB.getDocument("ia_usage", todayKey());
+      return doc && doc.count ? doc.count : 0;
+    } catch (e) { return 0; }
+  }
+
+  async function getTodayUserCount() {
+    const user = window.Auth && window.Auth.getUser ? window.Auth.getUser() : null;
+    if (!user || !user.uid) return 0;
+    try {
+      const doc = await window.FB.getDocument("ia_usage_users", todayKey() + "_" + user.uid);
+      return doc && doc.count ? doc.count : 0;
+    } catch (e) { return 0; }
+  }
+
+  async function incrementCounts() {
+    const key = todayKey();
+    const user = window.Auth && window.Auth.getUser ? window.Auth.getUser() : null;
+    try {
+      const globalDoc = await window.FB.getDocument("ia_usage", key) || { count: 0 };
+      await window.FB.setDocument("ia_usage", key, {
+        count: (globalDoc.count || 0) + 1,
+        date: key,
+        lastUpdated: Date.now()
+      });
+      if (user && user.uid) {
+        const userDocId = key + "_" + user.uid;
+        const userDoc = await window.FB.getDocument("ia_usage_users", userDocId) || { count: 0 };
+        await window.FB.setDocument("ia_usage_users", userDocId, {
+          count: (userDoc.count || 0) + 1,
+          date: key,
+          userId: user.uid,
+          pseudo: window.State ? window.State.get("pseudo") : "",
+          lastUpdated: Date.now()
+        });
+      }
+    } catch (e) {
+      console.warn("Erreur increment counts :", e);
     }
   }
 
@@ -59,50 +147,64 @@ const ChatScreen = (function() {
     if (input) {
       input.placeholder = chatLanguage === "ar"
         ? "اكتب أو تكلم..."
-        : "Écrivez en arabe ou en français…";
+        : "Ecrivez en arabe ou en francais...";
       input.dir = chatLanguage === "ar" ? "rtl" : "ltr";
     }
   }
 
   /* =========================================================
-     QUOTA
+     QUOTA AFFICHAGE
      ========================================================= */
-  function refreshQuota() {
+  async function refreshQuota() {
     if (!window.State) return;
+
+    await loadAiConfig();
 
     const isPremium = window.State.get("isPremium");
     const quotaBar = document.getElementById("quotaBar");
-
-    if (isPremium) {
-      if (quotaBar) {
-        quotaBar.innerHTML = '<span>Premium</span><b>Messages illimités ✦</b>';
-      }
-      const sendBtn = document.getElementById("chatSendBtn");
-      if (sendBtn) sendBtn.disabled = false;
-      const input = document.getElementById("chatInput");
-      if (input) input.disabled = false;
-      return;
-    }
-
-    window.State.checkChatQuota();
-    const used = window.State.get("chatCount") || 0;
-    const limit = (window.CONFIG && window.CONFIG.CHAT_DAILY_LIMIT) || 10;
-    const remaining = Math.max(0, limit - used);
-
-    const usedEl = document.getElementById("quotaUsed");
-    if (usedEl) usedEl.textContent = used;
-
-    const overLimit = remaining === 0;
     const sendBtn = document.getElementById("chatSendBtn");
     const input = document.getElementById("chatInput");
     const micBtn = document.getElementById("chatMicBtn");
 
+    if (!getAiEnabled()) {
+      if (quotaBar) quotaBar.innerHTML = '<span style="color:#ff9aa5;">IA temporairement desactivee</span>';
+      if (sendBtn) sendBtn.disabled = true;
+      if (input) {
+        input.disabled = true;
+        input.placeholder = "IA temporairement indisponible";
+      }
+      if (micBtn) micBtn.disabled = true;
+      return;
+    }
+
+    const userLimit = getUserLimit();
+    const userUsed = await getTodayUserCount();
+    const userRemaining = Math.max(0, userLimit - userUsed);
+
+    const globalLimit = getGlobalLimit();
+    const globalUsed = await getTodayGlobalCount();
+    const globalReached = globalUsed >= globalLimit;
+
+    const overLimit = userRemaining === 0 || globalReached;
+
+    if (quotaBar) {
+      if (isPremium) {
+        quotaBar.innerHTML = '<span>Premium</span><b>' + userRemaining + ' / ' + userLimit + ' messages restants</b>';
+      } else {
+        quotaBar.innerHTML = '<span>Gratuit</span><b>' + userRemaining + ' / ' + userLimit + ' messages restants aujourd hui</b>';
+      }
+    }
+
     if (sendBtn) sendBtn.disabled = overLimit;
     if (input) {
       input.disabled = overLimit;
-      input.placeholder = overLimit
-        ? "Quota atteint — passez Premium ✦"
-        : (chatLanguage === "ar" ? "اكتب أو تكلم..." : "Écrivez en arabe ou en français…");
+      if (globalReached) {
+        input.placeholder = "Limite globale atteinte. Reessaye demain.";
+      } else if (userRemaining === 0) {
+        input.placeholder = isPremium ? "Limite premium atteinte" : "Quota atteint - passe Premium";
+      } else {
+        input.placeholder = chatLanguage === "ar" ? "اكتب أو تكلم..." : "Ecrivez en arabe ou en francais...";
+      }
     }
     if (micBtn) micBtn.disabled = overLimit;
   }
@@ -119,32 +221,47 @@ const ChatScreen = (function() {
   }
 
   /* =========================================================
-     ENVOI MESSAGE
+     ENVOI MESSAGE - avec verifications quota
      ========================================================= */
   async function sendMessage() {
     const input = document.getElementById("chatInput");
     if (!input) return;
-
     const text = input.value.trim();
     if (!text) return;
 
-    // Vérifier quota
-    if (!window.State || !window.State.canSendChat()) {
-      if (window.Main && window.Main.toast) {
-        window.Main.toast("Quota gratuit atteint — passez Premium ✦");
-      }
+    await loadAiConfig();
+
+    if (!getAiEnabled()) {
+      if (window.Main) window.Main.toast("Le chat IA est temporairement indisponible");
       return;
     }
 
-    // Afficher le message de l'utilisateur
+    const globalUsed = await getTodayGlobalCount();
+    if (globalUsed >= getGlobalLimit()) {
+      if (window.Main) window.Main.toast("Limite globale atteinte aujourd hui. Reessaye demain.");
+      await refreshQuota();
+      return;
+    }
+
+    const userUsed = await getTodayUserCount();
+    const userLimit = getUserLimit();
+    if (userUsed >= userLimit) {
+      const isPremium = window.State && window.State.get("isPremium");
+      if (window.Main) {
+        window.Main.toast(isPremium
+          ? "Limite premium atteinte (" + userLimit + " msg/jour)"
+          : "Quota gratuit atteint - passe Premium pour " + getUserLimit.call({}, true) + " messages/jour");
+      }
+      await refreshQuota();
+      return;
+    }
+
     addMessage("user", text);
     input.value = "";
 
-    // Incrémenter quota
-    window.State.incrementChatCount();
-    refreshQuota();
+    await incrementCounts();
+    await refreshQuota();
 
-    // Indicateur de saisie
     addTypingIndicator();
 
     try {
@@ -157,11 +274,12 @@ const ChatScreen = (function() {
           speak(response.reply);
         }
       } else {
-        addMessage("bot", "Hmm, je n'ai pas bien compris. Réessayons ?");
+        addMessage("bot", "Hmm, je n ai pas bien compris. Reessayons ?");
       }
     } catch (e) {
       removeTypingIndicator();
-      addMessage("bot", "Connexion impossible pour l'instant. Réessayez plus tard.");
+      addMessage("bot", "Connexion impossible pour l instant. Reessaye plus tard.");
+      console.warn("Erreur IA :", e);
     }
   }
 
@@ -183,7 +301,6 @@ const ChatScreen = (function() {
       '<span class="msg-icon">' + escapeHTML(iconText) + '</span>' +
       escapeHTML(text);
 
-    // Si le texte contient de l'arabe, mettre en RTL
     if (containsArabic(text)) {
       el.style.direction = "rtl";
       el.style.textAlign = "right";
@@ -218,16 +335,16 @@ const ChatScreen = (function() {
      RECONNAISSANCE VOCALE
      ========================================================= */
   function setupRecognition() {
-    if (recognition) return; // déjà initialisé
+    if (recognition) return;
 
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
-      console.warn("Speech recognition non supportée");
+      console.warn("Speech recognition non supportee");
       const micBtn = document.getElementById("chatMicBtn");
       if (micBtn) {
         micBtn.style.opacity = "0.4";
         micBtn.disabled = true;
-        micBtn.title = "Reconnaissance vocale non supportée sur ce navigateur";
+        micBtn.title = "Reconnaissance vocale non supportee sur ce navigateur";
       }
       return;
     }
@@ -242,7 +359,6 @@ const ChatScreen = (function() {
       const input = document.getElementById("chatInput");
       if (input) input.value = transcript;
       stopRecording();
-      // Auto-envoyer
       setTimeout(sendMessage, 250);
     };
 
@@ -250,9 +366,7 @@ const ChatScreen = (function() {
       console.warn("Speech recognition error :", event.error);
       stopRecording();
       if (event.error === "not-allowed" || event.error === "permission-denied") {
-        if (window.Main && window.Main.toast) {
-          window.Main.toast("Autorise le microphone pour parler à l'IA");
-        }
+        if (window.Main) window.Main.toast("Autorise le microphone pour parler a l IA");
       }
     };
 
@@ -261,22 +375,24 @@ const ChatScreen = (function() {
     };
   }
 
-  function toggleMic() {
+  async function toggleMic() {
     if (!recognition) {
       setupRecognition();
       if (!recognition) {
-        if (window.Main && window.Main.toast) {
-          window.Main.toast("Reconnaissance vocale non disponible");
-        }
+        if (window.Main) window.Main.toast("Reconnaissance vocale non disponible");
         return;
       }
     }
 
-    // Vérifier quota
-    if (!window.State || !window.State.canSendChat()) {
-      if (window.Main && window.Main.toast) {
-        window.Main.toast("Quota gratuit atteint");
-      }
+    await loadAiConfig();
+    if (!getAiEnabled()) {
+      if (window.Main) window.Main.toast("IA temporairement desactivee");
+      return;
+    }
+
+    const userUsed = await getTodayUserCount();
+    if (userUsed >= getUserLimit()) {
+      if (window.Main) window.Main.toast("Quota atteint");
       return;
     }
 
@@ -289,21 +405,17 @@ const ChatScreen = (function() {
 
   function startRecording() {
     if (!recognition) return;
-
     try {
       recognition.lang = chatLanguage === "ar" ? "ar-SA" : "fr-FR";
       recognition.start();
       isRecording = true;
-
       const micBtn = document.getElementById("chatMicBtn");
       const indicator = document.getElementById("voiceIndicator");
-
       if (micBtn) micBtn.classList.add("recording");
       if (indicator) indicator.hidden = false;
-
       if (window.Audio) window.Audio.tap();
     } catch (e) {
-      console.warn("Impossible de démarrer la reco vocale :", e);
+      console.warn("Impossible de demarrer la reco vocale :", e);
       isRecording = false;
     }
   }
@@ -320,7 +432,7 @@ const ChatScreen = (function() {
   }
 
   /* =========================================================
-     SYNTHÈSE VOCALE (lecture à voix haute)
+     SYNTHESE VOCALE
      ========================================================= */
   function shouldReadAloud() {
     if (!window.State) return true;
@@ -330,11 +442,9 @@ const ChatScreen = (function() {
   function speak(text) {
     if (!window.speechSynthesis) return;
     if (!text) return;
-
     try {
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
-      // Détecter automatiquement la langue selon le contenu
       utter.lang = containsArabic(text) ? "ar-SA" : "fr-FR";
       utter.rate = 0.9;
       utter.pitch = 1.0;
@@ -358,15 +468,11 @@ const ChatScreen = (function() {
     });
   }
 
-  /* =========================================================
-     QUITTER L'ÉCRAN → arrêter tout
-     ========================================================= */
   function leave() {
     stopRecording();
     try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
   }
 
-  /* -------- API publique -------- */
   return {
     show: show,
     sendMessage: sendMessage,
@@ -378,4 +484,4 @@ const ChatScreen = (function() {
 })();
 
 window.ChatScreen = ChatScreen;
-console.log("✓ ChatScreen chargé (vocal + IA)");
+console.log("OK ChatScreen charge (vocal + IA + quotas)");
