@@ -937,33 +937,249 @@ const AdminScreen = (function() {
       '<div class="admin-empty">Les 30 badges sont definis dans xp.js. Edition des metadonnees a venir.</div>';
   }
 
-  // ============ ONGLET 7 : USERS ============
+    // ============ ONGLET 7 : USERS (console RH complete) ============
+  let usersCurrentView = "top";
+  let usersCurrentFilter = "all";
+  let usersAllData = [];
+
   async function renderUsersTab(container) {
-    container.innerHTML = '<div class="admin-loading">Chargement users...</div>';
+    container.innerHTML = '<div class="admin-loading">Chargement des utilisateurs...</div>';
     let users;
     try { users = await window.FB.getCollection("users") || []; }
-    catch (e) { container.innerHTML = '<div class="panel"><div class="admin-error">Erreur: ' + e.message + '</div></div>'; return; }
+    catch (e) {
+      container.innerHTML = '<div class="panel"><div class="admin-error">Erreur: ' + e.message + '</div></div>';
+      return;
+    }
+    usersAllData = users;
+
     const total = users.length;
     const premium = users.filter(function(u) { return u.isPremium; }).length;
+    const gratuit = total - premium;
     const totalXP = users.reduce(function(s, u) { return s + (u.xp || 0); }, 0);
+    const totalStreak = users.reduce(function(s, u) { return s + (u.streak || 0); }, 0);
+    const activeWeek = users.filter(function(u) {
+      const last = u.lastActiveAt || u.lastSession || 0;
+      return (Date.now() - last) < 7 * 24 * 60 * 60 * 1000;
+    }).length;
+
     container.innerHTML =
       '<div class="panel">' +
-        '<div class="panel-title">STATISTIQUES USERS</div>' +
+        '<div class="panel-title">VUE D ENSEMBLE</div>' +
         '<div class="stats-grid">' +
           '<div class="stat"><b>' + total + '</b><span>Inscrits</span></div>' +
           '<div class="stat"><b>' + premium + '</b><span>Premium</span></div>' +
+          '<div class="stat"><b>' + gratuit + '</b><span>Gratuits</span></div>' +
+          '<div class="stat"><b>' + activeWeek + '</b><span>Actifs (7j)</span></div>' +
           '<div class="stat"><b>' + totalXP + '</b><span>XP total</span></div>' +
+          '<div class="stat"><b>' + totalStreak + '</b><span>Streaks cumules</span></div>' +
         '</div>' +
+        '<button class="btn btn-outline mt-12" id="exportUsersCSVBtn" style="width:100%;">Exporter tous les users en CSV</button>' +
       '</div>' +
       '<div class="panel mt-12">' +
-        '<div class="panel-title">TOP 10 UTILISATEURS</div>' +
-        (users.sort(function(a,b){return(b.xp||0)-(a.xp||0);}).slice(0,10).map(function(u, i) {
-          return '<div class="list-item admin-list-item"><div class="admin-item-body">' +
-            '<div class="title">#' + (i+1) + ' ' + escapeHTML(u.pseudo||"Anonyme") + '</div>' +
-            '<div class="meta">XP: ' + (u.xp||0) + ' - Niveau ' + (u.level||1) + (u.isPremium?" - premium":"") + '</div></div></div>';
-        }).join("") || '<div class="admin-empty">Aucun utilisateur</div>') +
+        '<div class="panel-title">CLASSEMENTS</div>' +
+        '<div class="sub-tabs">' +
+          '<button class="filter-chip ' + (usersCurrentView === "top" ? "active" : "") + '" data-userview="top">Top XP total</button>' +
+          '<button class="filter-chip ' + (usersCurrentView === "week" ? "active" : "") + '" data-userview="week">Top hebdo</button>' +
+          '<button class="filter-chip ' + (usersCurrentView === "month" ? "active" : "") + '" data-userview="month">Top mensuel</button>' +
+          '<button class="filter-chip ' + (usersCurrentView === "streak" ? "active" : "") + '" data-userview="streak">Top streak</button>' +
+        '</div>' +
+        '<div id="usersRankingList" class="admin-list mt-12">Chargement...</div>' +
+      '</div>' +
+      '<div class="panel mt-12">' +
+        '<div class="panel-title">LISTE COMPLETE</div>' +
+        '<input class="input admin-search" type="search" id="usersSearch" placeholder="Rechercher pseudo ou email..."/>' +
+        '<div class="sub-tabs">' +
+          '<button class="filter-chip ' + (usersCurrentFilter === "all" ? "active" : "") + '" data-userfilter="all">Tous</button>' +
+          '<button class="filter-chip ' + (usersCurrentFilter === "premium" ? "active" : "") + '" data-userfilter="premium">Premium</button>' +
+          '<button class="filter-chip ' + (usersCurrentFilter === "free" ? "active" : "") + '" data-userfilter="free">Gratuits</button>' +
+          '<button class="filter-chip ' + (usersCurrentFilter === "active" ? "active" : "") + '" data-userfilter="active">Actifs (7j)</button>' +
+        '</div>' +
+        '<div class="admin-count" id="usersListCount">0 users</div>' +
+        '<div id="usersFullList" class="admin-list">Chargement...</div>' +
       '</div>';
+
+    document.getElementById("exportUsersCSVBtn").onclick = exportUsersCSV;
+
+    container.querySelectorAll("[data-userview]").forEach(function(btn) {
+      btn.onclick = function() {
+        usersCurrentView = btn.getAttribute("data-userview");
+        container.querySelectorAll("[data-userview]").forEach(function(b) { b.classList.remove("active"); });
+        btn.classList.add("active");
+        renderUsersRanking();
+      };
+    });
+
+    container.querySelectorAll("[data-userfilter]").forEach(function(btn) {
+      btn.onclick = function() {
+        usersCurrentFilter = btn.getAttribute("data-userfilter");
+        container.querySelectorAll("[data-userfilter]").forEach(function(b) { b.classList.remove("active"); });
+        btn.classList.add("active");
+        renderUsersFullList();
+      };
+    });
+
+    const searchInput = document.getElementById("usersSearch");
+    searchInput.addEventListener("input", renderUsersFullList);
+
+    renderUsersRanking();
+    renderUsersFullList();
   }
+
+  function renderUsersRanking() {
+    const list = document.getElementById("usersRankingList");
+    if (!list) return;
+    let sorted = [];
+    if (usersCurrentView === "top") {
+      sorted = usersAllData.slice().sort(function(a,b){return(b.xp||0)-(a.xp||0);});
+    } else if (usersCurrentView === "week") {
+      sorted = usersAllData.slice().sort(function(a,b){return(b.xpThisWeek||0)-(a.xpThisWeek||0);});
+    } else if (usersCurrentView === "month") {
+      sorted = usersAllData.slice().sort(function(a,b){return(b.xpThisMonth||0)-(a.xpThisMonth||0);});
+    } else if (usersCurrentView === "streak") {
+      sorted = usersAllData.slice().sort(function(a,b){return(b.streak||0)-(a.streak||0);});
+    }
+    const top10 = sorted.slice(0, 10);
+    if (top10.length === 0) {
+      list.innerHTML = '<div class="admin-empty">Aucun utilisateur</div>';
+      return;
+    }
+    list.innerHTML = top10.map(function(u, i) {
+      const medal = i === 0 ? "1er" : i === 1 ? "2eme" : i === 2 ? "3eme" : "#" + (i+1);
+      let metric = "";
+      if (usersCurrentView === "top") metric = (u.xp||0) + " XP - Niv " + (u.level||1);
+      else if (usersCurrentView === "week") metric = (u.xpThisWeek||0) + " XP cette semaine";
+      else if (usersCurrentView === "month") metric = (u.xpThisMonth||0) + " XP ce mois";
+      else if (usersCurrentView === "streak") metric = (u.streak||0) + " jours consecutifs";
+      return '<div class="list-item admin-list-item">' +
+        '<div class="admin-item-body">' +
+          '<div class="title">' + medal + ' ' + escapeHTML(u.pseudo||"Anonyme") + (u.isPremium?" - premium":"") + '</div>' +
+          '<div class="meta">' + escapeHTML(metric) + '</div>' +
+        '</div>' +
+        '<div class="admin-item-actions">' +
+          '<button class="btn-mini btn-mini-edit" data-view-user="' + (u._id || u.uid) + '" type="button">Voir</button>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+    list.querySelectorAll("[data-view-user]").forEach(function(btn) {
+      btn.onclick = function() { showUserDetail(btn.getAttribute("data-view-user")); };
+    });
+  }
+
+  function renderUsersFullList() {
+    const list = document.getElementById("usersFullList");
+    const count = document.getElementById("usersListCount");
+    if (!list) return;
+    const searchInput = document.getElementById("usersSearch");
+    const query = (searchInput ? searchInput.value : "").toLowerCase();
+    let filtered = usersAllData.slice();
+
+    if (usersCurrentFilter === "premium") {
+      filtered = filtered.filter(function(u) { return u.isPremium; });
+    } else if (usersCurrentFilter === "free") {
+      filtered = filtered.filter(function(u) { return !u.isPremium; });
+    } else if (usersCurrentFilter === "active") {
+      const week = 7 * 24 * 60 * 60 * 1000;
+      filtered = filtered.filter(function(u) {
+        const last = u.lastActiveAt || u.lastSession || 0;
+        return (Date.now() - last) < week;
+      });
+    }
+
+    if (query) {
+      filtered = filtered.filter(function(u) {
+        return (u.pseudo||"").toLowerCase().indexOf(query) !== -1 ||
+               (u.email||"").toLowerCase().indexOf(query) !== -1;
+      });
+    }
+
+    filtered.sort(function(a,b){return(b.xp||0)-(a.xp||0);});
+
+    if (count) count.textContent = filtered.length + " user" + (filtered.length > 1 ? "s" : "") + (query ? " (filtre)" : "");
+
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="admin-empty">Aucun utilisateur trouve</div>';
+      return;
+    }
+
+    list.innerHTML = filtered.slice(0, 100).map(function(u) {
+      const last = u.lastActiveAt || u.lastSession || 0;
+      const lastActive = last ? new Date(last).toLocaleDateString("fr-FR") : "jamais";
+      return '<div class="list-item admin-list-item">' +
+        '<div class="admin-item-body">' +
+          '<div class="title">' + escapeHTML(u.pseudo||"Anonyme") + (u.isPremium?" - premium":"") + '</div>' +
+          '<div class="meta">' + escapeHTML(u.email||"sans email") + '</div>' +
+          '<div class="admin-meta-tiny">Niv ' + (u.level||1) + ' - ' + (u.xp||0) + ' XP - Streak ' + (u.streak||0) + 'j - Actif: ' + lastActive + '</div>' +
+        '</div>' +
+        '<div class="admin-item-actions">' +
+          '<button class="btn-mini btn-mini-edit" data-view-user="' + (u._id || u.uid) + '" type="button">Voir</button>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+
+    if (filtered.length > 100) {
+      list.innerHTML += '<div class="admin-meta-tiny" style="text-align:center; margin-top:10px;">100 premiers users affiches sur ' + filtered.length + '</div>';
+    }
+
+    list.querySelectorAll("[data-view-user]").forEach(function(btn) {
+      btn.onclick = function() { showUserDetail(btn.getAttribute("data-view-user")); };
+    });
+  }
+
+  function showUserDetail(userId) {
+    const u = usersAllData.find(function(x) { return (x._id === userId) || (x.uid === userId); });
+    if (!u) { toast("User introuvable"); return; }
+    const last = u.lastActiveAt || u.lastSession || 0;
+    const lastActive = last ? new Date(last).toLocaleString("fr-FR") : "jamais";
+    const created = u.createdAt ? new Date(u.createdAt).toLocaleDateString("fr-FR") : "inconnu";
+    const html =
+      '<div style="text-align:left;">' +
+        '<h3 style="font-family: Cinzel, serif; color: var(--gold-light); margin: 0 0 12px;">' + escapeHTML(u.pseudo || "Anonyme") + '</h3>' +
+        '<div class="admin-meta-tiny" style="margin-bottom:14px;">' + escapeHTML(u.email || "sans email") + '</div>' +
+        '<div class="stats-grid">' +
+          '<div class="stat"><b>' + (u.level || 1) + '</b><span>Niveau</span></div>' +
+          '<div class="stat"><b>' + (u.xp || 0) + '</b><span>XP total</span></div>' +
+          '<div class="stat"><b>' + (u.streak || 0) + '</b><span>Streak (j)</span></div>' +
+          '<div class="stat"><b>' + ((u.badges || []).length) + '</b><span>Badges</span></div>' +
+        '</div>' +
+        '<div class="admin-meta-tiny" style="margin-top:14px; line-height:1.6;">' +
+          'Statut : ' + (u.isPremium ? "Premium" : "Gratuit") + '<br>' +
+          'Inscrit le : ' + created + '<br>' +
+          'Derniere activite : ' + lastActive + '<br>' +
+          'Messages IA aujourd hui : ' + (u.iaMessagesToday || 0) + '<br>' +
+          'Pubs vues : ' + (u.adsViewed || 0) +
+        '</div>' +
+      '</div>';
+    if (window.Main && window.Main.showModal) {
+      window.Main.showModal("Detail utilisateur", html);
+    } else {
+      alert(u.pseudo + "\nXP: " + (u.xp||0) + "\nNiv: " + (u.level||1));
+    }
+  }
+
+  function exportUsersCSV() {
+    if (usersAllData.length === 0) { toast("Aucun user a exporter"); return; }
+    const headers = ["pseudo", "email", "level", "xp", "xpThisWeek", "xpThisMonth", "streak", "isPremium", "iaMessagesToday", "adsViewed", "createdAt", "lastActiveAt"];
+    const rows = usersAllData.map(function(u) {
+      return headers.map(function(h) {
+        let v = u[h];
+        if (v === undefined || v === null) v = "";
+        if (typeof v === "boolean") v = v ? "OUI" : "NON";
+        if (h === "createdAt" || h === "lastActiveAt") v = v ? new Date(v).toISOString().slice(0,10) : "";
+        v = String(v).replace(/"/g, '""');
+        return '"' + v + '"';
+      }).join(",");
+    });
+    const csv = headers.join(",") + "\n" + rows.join("\n");
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "users-dar-al-loughah-" + new Date().toISOString().slice(0,10) + ".csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast(usersAllData.length + " users exportes");
+  }
+
 
   // ============ ONGLET 8 : STATS ============
     // ============ ONGLET 8 : STATS (avec IA Stats) ============
