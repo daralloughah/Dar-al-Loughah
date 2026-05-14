@@ -77,7 +77,7 @@ const Main = (function() {
       "home": window.HomeScreen, "themes": window.ThemesScreen, "theme-levels": window.ThemesScreen,
       "vocab": window.VocabScreen, "reading": window.ReadingScreen, "quiz": window.QuizScreen,
       "rapid": window.RapidScreen, "chat": window.ChatScreen, "lists": window.ListsScreen,
-      "list-detail": window.ListsScreen, "profile": window.ProfileScreen, "badges": window.BadgesScreen,
+      "list-detail": window.ListsScreen, "groups": window.GroupsScreen, "profile": window.ProfileScreen, "badges": window.BadgesScreen,
       "wotd": window.WotdScreen, "contact": window.ContactScreen, "premium": window.PremiumScreen,
       "settings": window.SettingsScreen, "admin": window.AdminScreen, "lesson": window.HomeScreen
     };
