@@ -1,8 +1,9 @@
 /* =========================================================
-   DAR AL LOUGHAH — XP, NIVEAUX, BADGES
+   DAR AL LOUGHAH — XP, NIVEAUX, BADGES (v2 hebdo/mensuel)
    - Formule: niveau N nécessite 35 × N × (N+1) XP cumulés
    - Niveau 200 ≈ 700 000 XP ≈ 7000 mots appris
    - Mouallim ≈ niveau ~250 ≈ 12 000 mots
+   - Compteurs hebdo / mensuel pour classements
    ========================================================= */
 
 const XP = (function() {
@@ -12,42 +13,29 @@ const XP = (function() {
   /* =========================================================
      FORMULE DE NIVEAU
      ========================================================= */
-  // XP cumulé requis pour atteindre le niveau N
-  // f(N) = 35 * N * (N + 1)
-  // Ex : niveau 1 -> 70 XP cumulés
-  //      niveau 10 -> 3 850 XP
-  //      niveau 50 -> 89 250 XP
-  //      niveau 100 -> 353 500 XP
-  //      niveau 200 -> 1 407 000 XP (calibré : ~7000 mots × 100 XP × 2)
-  //      niveau 250 -> ~2 200 000 XP (Mouallim, ~12 000 mots)
   function xpRequiredForLevel(level) {
     return 35 * level * (level + 1);
   }
 
-  // XP nécessaire pour passer du niveau actuel au suivant
   function xpToNextLevel(currentLevel) {
     return xpRequiredForLevel(currentLevel + 1) - xpRequiredForLevel(currentLevel);
   }
 
-  // Calcule le niveau correspondant à un total XP
   function levelFromXP(totalXP) {
     if (totalXP < 70) return 1;
-    // Inverse de 35*N*(N+1) <= XP
-    // Approximation puis ajustement
     let N = Math.floor((-1 + Math.sqrt(1 + 4 * totalXP / 35)) / 2);
     while (xpRequiredForLevel(N + 1) <= totalXP) N++;
     while (xpRequiredForLevel(N) > totalXP) N--;
     return Math.max(1, N);
   }
 
-  // XP dans le niveau actuel (entre 0 et xpToNextLevel)
   function xpInCurrentLevel(totalXP) {
     const lvl = levelFromXP(totalXP);
     return totalXP - xpRequiredForLevel(lvl);
   }
 
   /* =========================================================
-     TITRES DE NIVEAU (dignité progressive)
+     TITRES DE NIVEAU
      ========================================================= */
   function levelTitle(level) {
     if (level >= 250) return "Mouallim — مُعَلِّم";
@@ -64,9 +52,9 @@ const XP = (function() {
   }
 
   /* =========================================================
-     AJOUTER DE L'XP
+     AJOUTER DE L'XP (avec compteurs hebdo/mensuel)
      ========================================================= */
-    function addXP(amount, reason) {
+  function addXP(amount, reason) {
     if (!window.State) return { gained: 0, levelUp: false };
 
     let gained = amount;
@@ -80,7 +68,7 @@ const XP = (function() {
     const newXP = oldXP + gained;
     const newLevel = levelFromXP(newXP);
 
-    // === Compteurs hebdo / mensuel (avec auto-reset si periode changee) ===
+    // Compteurs hebdo / mensuel (avec auto-reset si periode changee)
     let xpThisWeek = window.State.get("xpThisWeek") || 0;
     let xpThisMonth = window.State.get("xpThisMonth") || 0;
     let weekKey = window.State.get("weekKey") || "";
@@ -111,7 +99,6 @@ const XP = (function() {
       monthKey: monthKey
     });
 
-
     const result = {
       gained: gained,
       reason: reason || "",
@@ -120,30 +107,75 @@ const XP = (function() {
       oldLevel: oldLevel
     };
 
-    // Émettre événement pour que main.js affiche un toast/modal
     document.dispatchEvent(new CustomEvent("xp-gained", { detail: result }));
     if (result.levelUp) {
       document.dispatchEvent(new CustomEvent("level-up", { detail: result }));
-      // Son
       if (window.Audio) window.Audio.levelUp();
     }
 
-    // Vérifier les badges
     checkBadges();
-
     return result;
   }
 
   /* =========================================================
+     INCREMENT MOTS / DEBLOCABLES (avec auto-reset)
+     ========================================================= */
+  function incrementWordCount() {
+    if (!window.State) return;
+    const total = (window.State.get("masteredWords") || 0) + 1;
+    let wordsThisWeek = window.State.get("wordsThisWeek") || 0;
+    let wordsThisMonth = window.State.get("wordsThisMonth") || 0;
+    let weekKey = window.State.get("weekKey") || "";
+    let monthKey = window.State.get("monthKey") || "";
+
+    if (window.PeriodReset) {
+      const currentWeek = window.PeriodReset.getCurrentWeekKey();
+      const currentMonth = window.PeriodReset.getCurrentMonthKey();
+      if (weekKey !== currentWeek) { wordsThisWeek = 0; weekKey = currentWeek; }
+      if (monthKey !== currentMonth) { wordsThisMonth = 0; monthKey = currentMonth; }
+    }
+
+    wordsThisWeek++;
+    wordsThisMonth++;
+
+    window.State.update({
+      masteredWords: total,
+      wordsThisWeek: wordsThisWeek,
+      wordsThisMonth: wordsThisMonth,
+      weekKey: weekKey,
+      monthKey: monthKey
+    });
+  }
+
+  function incrementUnlockCount() {
+    if (!window.State) return;
+    const total = (window.State.get("unlocksTotal") || 0) + 1;
+    let unlocksThisWeek = window.State.get("unlocksThisWeek") || 0;
+    let unlocksThisMonth = window.State.get("unlocksThisMonth") || 0;
+    let weekKey = window.State.get("weekKey") || "";
+    let monthKey = window.State.get("monthKey") || "";
+
+    if (window.PeriodReset) {
+      const currentWeek = window.PeriodReset.getCurrentWeekKey();
+      const currentMonth = window.PeriodReset.getCurrentMonthKey();
+      if (weekKey !== currentWeek) { unlocksThisWeek = 0; weekKey = currentWeek; }
+      if (monthKey !== currentMonth) { unlocksThisMonth = 0; monthKey = currentMonth; }
+    }
+
+    unlocksThisWeek++;
+    unlocksThisMonth++;
+
+    window.State.update({
+      unlocksTotal: total,
+      unlocksThisWeek: unlocksThisWeek,
+      unlocksThisMonth: unlocksThisMonth,
+      weekKey: weekKey,
+      monthKey: monthKey
+    });
+  }
+
+  /* =========================================================
      LES 30 BADGES
-     Catégories :
-     - assiduity (6) : streak
-     - vocab (6) : mots appris
-     - xp (6) : XP cumulés
-     - performance (4) : exploits
-     - reading (3) : alphabet
-     - themes (3) : thèmes terminés
-     - special (2) : Premium, Early adopter
      ========================================================= */
   const BADGES = [
     // ===== ASSIDUITÉ (6) =====
@@ -189,7 +221,6 @@ const XP = (function() {
     // ===== SPÉCIAL (2) =====
     { id: "special_premium",       cat: "special", name: "Pass Premium",  desc: "Membre Premium",     tier: "rare",   shape: "crown",     letter: "★", check: function(s) { return s.isPremium === true; } },
     { id: "special_early_adopter", cat: "special", name: "Early Adopter", desc: "Premier supporter",  tier: "rare",   shape: "medallion", letter: "أ", check: function(s) {
-      // Premier mois de l'app
       if (!s.createdAt) return false;
       const monthMs = 30 * 24 * 3600 * 1000;
       return (Date.now() - s.createdAt) < monthMs && s.createdAt < new Date("2026-12-31").getTime();
@@ -210,7 +241,7 @@ const XP = (function() {
   };
 
   /* =========================================================
-     GÉNÉRATION SVG ARTISANALE DES BADGES (formes uniques)
+     GÉNÉRATION SVG DES BADGES
      ========================================================= */
   function getBadgeSVG(badge) {
     const tier = TIER_COLORS[badge.tier] || TIER_COLORS.gold;
@@ -339,7 +370,6 @@ const XP = (function() {
         shapeSVG = '<circle cx="50" cy="50" r="36" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>';
     }
 
-    // Lettre arabe ou symbole au centre
     const letterColor = (badge.tier === "silver" || badge.tier === "bronze") ? "#2a1d00" : "#FFFCE0";
     const centerLetter =
       '<text x="50" y="60" text-anchor="middle" font-family="Amiri, serif" font-size="28" font-weight="700" fill="' + letterColor + '" opacity="0.85">' + letter + '</text>';
@@ -366,7 +396,6 @@ const XP = (function() {
         if (badge.check(stateData)) {
           window.State.unlockBadge(badge.id);
           newlyUnlocked.push(badge);
-          // Émettre événement pour modale
           document.dispatchEvent(new CustomEvent("badge-unlocked", { detail: badge }));
           if (window.Audio) window.Audio.badge();
         }
@@ -395,7 +424,7 @@ const XP = (function() {
   }
 
   /* =========================================================
-     GAINS XP PRÉ-CONFIGURÉS (helpers)
+     GAINS XP PRÉ-CONFIGURÉS
      ========================================================= */
   function gainQCMCorrect()      { return addXP((CFG.XP && CFG.XP.QCM_CORRECT) || 10, "Bonne réponse QCM"); }
   function gainRapidCorrect(combo) {
@@ -411,7 +440,6 @@ const XP = (function() {
      INIT
      ========================================================= */
   function init() {
-    // Recalcule le niveau au chargement (au cas où)
     if (window.State) {
       const xp = window.State.get("xp") || 0;
       const correctLevel = levelFromXP(xp);
@@ -430,67 +458,19 @@ const XP = (function() {
 
   /* -------- API publique -------- */
   return {
-    // Niveaux
     xpRequiredForLevel: xpRequiredForLevel,
     xpToNextLevel: xpToNextLevel,
     levelFromXP: levelFromXP,
     xpInCurrentLevel: xpInCurrentLevel,
     levelTitle: levelTitle,
-
-    // Ajout XP
-   function addXP(amount, reason) {
-    if (!window.State) return { gained: 0, levelUp: false };
-
-    let gained = amount;
-    if (window.State.get("isPremium")) {
-      const mult = (CFG.XP && CFG.XP.PREMIUM_MULTIPLIER) || 2;
-      gained = amount * mult;
-    }
-
-    const oldXP = window.State.get("xp") || 0;
-    const oldLevel = window.State.get("level") || 1;
-    const newXP = oldXP + gained;
-    const newLevel = levelFromXP(newXP);
-
-    // === Compteurs hebdo / mensuel (avec auto-reset si periode changee) ===
-    let xpThisWeek = window.State.get("xpThisWeek") || 0;
-    let xpThisMonth = window.State.get("xpThisMonth") || 0;
-    let weekKey = window.State.get("weekKey") || "";
-    let monthKey = window.State.get("monthKey") || "";
-
-    if (window.PeriodReset) {
-      const currentWeek = window.PeriodReset.getCurrentWeekKey();
-      const currentMonth = window.PeriodReset.getCurrentMonthKey();
-      if (weekKey !== currentWeek) {
-        xpThisWeek = 0;
-        weekKey = currentWeek;
-      }
-      if (monthKey !== currentMonth) {
-        xpThisMonth = 0;
-        monthKey = currentMonth;
-      }
-    }
-
-    xpThisWeek += gained;
-    xpThisMonth += gained;
-
-    window.State.update({
-      xp: newXP,
-      level: newLevel,
-      xpThisWeek: xpThisWeek,
-      xpThisMonth: xpThisMonth,
-      weekKey: weekKey,
-      monthKey: monthKey
-    });
-  
     addXP: addXP,
+    incrementWordCount: incrementWordCount,
+    incrementUnlockCount: incrementUnlockCount,
     gainQCMCorrect: gainQCMCorrect,
     gainRapidCorrect: gainRapidCorrect,
     gainWordKnown: gainWordKnown,
     gainLetterLearned: gainLetterLearned,
     gainReadingMilestone: gainReadingMilestone,
-
-    // Badges
     getAllBadges: getAllBadges,
     getBadge: getBadge,
     getBadgesByCategory: getBadgesByCategory,
