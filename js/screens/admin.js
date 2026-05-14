@@ -966,9 +966,10 @@ const AdminScreen = (function() {
   }
 
   // ============ ONGLET 8 : STATS ============
+    // ============ ONGLET 8 : STATS (avec IA Stats) ============
   async function renderStatsTab(container) {
     container.innerHTML = '<div class="admin-loading">Calcul des stats...</div>';
-    let themes, defs, notions, unlocks, wotd, lists, users;
+    let themes, defs, notions, unlocks, wotd, lists, users, iaUsageUsers, iaUsageGlobal, cfg;
     try {
       themes = await window.FB.getCollection("themes") || [];
       defs = await window.FB.getCollection("definitions") || [];
@@ -977,12 +978,63 @@ const AdminScreen = (function() {
       wotd = await window.FB.getCollection("wotd") || [];
       lists = await window.FB.getCollection("officialLists") || [];
       users = await window.FB.getCollection("users") || [];
-    } catch (e) { container.innerHTML = '<div class="panel"><div class="admin-error">Erreur: ' + e.message + '</div></div>'; return; }
+      iaUsageUsers = await window.FB.getCollection("ia_usage_users") || [];
+      iaUsageGlobal = await window.FB.getCollection("ia_usage") || [];
+      cfg = await window.FB.getDocument("config", "global") || {};
+    } catch (e) {
+      container.innerHTML = '<div class="panel"><div class="admin-error">Erreur: ' + e.message + '</div></div>';
+      return;
+    }
+
     let totalWords = 0;
     themes.forEach(function(t) { totalWords += countWordsInTheme(t); });
+
+    const today = todayKeyAdmin();
+    const todayGlobalDoc = iaUsageGlobal.find(function(d) { return d._id === today; });
+    const todayGlobalCount = todayGlobalDoc ? (todayGlobalDoc.count || 0) : 0;
+    const globalLimit = cfg.chatGlobalDailyLimit || 5000;
+    const globalPct = Math.min(100, Math.round((todayGlobalCount / globalLimit) * 100));
+
+    const todayUsers = iaUsageUsers.filter(function(d) { return d.date === today; });
+    const uniqueUsersToday = todayUsers.length;
+    const topUsers = todayUsers.sort(function(a,b){return(b.count||0)-(a.count||0);}).slice(0, 5);
+
+    const aiEnabled = cfg.aiEnabled !== false;
+    const userLimit = cfg.chatDailyLimit || 10;
+    const userLimitPremium = cfg.chatDailyLimitPremium || 100;
+
     container.innerHTML =
       '<div class="panel">' +
-        '<div class="panel-title">VUE D ENSEMBLE</div>' +
+        '<div class="panel-title">CONTROLE IA EN TEMPS REEL</div>' +
+        '<div class="admin-ai-status ' + (aiEnabled ? "ok" : "off") + '">' +
+          '<b>' + (aiEnabled ? "IA ACTIVEE" : "IA DESACTIVEE") + '</b>' +
+        '</div>' +
+        '<div class="admin-ai-bar mt-12">' +
+          '<div class="admin-ai-bar-label">Usage global aujourd hui : ' + todayGlobalCount + ' / ' + globalLimit + ' messages</div>' +
+          '<div class="admin-ai-bar-track">' +
+            '<div class="admin-ai-bar-fill ' + (globalPct > 80 ? "danger" : globalPct > 50 ? "warning" : "ok") + '" style="width:' + globalPct + '%"></div>' +
+          '</div>' +
+          '<div class="admin-ai-bar-pct">' + globalPct + '%</div>' +
+        '</div>' +
+        '<div class="stats-grid mt-12">' +
+          '<div class="stat"><b>' + uniqueUsersToday + '</b><span>Users actifs IA aujourd hui</span></div>' +
+          '<div class="stat"><b>' + userLimit + '</b><span>Limite gratuit</span></div>' +
+          '<div class="stat"><b>' + userLimitPremium + '</b><span>Limite premium</span></div>' +
+          '<div class="stat"><b>' + (globalLimit - todayGlobalCount) + '</b><span>Marge restante</span></div>' +
+        '</div>' +
+        '<button class="btn btn-outline mt-12" id="resetIaTodayBtn" style="width:100%;">Reset compteurs aujourd hui (urgence)</button>' +
+      '</div>' +
+      '<div class="panel mt-12">' +
+        '<div class="panel-title">TOP 5 USERS IA AUJOURD HUI</div>' +
+        (topUsers.length > 0 ? topUsers.map(function(u, i) {
+          const pct = Math.round(((u.count||0) / userLimit) * 100);
+          return '<div class="list-item admin-list-item"><div class="admin-item-body">' +
+            '<div class="title">#' + (i+1) + ' ' + escapeHTML(u.pseudo || "Anonyme") + '</div>' +
+            '<div class="meta">' + (u.count||0) + ' messages (' + pct + '% de la limite)</div></div></div>';
+        }).join("") : '<div class="admin-empty">Aucun user n a utilise l IA aujourd hui</div>') +
+      '</div>' +
+      '<div class="panel mt-12">' +
+        '<div class="panel-title">VUE D ENSEMBLE CONTENU</div>' +
         '<div class="stats-grid">' +
           '<div class="stat"><b>' + themes.length + '</b><span>Themes</span></div>' +
           '<div class="stat"><b>' + totalWords + '</b><span>Mots</span></div>' +
@@ -1002,7 +1054,27 @@ const AdminScreen = (function() {
             '<div class="meta">' + countWordsInTheme(t) + ' mots</div></div></div>';
         }).join("") || '<div class="admin-empty">Aucun theme</div>') +
       '</div>';
+
+    const resetBtn = document.getElementById("resetIaTodayBtn");
+    if (resetBtn) resetBtn.onclick = async function() {
+      if (!await confirmAction("ATTENTION : Cette action remet a zero les compteurs IA pour aujourd hui. Les users gratuits auront a nouveau leurs 10 messages. A utiliser uniquement en cas de bug. Continuer ?")) return;
+      try {
+        await window.FB.setDocument("ia_usage", today, { count: 0, date: today, lastUpdated: Date.now() });
+        for (const u of todayUsers) {
+          await window.FB.deleteDocument("ia_usage_users", u._id);
+        }
+        toast("Compteurs reset");
+        renderStatsTab(container);
+      } catch (e) { toast("Erreur: " + e.message); }
+    };
   }
+
+  function todayKeyAdmin() {
+    const d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+
 
   // ============ ONGLET 9 : REGLAGES ============
     async function renderConfigTab(container) {
