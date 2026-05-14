@@ -127,8 +127,7 @@ const AdminScreen = (function() {
       };
       return;
     }
-
-    }
+   
     if (filtered.length === 0) {
       list.innerHTML = '<div class="admin-empty">Aucun resultat pour "' + escapeHTML(query) + '"</div>';
       return;
