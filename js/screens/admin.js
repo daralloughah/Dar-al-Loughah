@@ -1121,8 +1121,6 @@ const AdminScreen = (function() {
     };
   }
 
-  }
-
   // ============ ONGLET 10 : OUTILS ============
   function renderToolsTab(container) {
     container.innerHTML =
