@@ -79,7 +79,7 @@ const Main = (function() {
       "rapid": window.RapidScreen, "chat": window.ChatScreen, "lists": window.ListsScreen,
       "list-detail": window.ListsScreen, "groups": window.GroupsScreen, "profile": window.ProfileScreen, "badges": window.BadgesScreen,
       "wotd": window.WotdScreen, "contact": window.ContactScreen, "premium": window.PremiumScreen,
-      "settings": window.SettingsScreen, "admin": window.AdminScreen, "lesson": window.HomeScreen
+      "settings": window.SettingsScreen, "admin": window.AdminScreen, "leaderboard": window.LeaderboardScreen, "lesson": window.HomeScreen
     };
     const screenObj = map[screenName];
     if (!screenObj) return;
