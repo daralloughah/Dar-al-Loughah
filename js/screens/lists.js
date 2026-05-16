@@ -1,8 +1,8 @@
 /* =========================================================
-   DAR AL LOUGHAH — SCREEN: LISTS (personnelles)
-   - Création / suppression de listes
-   - Ajout / suppression de mots (AR + translit + FR + exemple)
-   - Lancement d'apprentissage (cartes, QCM, rapid)
+   DAR AL LOUGHAH — SCREEN: LISTS (personnelles) v3 cloud
+   - Compatible Supabase (méthodes State.* async)
+   - Loader durant les opérations
+   - Mêmes actions UI, même apparence
    ========================================================= */
 
 const ListsScreen = (function() {
@@ -12,7 +12,17 @@ const ListsScreen = (function() {
   /* =========================================================
      SHOW : page principale des listes
      ========================================================= */
-  function show() {
+  async function show() {
+    // Si on est connecté, on s'assure que les listes sont à jour depuis le cloud
+    if (window.State && !window.State.isGuest() && window.State.loadUserLists) {
+      if (window.Main && window.Main.showLoader) window.Main.showLoader();
+      try {
+        await window.State.loadUserLists();
+      } catch (e) {
+        console.warn("loadUserLists error:", e);
+      }
+      if (window.Main && window.Main.hideLoader) window.Main.hideLoader();
+    }
     renderListsContainer();
   }
 
@@ -48,9 +58,9 @@ const ListsScreen = (function() {
   }
 
   /* =========================================================
-     CRÉER UNE LISTE
+     CRÉER UNE LISTE (async)
      ========================================================= */
-  function createList() {
+  async function createList() {
     const input = document.getElementById("newListName");
     if (!input) return;
 
@@ -73,19 +83,35 @@ const ListsScreen = (function() {
       return;
     }
 
-    window.State.createList(name);
-    input.value = "";
+    if (window.Main && window.Main.showLoader) window.Main.showLoader();
+    try {
+      const created = await window.State.createList(name);
+      if (window.Main && window.Main.hideLoader) window.Main.hideLoader();
 
-    if (window.Audio) window.Audio.correct();
-    if (window.Main && window.Main.toast) {
-      window.Main.toast("Liste « " + name + " » créée");
+      if (!created) {
+        if (window.Main && window.Main.toast) {
+          window.Main.toast("Erreur lors de la création de la liste");
+        }
+        return;
+      }
+
+      input.value = "";
+      if (window.Audio) window.Audio.correct();
+      if (window.Main && window.Main.toast) {
+        window.Main.toast("Liste « " + name + " » créée");
+      }
+      renderListsContainer();
+    } catch (e) {
+      if (window.Main && window.Main.hideLoader) window.Main.hideLoader();
+      console.error("createList error:", e);
+      if (window.Main && window.Main.toast) {
+        window.Main.toast("Erreur : " + (e.message || "création impossible"));
+      }
     }
-
-    renderListsContainer();
   }
 
   /* =========================================================
-     SUPPRIMER UNE LISTE
+     SUPPRIMER UNE LISTE (async)
      ========================================================= */
   function deleteList(listId) {
     if (!window.State) return;
@@ -93,23 +119,32 @@ const ListsScreen = (function() {
     const list = window.State.getList(listId);
     if (!list) return;
 
+    const doDelete = async function() {
+      if (window.Main && window.Main.showLoader) window.Main.showLoader();
+      try {
+        await window.State.deleteList(listId);
+        if (currentListId === listId) currentListId = null;
+        renderListsContainer();
+        if (window.Audio) window.Audio.tap();
+      } catch (e) {
+        console.error("deleteList error:", e);
+        if (window.Main && window.Main.toast) {
+          window.Main.toast("Erreur lors de la suppression");
+        }
+      }
+      if (window.Main && window.Main.hideLoader) window.Main.hideLoader();
+    };
+
     if (window.Main && window.Main.confirm) {
       window.Main.confirm(
         "Supprimer la liste",
         "Voulez-vous vraiment supprimer la liste « " + list.name + " » et tous ses mots ?",
-        function() {
-          window.State.deleteList(listId);
-          if (currentListId === listId) currentListId = null;
-          renderListsContainer();
-          if (window.Audio) window.Audio.tap();
-        }
+        doDelete
       );
     } else {
       // Fallback : confirm natif
       if (confirm("Supprimer la liste « " + list.name + " » ?")) {
-        window.State.deleteList(listId);
-        if (currentListId === listId) currentListId = null;
-        renderListsContainer();
+        doDelete();
       }
     }
   }
@@ -119,20 +154,15 @@ const ListsScreen = (function() {
      ========================================================= */
   function openList(listId) {
     if (!window.State) return;
-
     const list = window.State.getList(listId);
     if (!list) return;
 
     currentListId = listId;
 
-    // Mettre à jour le titre
     const titleEl = document.getElementById("listDetailTitle");
     if (titleEl) titleEl.textContent = list.name;
 
-    // Naviguer
-    if (window.Main) {
-      window.Main.goto("list-detail");
-    }
+    if (window.Main) window.Main.goto("list-detail");
   }
 
   /* =========================================================
@@ -192,9 +222,9 @@ const ListsScreen = (function() {
   }
 
   /* =========================================================
-     AJOUTER UN MOT À LA LISTE COURANTE
+     AJOUTER UN MOT À LA LISTE COURANTE (async)
      ========================================================= */
-  function addWordToCurrentList() {
+  async function addWordToCurrentList() {
     if (!currentListId || !window.State) return;
 
     const arInput = document.getElementById("wordArInput");
@@ -220,20 +250,34 @@ const ListsScreen = (function() {
       return;
     }
 
-    window.State.addWordToList(currentListId, {
-      ar: ar,
-      translit: translit,
-      fr: fr,
-      example: example
-    });
+    if (window.Main && window.Main.showLoader) window.Main.showLoader();
+    try {
+      const added = await window.State.addWordToList(currentListId, {
+        ar: ar, translit: translit, fr: fr, example: example
+      });
+      if (window.Main && window.Main.hideLoader) window.Main.hideLoader();
 
-    if (window.Audio) window.Audio.correct();
-    if (window.Main && window.Main.toast) {
-      window.Main.toast("Mot ajouté ✓");
+      if (!added) {
+        if (window.Main && window.Main.toast) {
+          window.Main.toast("Erreur lors de l'ajout du mot");
+        }
+        return;
+      }
+
+      if (window.Audio) window.Audio.correct();
+      if (window.Main && window.Main.toast) {
+        window.Main.toast("Mot ajouté ✓");
+      }
+
+      clearAddForm();
+      renderListWords();
+    } catch (e) {
+      if (window.Main && window.Main.hideLoader) window.Main.hideLoader();
+      console.error("addWordToCurrentList error:", e);
+      if (window.Main && window.Main.toast) {
+        window.Main.toast("Erreur : " + (e.message || "ajout impossible"));
+      }
     }
-
-    clearAddForm();
-    renderListWords();
   }
 
   function clearAddForm() {
@@ -244,14 +288,21 @@ const ListsScreen = (function() {
   }
 
   /* =========================================================
-     SUPPRIMER UN MOT
+     SUPPRIMER UN MOT (async)
      ========================================================= */
-  function deleteWord(wordId) {
+  async function deleteWord(wordId) {
     if (!currentListId || !window.State) return;
 
-    window.State.removeWordFromList(currentListId, wordId);
-    if (window.Audio) window.Audio.tap();
-    renderListWords();
+    try {
+      await window.State.removeWordFromList(currentListId, wordId);
+      if (window.Audio) window.Audio.tap();
+      renderListWords();
+    } catch (e) {
+      console.error("deleteWord error:", e);
+      if (window.Main && window.Main.toast) {
+        window.Main.toast("Erreur lors de la suppression");
+      }
+    }
   }
 
   /* =========================================================
@@ -346,4 +397,4 @@ const ListsScreen = (function() {
 })();
 
 window.ListsScreen = ListsScreen;
-console.log("✓ ListsScreen chargé");
+console.log("ListsScreen (cloud-ready) chargé");
