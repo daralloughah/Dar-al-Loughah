@@ -456,6 +456,13 @@ const XP = (function() {
     init();
   }
 
+  // Re-verifier les badges apres le pull cloud (quand l'user se connecte)
+  document.addEventListener("firebase-user-changed", function(e) {
+    if (e.detail && e.detail.user) {
+      setTimeout(function() { checkBadges(); }, 500);
+    }
+  });
+
   /* -------- API publique -------- */
   return {
     xpRequiredForLevel: xpRequiredForLevel,
