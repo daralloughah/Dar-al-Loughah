@@ -16,21 +16,21 @@ const Auth = (function() {
     };
   }
 
-  function firebaseReady() {
+  function backendReady() {
     return window.FB && window.FB.isReady && window.FB.isReady();
   }
 
-  async function ensureFirebase() {
-    if (firebaseReady()) return true;
+  async function ensureBackend() {
+    if (backendReady()) return true;
     if (window.FB && window.FB.init) {
       try { await window.FB.init(); } catch (e) { return false; }
     }
-    return firebaseReady();
+    return backendReady();
   }
 
   async function loginGoogle() {
-    const ok = await ensureFirebase();
-    if (!ok) return { success: false, error: "Firebase non disponible" };
+    const ok = await ensureBackend();
+    if (!ok) return { success: false, error: "Backend non disponible" };
     const result = await window.FB.signInGoogle();
     if (!result.success) return { success: false, error: result.error || "Erreur Google" };
     const user = {
@@ -52,8 +52,8 @@ const Auth = (function() {
     if (!email || !password) return { success: false, error: "Email et mot de passe requis" };
     if (!validateEmail(email)) return { success: false, error: "Email invalide" };
 
-    const ok = await ensureFirebase();
-    if (!ok) return { success: false, error: "Firebase non disponible" };
+    const ok = await ensureBackend();
+    if (!ok) return { success: false, error: "Backend non disponible" };
 
     const result = await window.FB.signIn(email, password);
     if (!result.success) return { success: false, error: result.error || "Identifiants incorrects" };
@@ -76,8 +76,14 @@ const Auth = (function() {
     if (data.password !== data.passwordConfirm) return { success: false, error: "Mots de passe differents" };
     if (!data.terms) return { success: false, error: "Acceptez les conditions" };
 
-    const ok = await ensureFirebase();
-    if (!ok) return { success: false, error: "Firebase non disponible" };
+    const ok = await ensureBackend();
+    if (!ok) return { success: false, error: "Backend non disponible" };
+
+    // Detection : etait-on en mode invite avec des donnees ?
+    const wasGuestWithData = window.State && window.State.isGuest && window.State.isGuest() &&
+      ((window.State.get("xp") || 0) > 0 ||
+       (window.State.get("lists") || []).length > 0 ||
+       (window.State.get("unlockedBadges") || []).length > 0);
 
     const result = await window.FB.signUp(data.email, data.password);
     if (!result.success) return { success: false, error: result.error || "Erreur inscription" };
@@ -89,25 +95,43 @@ const Auth = (function() {
       method: "email",
       uid: result.user.uid
     };
-    completeLogin(user, null, !!data.newsletter);
+    completeLogin(user, !!data.newsletter);
+
+    // Si on avait des donnees en mode invite, on les promeut au cloud
+    if (wasGuestWithData && window.State && window.State.promoteGuestToUser) {
+      try {
+        await window.State.promoteGuestToUser();
+        if (window.Main && window.Main.toast) window.Main.toast("Progression sauvegardee dans le cloud");
+      } catch (e) {
+        console.warn("Promotion invite -> user echouee:", e);
+      }
+    }
+
     return { success: true, user: user };
   }
 
   function loginGuest() {
     const user = { pseudo: "Invite", email: "", avatar: "", method: "guest" };
     completeLogin(user);
+    if (window.Main && window.Main.toast) {
+      window.Main.toast("Mode invite : progression non sauvegardee");
+    }
     return { success: true, user: user };
   }
 
   async function logout() {
-    if (firebaseReady()) {
+    // Flush des donnees en attente avant deconnexion
+    if (window.State && window.State.flushPending) {
+      try { await window.State.flushPending(); } catch (e) {}
+    }
+    if (backendReady()) {
       try { await window.FB.signOut(); } catch (e) {}
     }
     if (window.State) window.State.update({ loggedIn: false, authMethod: "guest" });
     document.dispatchEvent(new CustomEvent("auth-logout"));
   }
 
-  function completeLogin(user, token, newsletter) {
+  function completeLogin(user, newsletter) {
     if (!window.State) return;
 
     window.State.update({
@@ -120,10 +144,6 @@ const Auth = (function() {
       newsletter: !!newsletter,
       createdAt: window.State.get("createdAt") || Date.now()
     });
-
-    if (token) {
-      try { localStorage.setItem("dar_auth_token", token); } catch (e) {}
-    }
 
     document.dispatchEvent(new CustomEvent("auth-login", { detail: user }));
 
@@ -149,8 +169,8 @@ const Auth = (function() {
   }
 
   async function resetPassword(email) {
-    const ok = await ensureFirebase();
-    if (!ok) return { success: false, error: "Firebase non disponible" };
+    const ok = await ensureBackend();
+    if (!ok) return { success: false, error: "Backend non disponible" };
     return await window.FB.resetPassword(email);
   }
 
@@ -170,3 +190,4 @@ const Auth = (function() {
 })();
 
 window.Auth = Auth;
+console.log("Auth (Supabase-ready) charge");
