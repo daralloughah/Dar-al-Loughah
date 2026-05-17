@@ -30,6 +30,29 @@ const FB = (function() {
     return mapping[name] || name;
   }
 
+  // Tables qui stockent tout le contenu dans une colonne JSONB "data"
+  // (pattern clé/JSON au lieu de colonnes individuelles)
+  const DATA_WRAPPED_TABLES = ["themes", "badges_content", "official_lists", "words", "vocab"];
+
+  function isDataWrapped(table) {
+    return DATA_WRAPPED_TABLES.indexOf(table) !== -1;
+  }
+
+  // Emballe le payload pour les tables avec colonne "data"
+  function wrapPayload(id, data) {
+    var clean = Object.assign({}, data);
+    delete clean.id;
+    delete clean._id;
+    return { id: id, data: clean };
+  }
+
+  // Déroule une ligne récupérée depuis une table avec colonne "data"
+  function unwrapRow(row) {
+    if (!row) return null;
+    var inner = (row.data && typeof row.data === "object") ? row.data : {};
+    return Object.assign({ _id: row.id, id: row.id }, inner);
+  }
+
   // ===== AFFICHAGE D'ERREUR FATALE =====
   function showFatalError(msg) {
     document.body.innerHTML =
@@ -205,6 +228,9 @@ const FB = (function() {
     const table = mapCollectionName(name);
     const { data, error } = await supabase.from(table).select("*");
     if (error) { console.warn("getCollection error:", error); return []; }
+    if (isDataWrapped(table)) {
+      return (data || []).map(unwrapRow);
+    }
     return (data || []).map(function(row) {
       return Object.assign({ _id: row.id }, row);
     });
@@ -216,13 +242,16 @@ const FB = (function() {
     const { data, error } = await supabase.from(table).select("*").eq("id", id).maybeSingle();
     if (error) { console.warn("getDocument error:", error); return null; }
     if (!data) return null;
+    if (isDataWrapped(table)) return unwrapRow(data);
     return Object.assign({ _id: data.id }, data);
   }
 
   async function setDocument(name, id, data) {
     await init();
     const table = mapCollectionName(name);
-    const payload = Object.assign({}, data, { id: id });
+    var payload = isDataWrapped(table)
+      ? wrapPayload(id, data)
+      : Object.assign({}, data, { id: id });
     const { error } = await supabase.from(table).upsert(payload);
     if (error) {
       console.warn("setDocument error:", error);
@@ -237,7 +266,8 @@ const FB = (function() {
   async function updateDocument(name, id, data) {
     await init();
     const table = mapCollectionName(name);
-    const { error } = await supabase.from(table).update(data).eq("id", id);
+    var updateData = isDataWrapped(table) ? { data: data } : data;
+    const { error } = await supabase.from(table).update(updateData).eq("id", id);
     if (error) { console.warn("updateDocument error:", error); return false; }
     return true;
   }
