@@ -1,0 +1,613 @@
+/* =========================================================
+   DAR AL LOUGHAH — 03-frames.css
+   ---------------------------------------------------------
+   Module 3/6 : Cadres ornés baroque, panels, frame, ornements
+   de coin, lanternes intégrées au .frame
+   
+   ⚠️ À charger APRÈS 02-typography.css.
+   On garde TOUTES les classes existantes (.frame, .panel,
+   .corner-bl, .corner-br) et on les upgrade en cadres baroque
+   dorés avec ornements arabesques.
+   ========================================================= */
+
+/* =========================================================
+   3.1 — FRAME (compat .frame — le grand cadre du brand)
+   Cadre orné avec 4 coins arabesques dorés
+   ========================================================= */
+.frame{
+  position: relative;
+  padding: 60px 22px 38px;
+  margin: 10px 0 18px;
+}
+
+/* Coins supérieurs : volutes arabesques dorées (~88px) */
+.frame::before,
+.frame::after{
+  content: "";
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  pointer-events: none;
+  opacity: .95;
+  filter: drop-shadow(0 0 6px rgba(212,175,55,.4));
+  z-index: 2;
+}
+.frame::before{
+  top: 0;
+  left: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23fdeec3'/><stop offset='40' stop-color='%23f0c860'/><stop offset='75' stop-color='%239c7019'/><stop offset='100' stop-color='%233d2806'/></linearGradient><radialGradient id='b' cx='35%25' cy='30%25' r='70%25'><stop offset='0' stop-color='%239ecdff'/><stop offset='40' stop-color='%233a6fc4'/><stop offset='100' stop-color='%230a2160'/></radialGradient></defs><g fill='none' stroke='url(%23g)' stroke-width='1.6' stroke-linecap='round'><path d='M4 60 V24 Q4 4 24 4 H60'/><path d='M12 44 V28 Q12 12 28 12 H44' opacity='.8'/><path d='M18 18 Q28 8 40 16' /><path d='M22 28 Q32 22 42 28' opacity='.7'/><path d='M28 38 Q36 32 44 36' opacity='.6'/></g><path d='M4 60 C 12 56 18 48 22 38 C 18 44 12 50 4 52 Z' fill='url(%23g)' opacity='.7'/><path d='M60 4 C 56 12 48 18 38 22 C 44 18 50 12 52 4 Z' fill='url(%23g)' opacity='.7'/><circle cx='14' cy='14' r='2.4' fill='url(%23b)' stroke='%233d2806' stroke-width='.4'/><circle cx='13.4' cy='13.4' r='.9' fill='%23fff' opacity='.7'/><path d='M48 4 L52 8 L48 12 L44 8 Z' fill='url(%23g)' opacity='.85'/><path d='M4 48 L8 52 L4 56 L0 52 Z' fill='url(%23g)' opacity='.85'/></svg>");
+}
+.frame::after{
+  top: 0;
+  right: 0;
+  transform: scaleX(-1);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23fdeec3'/><stop offset='40' stop-color='%23f0c860'/><stop offset='75' stop-color='%239c7019'/><stop offset='100' stop-color='%233d2806'/></linearGradient><radialGradient id='b' cx='35%25' cy='30%25' r='70%25'><stop offset='0' stop-color='%239ecdff'/><stop offset='40' stop-color='%233a6fc4'/><stop offset='100' stop-color='%230a2160'/></radialGradient></defs><g fill='none' stroke='url(%23g)' stroke-width='1.6' stroke-linecap='round'><path d='M4 60 V24 Q4 4 24 4 H60'/><path d='M12 44 V28 Q12 12 28 12 H44' opacity='.8'/><path d='M18 18 Q28 8 40 16' /><path d='M22 28 Q32 22 42 28' opacity='.7'/><path d='M28 38 Q36 32 44 36' opacity='.6'/></g><path d='M4 60 C 12 56 18 48 22 38 C 18 44 12 50 4 52 Z' fill='url(%23g)' opacity='.7'/><path d='M60 4 C 56 12 48 18 38 22 C 44 18 50 12 52 4 Z' fill='url(%23g)' opacity='.7'/><circle cx='14' cy='14' r='2.4' fill='url(%23b)' stroke='%233d2806' stroke-width='.4'/><circle cx='13.4' cy='13.4' r='.9' fill='%23fff' opacity='.7'/><path d='M48 4 L52 8 L48 12 L44 8 Z' fill='url(%23g)' opacity='.85'/><path d='M4 48 L8 52 L4 56 L0 52 Z' fill='url(%23g)' opacity='.85'/></svg>");
+}
+
+/* Coins inférieurs : (compat .corner-bl, .corner-br) */
+.frame .corner-bl,
+.frame .corner-br{
+  content: "";
+  position: absolute;
+  width: 76px;
+  height: 76px;
+  bottom: 0;
+  background-repeat: no-repeat;
+  background-size: contain;
+  pointer-events: none;
+  opacity: .85;
+  filter: drop-shadow(0 0 4px rgba(212,175,55,.35));
+  z-index: 2;
+}
+.frame .corner-bl{
+  left: 0;
+  transform: scaleY(-1);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23fdeec3'/><stop offset='50' stop-color='%23c89a3a'/><stop offset='100' stop-color='%233d2806'/></linearGradient><radialGradient id='b' cx='35%25' cy='30%25' r='70%25'><stop offset='0' stop-color='%239ecdff'/><stop offset='40' stop-color='%233a6fc4'/><stop offset='100' stop-color='%230a2160'/></radialGradient></defs><g fill='none' stroke='url(%23g)' stroke-width='1.4' stroke-linecap='round'><path d='M4 48 V20 Q4 4 20 4 H48'/><path d='M14 14 Q24 6 36 14'/><path d='M20 26 Q28 22 36 26' opacity='.7'/></g><path d='M4 48 C 10 46 16 40 18 32 C 14 36 10 42 4 44 Z' fill='url(%23g)' opacity='.6'/><circle cx='14' cy='14' r='1.8' fill='url(%23b)'/></svg>");
+}
+.frame .corner-br{
+  right: 0;
+  transform: scale(-1, -1);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23fdeec3'/><stop offset='50' stop-color='%23c89a3a'/><stop offset='100' stop-color='%233d2806'/></linearGradient><radialGradient id='b' cx='35%25' cy='30%25' r='70%25'><stop offset='0' stop-color='%239ecdff'/><stop offset='40' stop-color='%233a6fc4'/><stop offset='100' stop-color='%230a2160'/></radialGradient></defs><g fill='none' stroke='url(%23g)' stroke-width='1.4' stroke-linecap='round'><path d='M4 48 V20 Q4 4 20 4 H48'/><path d='M14 14 Q24 6 36 14'/><path d='M20 26 Q28 22 36 26' opacity='.7'/></g><path d='M4 48 C 10 46 16 40 18 32 C 14 36 10 42 4 44 Z' fill='url(%23g)' opacity='.6'/><circle cx='14' cy='14' r='1.8' fill='url(%23b)'/></svg>");
+}
+
+/* =========================================================
+   3.2 — PANEL (compat .panel — la card baroque centrale)
+   Panel premium avec border doré, gradient navy, glow interne
+   ========================================================= */
+.panel{
+  background:
+    linear-gradient(180deg, rgba(17,31,74,.78), rgba(6,12,34,.92));
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-lg);
+  padding: 18px 16px;
+  position: relative;
+  box-shadow:
+    var(--shadow-soft),
+    inset 0 1px 0 rgba(244,215,122,.18),
+    inset 0 0 24px rgba(212,175,55,.04);
+  backdrop-filter: blur(6px);
+  overflow: visible;
+}
+.panel + .panel{ margin-top: 14px; }
+
+/* Double liseré doré intérieur (effet baroque) */
+.panel::before{
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(212,175,55,.18);
+  border-radius: calc(var(--radius-lg) - 4px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Coins ornés en triangles dorés (subtils, 4 coins) */
+.panel::after{
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image:
+    /* top-left */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23fdeec3'/><stop offset='100' stop-color='%239c7019'/></linearGradient></defs><path d='M2 2 L10 2 L2 10 Z' fill='url(%23g)' opacity='.7'/></svg>"),
+    /* top-right */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><defs><linearGradient id='g' x1='1' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23fdeec3'/><stop offset='100' stop-color='%239c7019'/></linearGradient></defs><path d='M18 2 L10 2 L18 10 Z' fill='url(%23g)' opacity='.7'/></svg>"),
+    /* bottom-left */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><defs><linearGradient id='g' x1='0' y1='1' x2='1' y2='0'><stop offset='0' stop-color='%23fdeec3'/><stop offset='100' stop-color='%239c7019'/></linearGradient></defs><path d='M2 18 L10 18 L2 10 Z' fill='url(%23g)' opacity='.7'/></svg>"),
+    /* bottom-right */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><defs><linearGradient id='g' x1='1' y1='1' x2='0' y2='0'><stop offset='0' stop-color='%23fdeec3'/><stop offset='100' stop-color='%239c7019'/></linearGradient></defs><path d='M18 18 L10 18 L18 10 Z' fill='url(%23g)' opacity='.7'/></svg>");
+  background-repeat: no-repeat;
+  background-position:
+    6px 6px,
+    calc(100% - 6px) 6px,
+    6px calc(100% - 6px),
+    calc(100% - 6px) calc(100% - 6px);
+  background-size: 14px 14px;
+}
+
+/* Contenu du panel au-dessus des ::before/::after */
+.panel > *{
+  position: relative;
+  z-index: 2;
+}
+
+/* =========================================================
+   3.3 — PANEL HERO (premium, milestone, profile-head)
+   Variantes plus prestigieuses
+   ========================================================= */
+.premium-hero,
+.milestone-card,
+.theme-editor-panel{
+  background:
+    linear-gradient(180deg, rgba(40,24,60,.88), rgba(20,10,34,.95)) !important;
+  border-color: var(--gold-light) !important;
+  box-shadow:
+    0 0 22px rgba(212,175,55,.25),
+    inset 0 0 22px rgba(212,175,55,.08),
+    var(--shadow-soft) !important;
+}
+.premium-hero::before,
+.milestone-card::before{
+  border-color: rgba(244,215,122,.4) !important;
+}
+
+/* =========================================================
+   3.4 — CTA WRAP (compat .cta-wrap — autour des boutons)
+   ========================================================= */
+.cta-wrap{
+  margin-top: 22px;
+  position: relative;
+  z-index: 2;
+}
+
+/* =========================================================
+   3.5 — VOCAB CARD (compat .vocab-card — card de mot arabe)
+   Card spéciale plus haute avec contenu centré
+   ========================================================= */
+.vocab-card{
+  padding: 24px 18px;
+  text-align: center;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+.vocab-card .word-ar{
+  font-size: 46px;
+  color: var(--gold-light);
+  -webkit-text-fill-color: var(--gold-light);
+  text-shadow: 0 0 14px rgba(212,175,55,.25);
+}
+.vocab-card .transliter{ font-size: 14px; }
+.vocab-card .word-fr{ font-size: 22px; }
+.vocab-card .example{
+  font-family: var(--font-arabic);
+  font-size: 17px;
+  color: var(--ink-muted);
+  margin-top: 8px;
+  direction: rtl;
+}
+.vocab-card .example-fr{
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink-muted);
+  font-style: italic;
+}
+.vocab-card .flip-hint{
+  color: var(--ink-dim);
+  opacity: .6;
+  font-size: 12px;
+  letter-spacing: 1px;
+  margin-top: 8px;
+}
+
+/* =========================================================
+   3.6 — DAILY LESSON (compat .daily-lesson)
+   ========================================================= */
+.daily-lesson{
+  padding: 22px 18px;
+  text-align: center;
+}
+.daily-lesson .word-ar{
+  font-size: 36px;
+  margin: 8px 0;
+}
+.daily-lesson .word-fr{ font-size: 17px; }
+.daily-lesson .transliter{ margin-top: 6px; }
+
+/* =========================================================
+   3.7 — WOTD CARD (compat .wotd-card)
+   Card "mot du jour" avec arabe massif
+   ========================================================= */
+.wotd-card{
+  padding: 28px 18px;
+  text-align: center;
+}
+.wotd-card .ar{
+  font-family: var(--font-arabic);
+  font-weight: 700;
+  font-size: 58px;
+  background: linear-gradient(180deg, var(--gold-5), var(--gold-dark));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  direction: rtl;
+  text-shadow: 0 0 22px rgba(212,175,55,.22);
+  margin: 6px 0;
+  line-height: 1.1;
+}
+.wotd-card .translit{
+  font-family: var(--font-display);
+  letter-spacing: 3px;
+  color: var(--gold);
+  font-size: 13px;
+  text-transform: uppercase;
+}
+.wotd-card .fr{
+  font-family: var(--font-body);
+  font-size: 22px;
+  color: var(--ink);
+  font-style: italic;
+  margin-top: 10px;
+}
+.wotd-card .def{
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--ink-muted);
+  margin-top: 14px;
+  line-height: 1.6;
+}
+.wotd-example{
+  margin-top: 16px;
+  padding: 14px;
+  background: rgba(212,175,55,.06);
+  border-left: 2px solid var(--gold);
+  border-radius: 8px;
+  text-align: left;
+}
+.wotd-example .ar{
+  font-family: var(--font-arabic);
+  font-size: 22px;
+  color: var(--gold-light);
+  direction: rtl;
+  text-align: right;
+  -webkit-text-fill-color: var(--gold-light);
+}
+.wotd-example .fr{
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--ink-muted);
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+/* =========================================================
+   3.8 — STAT CARDS (compat .stats-row, .stat — XP/Streak/Niveau)
+   Petites cards stats en bas du home
+   ========================================================= */
+.stats-row{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 18px;
+}
+.stat{
+  background: linear-gradient(180deg, rgba(17,31,74,.7), rgba(6,12,34,.85));
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius);
+  padding: 14px 6px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.stat::before{
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(212,175,55,.15);
+  border-radius: calc(var(--radius) - 3px);
+  pointer-events: none;
+}
+.stat .num{
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gold-light);
+  text-shadow: 0 0 10px var(--gold-glow);
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+.stat .num .unit{
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 1px;
+  margin-left: 2px;
+}
+.stat .lbl{
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--ink-muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 3px;
+  position: relative;
+  z-index: 1;
+}
+
+/* =========================================================
+   3.9 — BOOST BANNER & INVENTORY (v2.1 — préservés)
+   Bandeau Boost XP actif + slots de boost
+   ========================================================= */
+.boost-banner{
+  padding: 14px 16px;
+  background: linear-gradient(180deg, rgba(40,24,60,.88), rgba(20,10,34,.95));
+  border-color: var(--gold-light);
+  box-shadow: 0 0 18px rgba(212,175,55,.2);
+}
+.boost-banner-inner{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.boost-icon{
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 8px var(--gold-glow));
+  animation: boostPulse 2s ease-in-out infinite;
+}
+@keyframes boostPulse{
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.1); }
+}
+.boost-info{ flex: 1; }
+.boost-label{
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold-light);
+}
+.boost-value{
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold-light);
+  text-shadow: 0 0 8px var(--gold-glow);
+  margin-top: 2px;
+}
+
+.boost-stack{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 12px 0;
+}
+.boost-slot{
+  aspect-ratio: 1;
+  background: rgba(6,12,34,.7);
+  border: 1px dashed var(--border-gold-2);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.boost-slot.filled{
+  background: linear-gradient(180deg, rgba(212,175,55,.18), rgba(212,175,55,.05));
+  border: 1px solid var(--gold);
+  box-shadow: 0 0 12px rgba(212,175,55,.2);
+}
+.boost-empty{
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--ink-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   3.10 — AD SLOTS (préservés — invisibles par défaut)
+   ========================================================= */
+.ad-slot{
+  background: rgba(6,12,34,.5);
+  border: 1px dashed var(--border-gold-2);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  color: var(--ink-dim);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   3.11 — PROFILE HEAD (compat .profile-head, .avatar, .level-chip)
+   Card profil avec avatar
+   ========================================================= */
+.profile-head{
+  text-align: center;
+  padding: 24px 18px;
+}
+.avatar{
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,.25), transparent 50%),
+    linear-gradient(180deg, var(--gold-5), var(--gold-dark));
+  border: 2px solid var(--gold-light);
+  box-shadow:
+    var(--shadow-gold),
+    inset 0 -4px 8px rgba(0,0,0,.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 700;
+  color: #2a1d00;
+  position: relative;
+}
+.avatar::before{
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid rgba(244,215,122,.5);
+  pointer-events: none;
+}
+.pseudo{
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: var(--gold-light);
+  margin-top: 8px;
+  text-shadow: 0 0 8px rgba(232,192,96,.3);
+}
+.level-chip{
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 16px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(212,175,55,.18), rgba(212,175,55,.06));
+  border: 1px solid var(--border-gold);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--gold-light);
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   3.12 — XP BAR (compat .xp-bar, .fill, .xp-label)
+   ========================================================= */
+.xp-bar{
+  margin: 18px 4px 4px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(6,12,34,.85);
+  border: 1px solid var(--border-gold);
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.4);
+}
+.xp-bar .fill{
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg,
+    var(--gold-dark),
+    var(--gold) 50%,
+    var(--gold-light));
+  box-shadow:
+    0 0 14px var(--gold-glow),
+    inset 0 1px 0 rgba(255,255,255,.3);
+  transition: width .6s cubic-bezier(.6,.2,.2,1);
+  position: relative;
+}
+.xp-bar .fill::after{
+  /* Shimmer qui glisse sur la barre */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,255,255,.3),
+    transparent);
+  animation: xpShimmer 2.5s linear infinite;
+}
+@keyframes xpShimmer{
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.xp-label{
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--ink-muted);
+  letter-spacing: 1px;
+  margin-top: 6px;
+  padding: 0 4px;
+}
+
+/* =========================================================
+   3.13 — PROFILE STATS (compat .profile-stats, .mini-stat)
+   ========================================================= */
+.profile-stats{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 18px;
+}
+.mini-stat{
+  padding: 10px 4px;
+  text-align: center;
+  background: rgba(6,12,34,.5);
+  border: 1px solid var(--border-gold-2);
+  border-radius: 12px;
+}
+.mini-stat b{
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--gold-light);
+  text-shadow: 0 0 8px var(--gold-glow);
+  display: block;
+}
+.mini-stat span{
+  font-family: var(--font-ui);
+  font-size: 9px;
+  color: var(--ink-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 3px;
+  display: block;
+}
+
+/* =========================================================
+   3.14 — TIMER RING (compat .timer-ring)
+   Anneau chrono doré pour révision rapide
+   ========================================================= */
+.timer-ring{
+  width: 130px;
+  height: 130px;
+  margin: 12px auto;
+  position: relative;
+}
+.timer-ring svg{
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.timer-ring .bg-circle{
+  fill: none;
+  stroke: rgba(212,175,55,.18);
+  stroke-width: 9;
+}
+.timer-ring .progress-circle{
+  fill: none;
+  stroke: url(#goldGrad);
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-dasharray: 326.7;
+  stroke-dashoffset: 0;
+  filter: drop-shadow(0 0 8px var(--gold-glow));
+  transition: stroke-dashoffset 1s linear;
+}
+.timer-ring .t-value{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
