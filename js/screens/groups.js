@@ -287,10 +287,9 @@ const GroupsScreen = (function() {
     }
 
     const invitCode = generateInvitCode();
-    const newGroupId = "grp_" + Date.now() + "_" + Math.random().toString(36).substring(2, 8);
 
     try {
-      await window.FB.setDocument("groups", newGroupId, {
+      const newId = await window.FB.addDocument("groups", {
         name: name,
         description: desc,
         type: type,
@@ -302,6 +301,7 @@ const GroupsScreen = (function() {
         totalWords: 0,
         created_at: new Date().toISOString()
       });
+      if (!newId) throw new Error("Supabase n a pas retourne d ID — verifiez les colonnes");
       toast("Groupe cree ! Code : " + invitCode);
       currentView = "myGroups";
       await loadUserGroups();

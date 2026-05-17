@@ -284,7 +284,12 @@ const FB = (function() {
     await init();
     const table = mapCollectionName(name);
     const { data: result, error } = await supabase.from(table).insert(data).select("id").single();
-    if (error) { console.warn("addDocument error:", error); return null; }
+    if (error) {
+      console.warn("addDocument error:", error);
+      var err = new Error(error.message || JSON.stringify(error));
+      err.supabaseCode = error.code;
+      throw err;
+    }
     return result ? result.id : null;
   }
 
