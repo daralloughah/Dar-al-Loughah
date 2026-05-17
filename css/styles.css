@@ -2740,3 +2740,38 @@ body:not(.premium-on) [data-premium="true"] {
 .lb-modal-actions .btn {
   width: 100%;
 }
+
+.lb-theme-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(244,215,122,0.08);
+  border-radius: 12px;
+  border: 1px solid rgba(244,215,122,0.2);
+}
+.lb-theme-label {
+  color: #F4D77A;
+  font-weight: 600;
+  font-size: 0.95em;
+}
+.lb-theme-select {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(244,215,122,0.3);
+  color: #FFFCE0;
+  font-family: inherit;
+  font-size: 0.95em;
+}
+.theme-leaderboard-cta {
+  margin-top: 32px;
+  text-align: center;
+}
+.theme-my-stats {
+  margin-top: 12px;
+  color: #F4D77A;
+  font-size: 0.9em;
+}
