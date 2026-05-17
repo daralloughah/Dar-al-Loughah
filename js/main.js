@@ -46,6 +46,8 @@ const Main = (function() {
 
     function goto(screenName) {
     if (!screenName) return;
+    // Forcer la sauvegarde cloud avant de changer d'écran
+    if (window.State && window.State.flushPending) window.State.flushPending();
     showLoader();
     if (currentScreen === "chat" && window.ChatScreen && window.ChatScreen.leave) window.ChatScreen.leave();
     if (currentScreen === "rapid" && window.RapidScreen && window.RapidScreen.stop) window.RapidScreen.stop();

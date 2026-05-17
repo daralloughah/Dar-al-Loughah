@@ -76,7 +76,8 @@ const VocabScreen = (function() {
         const levelId = ctx.levelId || "debutant";
         const words = themeData.levels[levelId] || [];
         if (words.length > 0) {
-          return words.map(function(w, i) {
+          const quizValidations = (window.State && window.State.get("quizValidations")) || {};
+          const allCards = words.map(function(w, i) {
             return {
               id: ctx.themeId + ":" + levelId + ":" + i,
               ar: w.ar || "",
@@ -89,6 +90,11 @@ const VocabScreen = (function() {
               levelId: levelId
             };
           });
+          // Séparer mots non maîtrisés (priorité) et mots déjà maîtrisés (en fin de deck)
+          const notMastered = allCards.filter(function(c) { return (quizValidations[c.id] || 0) < 3; });
+          const mastered = allCards.filter(function(c) { return (quizValidations[c.id] || 0) >= 3; });
+          // Si tout est maîtrisé, retourner tout le deck pour la révision
+          return notMastered.length > 0 ? notMastered : allCards.concat(mastered);
         }
       }
     }
