@@ -195,7 +195,8 @@ const VocabScreen = (function() {
 
     if (isKnown) {
       // +1 XP minimal pour engagement
-      if (window.XP) window.XP.addXP(1, "Engagement vocab");
+      const _tid = currentContext && currentContext.themeId;
+      if (window.XP) window.XP.addXP(1, { reason: "Engagement vocab", themeId: _tid || null });
       if (window.Audio) window.Audio.tap();
 
       // Ajouter à la queue de validation
@@ -301,9 +302,10 @@ const VocabScreen = (function() {
       else if (idx === pickedIndex) btn.classList.add("wrong");
     });
 
+    const _themeId = currentContext && currentContext.themeId;
     if (isCorrect) {
       // +10 XP pour validation réussie
-      if (window.XP) window.XP.gainQCMCorrect();
+      if (window.XP) window.XP.gainQCMCorrect(_themeId || null);
       if (window.Audio) window.Audio.correct();
 
       // Incrémenter compteur de validations
@@ -317,7 +319,9 @@ const VocabScreen = (function() {
           const learned = window.State.get("wordsLearned") || [];
           learned.push(word.id);
           window.State.set("wordsLearned", learned);
-          window.State.set("masteredWords", learned.length);
+
+          // incrementWordCount gère masteredWords + theme_progress.words_learned dans Supabase
+          if (window.XP) window.XP.incrementWordCount(_themeId || null);
 
           if (window.Main && window.Main.toast) {
             window.Main.toast("« " + word.fr + " » appris ✓");
@@ -325,13 +329,13 @@ const VocabScreen = (function() {
 
           if (window.XP) window.XP.checkBadges();
 
-          // Progression de thème
-          if (word.source === "theme" && word.sourceId) {
+          // Progression de thème (state local)
+          if (_themeId) {
             const tp = window.State.get("themeProgress") || {};
-            const themeData = tp[word.sourceId] || { completedLevels: [] };
-            const levelKey = word.levelId || "debutant";
+            const themeData = tp[_themeId] || { completedLevels: [] };
+            const levelKey = (currentContext && currentContext.level) || "debutant";
             themeData[levelKey] = (themeData[levelKey] || 0) + 1;
-            tp[word.sourceId] = themeData;
+            tp[_themeId] = themeData;
             window.State.set("themeProgress", tp);
           }
         }
