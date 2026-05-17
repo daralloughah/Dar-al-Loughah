@@ -81,8 +81,8 @@ const LeaderboardScreen = (function() {
       // Themes (pour le dropdown)
       const { data: themes } = await client
         .from("themes")
-        .select("id,name_fr,name_ar")
-        .order("name_fr", { ascending: true });
+        .select("id,name,\"nameAr\",\"order\"")
+        .order("order", { ascending: true });
       allThemes = themes || [];
     } catch (e) {
       console.warn("Erreur load leaderboard:", e);
@@ -156,7 +156,7 @@ const LeaderboardScreen = (function() {
     html += '<select id="lbThemeSelect" class="lb-theme-select">';
     allThemes.forEach(function(t) {
       const sel = t.id === selectedThemeId ? " selected" : "";
-      html += '<option value="' + escapeHTML(t.id) + '"' + sel + '>' + escapeHTML(t.name_fr || t.id) + '</option>';
+      html += '<option value="' + escapeHTML(t.id) + '"' + sel + '>' + escapeHTML(t.name || t.id) + '</option>';
     });
     html += '</select></div>';
     html += '<div id="lbThemeList" class="lb-theme-list"><div class="lb-loading">Chargement...</div></div>';
