@@ -1,9 +1,6 @@
 /* =========================================================
-   DAR AL LOUGHAH - LEADERBOARD SCREEN
-   5 onglets : General / Hebdo / Mensuel / Streak / Groupes
-   - Top 10 + position du user connecte
-   - Pseudo + groupe + valeur
-   - Clic sur user = modale (Voir profil / Envoyer message)
+   DAR AL LOUGHAH — LEADERBOARD v2 (Supabase + Par thème)
+   Onglets : General / Hebdo / Mensuel / Streak / Par thème / Groupes
    ========================================================= */
 
 const LeaderboardScreen = (function() {
@@ -11,9 +8,12 @@ const LeaderboardScreen = (function() {
   let currentTab = "general";
   let allUsers = [];
   let allGroups = [];
+  let allThemes = [];
   let userGroupsMap = {};
+  let selectedThemeId = null;
+  let themeProgressCache = []; // pour l'onglet "Par thème"
 
-  // ============ ENTREE PRINCIPALE ============
+  /* ============ ENTRÉE PRINCIPALE ============ */
   async function show() {
     renderUI();
     await loadData();
@@ -25,10 +25,11 @@ const LeaderboardScreen = (function() {
     if (!container) return;
     container.innerHTML =
       '<div class="lb-tabs-wrap"><div class="lb-tabs">' +
-        '<button class="filter-chip active" data-lbtab="general">General</button>' +
+        '<button class="filter-chip active" data-lbtab="general">Général</button>' +
         '<button class="filter-chip" data-lbtab="weekly">Hebdo</button>' +
         '<button class="filter-chip" data-lbtab="monthly">Mensuel</button>' +
         '<button class="filter-chip" data-lbtab="streak">Streak</button>' +
+        '<button class="filter-chip" data-lbtab="theme">Par thème</button>' +
         '<button class="filter-chip" data-lbtab="groups">Groupes</button>' +
       '</div></div>' +
       '<div id="lbTabContent" class="lb-content"><div class="lb-loading">Chargement...</div></div>';
@@ -45,23 +46,49 @@ const LeaderboardScreen = (function() {
     });
   }
 
-  // ============ CHARGEMENT DES DONNEES ============
+  /* ============ CHARGEMENT DES DONNÉES ============ */
   async function loadData() {
     try {
-      if (window.FB && window.FB.getCollection) {
-        allUsers = await window.FB.getCollection("users") || [];
-        allGroups = await window.FB.getCollection("groups") || [];
-      } else {
-        allUsers = [];
-        allGroups = [];
+      const client = window.FB && window.FB.getClient ? window.FB.getClient() : null;
+      if (!client) {
+        allUsers = []; allGroups = []; allThemes = [];
+        return;
       }
+
+      // Users (profiles)
+      const { data: users, error: e1 } = await client
+        .from("profiles")
+        .select("id,pseudo,xp,level,streak,xp_this_week,xp_this_month")
+        .limit(500);
+      allUsers = (users || []).map(function(u) {
+        return {
+          _id: u.id,
+          pseudo: u.pseudo,
+          xp: u.xp || 0,
+          level: u.level || 1,
+          streak: u.streak || 0,
+          xpThisWeek: u.xp_this_week || 0,
+          xpThisMonth: u.xp_this_month || 0
+        };
+      });
+
+      // Groups
+      const { data: groups } = await client.from("groups").select("*");
+      allGroups = (groups || []).map(function(g) {
+        return Object.assign({}, g, { _id: g.id });
+      });
+
+      // Themes (pour le dropdown)
+      const { data: themes } = await client
+        .from("themes")
+        .select("id,name_fr,name_ar")
+        .order("name_fr", { ascending: true });
+      allThemes = themes || [];
     } catch (e) {
       console.warn("Erreur load leaderboard:", e);
-      allUsers = [];
-      allGroups = [];
+      allUsers = []; allGroups = []; allThemes = [];
     }
 
-    // Construire un map userId -> [groupes]
     userGroupsMap = {};
     allGroups.forEach(function(g) {
       const members = g.members || [];
@@ -72,7 +99,7 @@ const LeaderboardScreen = (function() {
     });
   }
 
-  // ============ ROUTAGE DES ONGLETS ============
+  /* ============ ROUTAGE ============ */
   function renderTab(tab) {
     const c = document.getElementById("lbTabContent");
     if (!c) return;
@@ -81,58 +108,149 @@ const LeaderboardScreen = (function() {
       case "weekly":  renderWeekly(c); break;
       case "monthly": renderMonthly(c); break;
       case "streak":  renderStreak(c); break;
+      case "theme":   renderThemeTab(c); break;
       case "groups":  renderGroups(c); break;
     }
   }
 
-  // ============ ONGLET GENERAL (XP total) ============
-  function renderGeneral(container) {
-    const sorted = allUsers.slice().sort(function(a, b) {
-      return (b.xp || 0) - (a.xp || 0);
-    });
-    const valueGetter = function(u) { return (u.xp || 0); };
-    const labelGetter = function(u) { return formatNumber(u.xp || 0) + " XP"; };
-    renderLeaderboardList(container, sorted, valueGetter, labelGetter, "general");
+  /* ============ ONGLETS XP ============ */
+  function renderGeneral(c) {
+    const sorted = allUsers.slice().sort(function(a, b) { return (b.xp || 0) - (a.xp || 0); });
+    renderUserList(c, sorted, function(u) { return formatNumber(u.xp || 0) + " XP"; }, "general");
   }
-
-  // ============ ONGLET HEBDO ============
-  function renderWeekly(container) {
-    const sorted = allUsers.slice().sort(function(a, b) {
-      return (b.xpThisWeek || 0) - (a.xpThisWeek || 0);
-    });
-    const valueGetter = function(u) { return (u.xpThisWeek || 0); };
-    const labelGetter = function(u) { return formatNumber(u.xpThisWeek || 0) + " XP"; };
+  function renderWeekly(c) {
+    const sorted = allUsers.slice().sort(function(a, b) { return (b.xpThisWeek || 0) - (a.xpThisWeek || 0); });
     const subtitle = window.PeriodReset ? "Semaine " + window.PeriodReset.getCurrentWeekKey() : "Cette semaine";
-    renderLeaderboardList(container, sorted, valueGetter, labelGetter, "weekly", subtitle);
+    renderUserList(c, sorted, function(u) { return formatNumber(u.xpThisWeek || 0) + " XP"; }, "weekly", subtitle);
   }
-
-  // ============ ONGLET MENSUEL ============
-  function renderMonthly(container) {
-    const sorted = allUsers.slice().sort(function(a, b) {
-      return (b.xpThisMonth || 0) - (a.xpThisMonth || 0);
-    });
-    const valueGetter = function(u) { return (u.xpThisMonth || 0); };
-    const labelGetter = function(u) { return formatNumber(u.xpThisMonth || 0) + " XP"; };
+  function renderMonthly(c) {
+    const sorted = allUsers.slice().sort(function(a, b) { return (b.xpThisMonth || 0) - (a.xpThisMonth || 0); });
     const subtitle = window.PeriodReset ? "Mois " + window.PeriodReset.getCurrentMonthKey() : "Ce mois";
-    renderLeaderboardList(container, sorted, valueGetter, labelGetter, "monthly", subtitle);
+    renderUserList(c, sorted, function(u) { return formatNumber(u.xpThisMonth || 0) + " XP"; }, "monthly", subtitle);
   }
-
-  // ============ ONGLET STREAK ============
-  function renderStreak(container) {
-    const sorted = allUsers.slice().sort(function(a, b) {
-      return (b.streak || 0) - (a.streak || 0);
-    });
-    const valueGetter = function(u) { return (u.streak || 0); };
-    const labelGetter = function(u) {
+  function renderStreak(c) {
+    const sorted = allUsers.slice().sort(function(a, b) { return (b.streak || 0) - (a.streak || 0); });
+    renderUserList(c, sorted, function(u) {
       const s = u.streak || 0;
       return s + (s > 1 ? " jours" : " jour");
-    };
-    renderLeaderboardList(container, sorted, valueGetter, labelGetter, "streak", "Jours consecutifs de participation");
+    }, "streak", "Jours consécutifs de participation");
   }
 
-  // ============ ONGLET GROUPES (total XP du groupe) ============
+  /* ============ ONGLET PAR THÈME ============ */
+  async function renderThemeTab(container) {
+    if (allThemes.length === 0) {
+      container.innerHTML = '<div class="lb-empty">Aucun thème disponible.</div>';
+      return;
+    }
+
+    // Pré-sélection : query string ?theme=xxx ou premier thème
+    if (!selectedThemeId) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlTheme = urlParams.get("theme");
+      selectedThemeId = urlTheme || allThemes[0].id;
+    }
+
+    // Construire le dropdown
+    let html = '<div class="lb-theme-selector">';
+    html += '<label class="lb-theme-label">Thème :</label>';
+    html += '<select id="lbThemeSelect" class="lb-theme-select">';
+    allThemes.forEach(function(t) {
+      const sel = t.id === selectedThemeId ? " selected" : "";
+      html += '<option value="' + escapeHTML(t.id) + '"' + sel + '>' + escapeHTML(t.name_fr || t.id) + '</option>';
+    });
+    html += '</select></div>';
+    html += '<div id="lbThemeList" class="lb-theme-list"><div class="lb-loading">Chargement...</div></div>';
+
+    container.innerHTML = html;
+
+    const select = container.querySelector("#lbThemeSelect");
+    select.addEventListener("change", function() {
+      selectedThemeId = select.value;
+      loadAndRenderTheme();
+    });
+
+    await loadAndRenderTheme();
+  }
+
+  async function loadAndRenderTheme() {
+    const listEl = document.getElementById("lbThemeList");
+    if (!listEl) return;
+    listEl.innerHTML = '<div class="lb-loading">Chargement du classement...</div>';
+
+    try {
+      const client = window.FB && window.FB.getClient ? window.FB.getClient() : null;
+      if (!client) {
+        listEl.innerHTML = '<div class="lb-empty">Cloud indisponible.</div>';
+        return;
+      }
+
+      const { data: progress, error } = await client
+        .from("theme_progress")
+        .select("user_id,xp,words_learned,quizzes_done")
+        .eq("theme_id", selectedThemeId)
+        .order("xp", { ascending: false })
+        .limit(50);
+
+      if (error) {
+        listEl.innerHTML = '<div class="lb-empty">Erreur : ' + escapeHTML(error.message) + '</div>';
+        return;
+      }
+
+      themeProgressCache = progress || [];
+
+      if (themeProgressCache.length === 0) {
+        listEl.innerHTML = '<div class="lb-empty">Personne n a encore commencé ce thème.<br>Sois le premier !</div>';
+        return;
+      }
+
+      // Joindre avec les pseudos
+      const rows = themeProgressCache.map(function(p) {
+        const u = allUsers.find(function(x) { return x._id === p.user_id; });
+        return {
+          _id: p.user_id,
+          pseudo: u ? u.pseudo : "Anonyme",
+          level: u ? u.level : 1,
+          xp: p.xp || 0,
+          wordsLearned: p.words_learned || 0,
+          quizzesDone: p.quizzes_done || 0
+        };
+      });
+
+      const currentUserId = getCurrentUserId();
+      const top10 = rows.slice(0, 10);
+      let html = '<div class="lb-subtitle">Classement du thème</div>';
+      html += '<div class="lb-list">';
+      top10.forEach(function(r, i) {
+        const isMine = r._id === currentUserId;
+        const valueLabel = formatNumber(r.xp) + ' XP · ' + r.wordsLearned + ' mots';
+        html += renderRow(r, i + 1, valueLabel, isMine);
+      });
+      html += '</div>';
+
+      const myIdx = rows.findIndex(function(r) { return r._id === currentUserId; });
+      if (myIdx >= 10) {
+        const r = rows[myIdx];
+        html += '<div class="lb-my-position-label">Ma position :</div>';
+        html += '<div class="lb-list">' + renderRow(r, myIdx + 1, formatNumber(r.xp) + ' XP · ' + r.wordsLearned + ' mots', true) + '</div>';
+      } else if (myIdx === -1) {
+        html += '<div class="lb-my-position-label">Tu n as pas encore commencé ce thème.</div>';
+      }
+
+      listEl.innerHTML = html;
+
+      listEl.querySelectorAll("[data-user-id]").forEach(function(row) {
+        row.addEventListener("click", function() {
+          openUserModal(row.getAttribute("data-user-id"));
+        });
+      });
+    } catch (e) {
+      console.warn("loadAndRenderTheme exception:", e);
+      listEl.innerHTML = '<div class="lb-empty">Erreur de chargement.</div>';
+    }
+  }
+
+  /* ============ ONGLET GROUPES ============ */
   function renderGroups(container) {
-    // Calculer le total XP de chaque groupe
     const groupsWithXP = allGroups.map(function(g) {
       const members = g.members || [];
       let totalXP = 0;
@@ -146,7 +264,7 @@ const LeaderboardScreen = (function() {
     groupsWithXP.sort(function(a, b) { return (b.totalXP || 0) - (a.totalXP || 0); });
 
     if (groupsWithXP.length === 0) {
-      container.innerHTML = '<div class="lb-empty">Aucun groupe pour l instant.<br>Creez le premier !</div>';
+      container.innerHTML = '<div class="lb-empty">Aucun groupe pour l instant.<br>Créez le premier !</div>';
       return;
     }
 
@@ -155,11 +273,7 @@ const LeaderboardScreen = (function() {
       return (g.members || []).indexOf(currentUserId) !== -1;
     });
 
-    let html = '';
-    if (window.PeriodReset) {
-      html += '<div class="lb-subtitle">Classement par total XP du groupe</div>';
-    }
-
+    let html = '<div class="lb-subtitle">Classement par total XP du groupe</div>';
     const top10 = groupsWithXP.slice(0, 10);
     html += '<div class="lb-list">';
     top10.forEach(function(g, i) {
@@ -192,10 +306,10 @@ const LeaderboardScreen = (function() {
     '</div>';
   }
 
-  // ============ RENDU LISTE GENERIQUE ============
-  function renderLeaderboardList(container, sortedUsers, valueGetter, labelGetter, tabKey, subtitle) {
+  /* ============ RENDU LISTE USERS ============ */
+  function renderUserList(container, sortedUsers, labelGetter, tabKey, subtitle) {
     if (sortedUsers.length === 0) {
-      container.innerHTML = '<div class="lb-empty">Aucun utilisateur classe pour l instant.</div>';
+      container.innerHTML = '<div class="lb-empty">Aucun utilisateur classé pour l instant.</div>';
       return;
     }
 
@@ -203,26 +317,21 @@ const LeaderboardScreen = (function() {
     const top10 = sortedUsers.slice(0, 10);
 
     let html = '';
-    if (subtitle) {
-      html += '<div class="lb-subtitle">' + escapeHTML(subtitle) + '</div>';
-    }
-
+    if (subtitle) html += '<div class="lb-subtitle">' + escapeHTML(subtitle) + '</div>';
     html += '<div class="lb-list">';
     top10.forEach(function(u, i) {
-      html += renderUserRow(u, i + 1, labelGetter(u), u._id === currentUserId);
+      html += renderRow(u, i + 1, labelGetter(u), u._id === currentUserId);
     });
     html += '</div>';
 
-    // Position du user connecte si hors top 10
     const myIndex = sortedUsers.findIndex(function(u) { return u._id === currentUserId; });
     if (myIndex >= 10) {
       html += '<div class="lb-my-position-label">Ma position :</div>';
-      html += '<div class="lb-list">' + renderUserRow(sortedUsers[myIndex], myIndex + 1, labelGetter(sortedUsers[myIndex]), true) + '</div>';
+      html += '<div class="lb-list">' + renderRow(sortedUsers[myIndex], myIndex + 1, labelGetter(sortedUsers[myIndex]), true) + '</div>';
     }
 
     container.innerHTML = html;
 
-    // Bind clic sur les lignes utilisateur
     container.querySelectorAll("[data-user-id]").forEach(function(row) {
       row.addEventListener("click", function() {
         openUserModal(row.getAttribute("data-user-id"));
@@ -230,7 +339,7 @@ const LeaderboardScreen = (function() {
     });
   }
 
-  function renderUserRow(u, rank, valueLabel, isMine) {
+  function renderRow(u, rank, valueLabel, isMine) {
     const medal = getMedalForRank(rank);
     const pseudo = u.pseudo || "Anonyme";
     const level = u.level || 1;
@@ -250,23 +359,21 @@ const LeaderboardScreen = (function() {
     '</div>';
   }
 
-  // ============ MEDAILLES DE RANG ============
+  /* ============ MÉDAILLES ============ */
   function getMedalForRank(rank) {
-    if (rank === 1) return '<span class="lb-medal lb-medal-gold" title="1er">🥇</span>';
-    if (rank === 2) return '<span class="lb-medal lb-medal-silver" title="2eme">🥈</span>';
-    if (rank === 3) return '<span class="lb-medal lb-medal-bronze" title="3eme">🥉</span>';
+    if (rank === 1) return '<span class="lb-medal lb-medal-gold">🥇</span>';
+    if (rank === 2) return '<span class="lb-medal lb-medal-silver">🥈</span>';
+    if (rank === 3) return '<span class="lb-medal lb-medal-bronze">🥉</span>';
     return '<span class="lb-rank-num">#' + rank + '</span>';
   }
 
-  // ============ MODALE PROFIL UTILISATEUR ============
+  /* ============ MODALE PROFIL ============ */
   function openUserModal(userId) {
     const u = allUsers.find(function(x) { return x._id === userId; });
     if (!u) return;
-
     const currentUserId = getCurrentUserId();
     const isMyself = u._id === currentUserId;
 
-    // Construire la modale
     let modal = document.getElementById("lbUserModal");
     if (!modal) {
       modal = document.createElement("div");
@@ -311,56 +418,58 @@ const LeaderboardScreen = (function() {
     });
 
     const viewBtn = modal.querySelector("[data-lb-action='view-profile']");
-    if (viewBtn) {
-      viewBtn.addEventListener("click", function() {
-        modal.hidden = true;
-        if (window.Main && window.Main.toast) {
-          window.Main.toast("Profil public a venir bientot inchaAllah");
-        }
-        // TODO Phase 4 : ouvrir l ecran profil-public avec userId
-      });
-    }
+    if (viewBtn) viewBtn.addEventListener("click", function() {
+      modal.hidden = true;
+      if (window.Main && window.Main.toast) window.Main.toast("Profil public à venir bientôt inchaAllah");
+    });
 
     const msgBtn = modal.querySelector("[data-lb-action='send-message']");
-    if (msgBtn) {
-      msgBtn.addEventListener("click", function() {
-        modal.hidden = true;
-        if (window.Main && window.Main.toast) {
-          window.Main.toast("Messagerie a venir bientot inchaAllah");
-        }
-        // TODO Phase 5 : ouvrir conversation avec userId
-      });
-    }
+    if (msgBtn) msgBtn.addEventListener("click", function() {
+      modal.hidden = true;
+      if (window.Main && window.Main.toast) window.Main.toast("Messagerie à venir bientôt inchaAllah");
+    });
   }
 
-  // ============ UTILS ============
+  /* ============ API EXTERNE : ouvrir directement sur un thème ============ */
+  function showWithTheme(themeId) {
+    selectedThemeId = themeId || null;
+    currentTab = "theme";
+    show().then(function() {
+      // Activer visuellement le bon onglet
+      const container = document.getElementById("leaderboardContent");
+      if (container) {
+        container.querySelectorAll(".lb-tabs .filter-chip").forEach(function(b) {
+          b.classList.toggle("active", b.getAttribute("data-lbtab") === "theme");
+        });
+      }
+    });
+  }
+
+  /* ============ UTILS ============ */
   function getCurrentUserId() {
     if (window.Auth && window.Auth.getUser) {
       const u = window.Auth.getUser();
       if (u && u.uid) return u.uid;
     }
-    if (window.State && window.State.get) {
-      return window.State.get("uid") || "";
-    }
+    if (window.State && window.State.get) return window.State.get("uid") || "";
     return "";
   }
-
   function formatNumber(n) {
     if (typeof n !== "number") n = parseInt(n, 10) || 0;
     return n.toLocaleString("fr-FR");
   }
-
   function escapeHTML(s) {
     return String(s || "").replace(/[&<>"']/g, function(c) {
       return { "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c];
     });
   }
 
-  // ============ API PUBLIQUE ============
+  /* ============ API PUBLIQUE ============ */
   return {
-    show: show
+    show: show,
+    showWithTheme: showWithTheme
   };
 })();
 
 window.LeaderboardScreen = LeaderboardScreen;
-console.log("LeaderboardScreen charge");
+console.log("LeaderboardScreen v2 chargé");
