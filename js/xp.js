@@ -1,9 +1,10 @@
 /* =========================================================
-   DAR AL LOUGHAH — XP, NIVEAUX, BADGES (v2 hebdo/mensuel)
-   - Formule: niveau N nécessite 35 × N × (N+1) XP cumulés
-   - Niveau 200 ≈ 700 000 XP ≈ 7000 mots appris
-   - Mouallim ≈ niveau ~250 ≈ 12 000 mots
-   - Compteurs hebdo / mensuel pour classements
+   DAR AL LOUGHAH — XP, NIVEAUX, BADGES v3 (cloud-tracked)
+   - Tracking par thème dans theme_progress
+   - Journal immuable dans xp_events
+   - Formule niveau N = 35 × N × (N+1)
+   - 30 badges (inchangés)
+   - Compteurs hebdo/mensuel
    ========================================================= */
 
 const XP = (function() {
@@ -52,23 +53,34 @@ const XP = (function() {
   }
 
   /* =========================================================
-     AJOUTER DE L'XP (avec compteurs hebdo/mensuel)
+     CORE : AJOUTER DE L'XP (tracking complet)
      ========================================================= */
-  function addXP(amount, reason) {
+  // options : { reason, sourceType, sourceId, themeId }
+  async function addXP(amount, options) {
     if (!window.State) return { gained: 0, levelUp: false };
 
-    let gained = amount;
-    if (window.State.get("isPremium")) {
-      const mult = (CFG.XP && CFG.XP.PREMIUM_MULTIPLIER) || 2;
-      gained = amount * mult;
-    }
+    options = options || {};
+    const reason = options.reason || (typeof options === "string" ? options : "");
+    const sourceType = options.sourceType || null;
+    const sourceId = options.sourceId || null;
+    const themeId = options.themeId || null;
 
+    // Multiplicateur premium
+    let multiplier = 1.0;
+    if (window.State.get("isPremium")) {
+      multiplier = (CFG.XP && CFG.XP.PREMIUM_MULTIPLIER) || 2;
+    }
+    // TODO: ajouter multiplicateur de boost actif si feature activée
+
+    const gained = Math.round(amount * multiplier);
+
+    // ===== 1. Mettre à jour le state local =====
     const oldXP = window.State.get("xp") || 0;
     const oldLevel = window.State.get("level") || 1;
     const newXP = oldXP + gained;
     const newLevel = levelFromXP(newXP);
 
-    // Compteurs hebdo / mensuel (avec auto-reset si periode changee)
+    // Compteurs hebdo/mensuel
     let xpThisWeek = window.State.get("xpThisWeek") || 0;
     let xpThisMonth = window.State.get("xpThisMonth") || 0;
     let weekKey = window.State.get("weekKey") || "";
@@ -77,14 +89,8 @@ const XP = (function() {
     if (window.PeriodReset) {
       const currentWeek = window.PeriodReset.getCurrentWeekKey();
       const currentMonth = window.PeriodReset.getCurrentMonthKey();
-      if (weekKey !== currentWeek) {
-        xpThisWeek = 0;
-        weekKey = currentWeek;
-      }
-      if (monthKey !== currentMonth) {
-        xpThisMonth = 0;
-        monthKey = currentMonth;
-      }
+      if (weekKey !== currentWeek) { xpThisWeek = 0; weekKey = currentWeek; }
+      if (monthKey !== currentMonth) { xpThisMonth = 0; monthKey = currentMonth; }
     }
 
     xpThisWeek += gained;
@@ -99,12 +105,23 @@ const XP = (function() {
       monthKey: monthKey
     });
 
+    // ===== 2. Logger l'event dans xp_events (cloud) =====
+    // Async, non bloquant
+    logXpEvent(gained, reason, sourceType, sourceId, multiplier);
+
+    // ===== 3. Mettre à jour theme_progress si on est sur un thème =====
+    if (themeId) {
+      upsertThemeProgress(themeId, gained, 0);
+    }
+
     const result = {
       gained: gained,
-      reason: reason || "",
+      reason: reason,
+      themeId: themeId,
       levelUp: newLevel > oldLevel,
       newLevel: newLevel,
-      oldLevel: oldLevel
+      oldLevel: oldLevel,
+      multiplier: multiplier
     };
 
     document.dispatchEvent(new CustomEvent("xp-gained", { detail: result }));
@@ -118,9 +135,116 @@ const XP = (function() {
   }
 
   /* =========================================================
-     INCREMENT MOTS / DEBLOCABLES (avec auto-reset)
+     LOGGING : insérer dans xp_events
      ========================================================= */
-  function incrementWordCount() {
+  async function logXpEvent(amount, reason, sourceType, sourceId, multiplier) {
+    if (!window.State || window.State.isGuest()) return;
+    if (!window.FB || !window.FB.isReady) return;
+    const client = window.FB.getClient && window.FB.getClient();
+    if (!client) return;
+    const user = window.FB.getCurrentUser();
+    if (!user) return;
+
+    try {
+      await client.from("xp_events").insert({
+        user_id: user.uid,
+        amount: amount,
+        reason: reason || "unknown",
+        source_type: sourceType,
+        source_id: sourceId,
+        multiplier: multiplier || 1.0
+      });
+    } catch (e) {
+      console.warn("logXpEvent error:", e);
+    }
+  }
+
+  /* =========================================================
+     UPSERT theme_progress
+     ========================================================= */
+  async function upsertThemeProgress(themeId, xpToAdd, wordsToAdd) {
+    if (!window.State || window.State.isGuest()) return;
+    if (!themeId) return;
+    if (!window.FB || !window.FB.isReady) return;
+    const client = window.FB.getClient && window.FB.getClient();
+    if (!client) return;
+    const user = window.FB.getCurrentUser();
+    if (!user) return;
+
+    try {
+      // Récupérer la ligne existante
+      const { data: existing, error: e1 } = await client
+        .from("theme_progress")
+        .select("*")
+        .eq("user_id", user.uid)
+        .eq("theme_id", themeId)
+        .maybeSingle();
+
+      if (e1) { console.warn("theme_progress fetch:", e1); return; }
+
+      const currentXp = existing ? (existing.xp || 0) : 0;
+      const currentWords = existing ? (existing.words_learned || 0) : 0;
+      const currentQuizzes = existing ? (existing.quizzes_done || 0) : 0;
+
+      const payload = {
+        user_id: user.uid,
+        theme_id: themeId,
+        xp: currentXp + (xpToAdd || 0),
+        words_learned: currentWords + (wordsToAdd || 0),
+        quizzes_done: currentQuizzes,
+        last_activity: new Date().toISOString()
+      };
+
+      const { error: e2 } = await client
+        .from("theme_progress")
+        .upsert(payload, { onConflict: "user_id,theme_id" });
+
+      if (e2) console.warn("theme_progress upsert:", e2);
+    } catch (e) {
+      console.warn("upsertThemeProgress exception:", e);
+    }
+  }
+
+  /* =========================================================
+     INCREMENT theme_progress.quizzes_done (à appeler manuellement)
+     ========================================================= */
+  async function incrementThemeQuiz(themeId, isPerfect) {
+    if (!window.State || window.State.isGuest()) return;
+    if (!themeId) return;
+    if (!window.FB || !window.FB.isReady) return;
+    const client = window.FB.getClient && window.FB.getClient();
+    if (!client) return;
+    const user = window.FB.getCurrentUser();
+    if (!user) return;
+
+    try {
+      const { data: existing } = await client
+        .from("theme_progress")
+        .select("quizzes_done,quiz_perfect")
+        .eq("user_id", user.uid)
+        .eq("theme_id", themeId)
+        .maybeSingle();
+
+      const newQuizzes = (existing ? existing.quizzes_done : 0) + 1;
+      const newPerfect = (existing ? existing.quiz_perfect : 0) + (isPerfect ? 1 : 0);
+
+      await client
+        .from("theme_progress")
+        .upsert({
+          user_id: user.uid,
+          theme_id: themeId,
+          quizzes_done: newQuizzes,
+          quiz_perfect: newPerfect
+        }, { onConflict: "user_id,theme_id" });
+    } catch (e) {
+      console.warn("incrementThemeQuiz error:", e);
+    }
+  }
+
+  /* =========================================================
+     INCREMENT MOTS / DEBLOCABLES (state global, inchangé)
+     ========================================================= */
+  function incrementWordCount(themeId) {
     if (!window.State) return;
     const total = (window.State.get("masteredWords") || 0) + 1;
     let wordsThisWeek = window.State.get("wordsThisWeek") || 0;
@@ -145,6 +269,11 @@ const XP = (function() {
       weekKey: weekKey,
       monthKey: monthKey
     });
+
+    // Mettre à jour theme_progress avec +1 mot
+    if (themeId) {
+      upsertThemeProgress(themeId, 0, 1);
+    }
   }
 
   function incrementUnlockCount() {
@@ -175,18 +304,49 @@ const XP = (function() {
   }
 
   /* =========================================================
-     LES 30 BADGES
+     LOGGER un déblocage de contenu (definition / notion / boost)
+     ========================================================= */
+  async function logUnlock(unlockType, unlockId, themeId, method) {
+    if (!window.State || window.State.isGuest()) return false;
+    if (!window.FB || !window.FB.isReady) return false;
+    const client = window.FB.getClient && window.FB.getClient();
+    if (!client) return false;
+    const user = window.FB.getCurrentUser();
+    if (!user) return false;
+
+    try {
+      const { error } = await client.from("unlock_events").insert({
+        user_id: user.uid,
+        unlock_type: unlockType,
+        unlock_id: unlockId,
+        theme_id: themeId || null,
+        method: method || "ad"
+      });
+      if (error) {
+        console.warn("logUnlock error:", error);
+        return false;
+      }
+      incrementUnlockCount();
+      return true;
+    } catch (e) {
+      console.warn("logUnlock exception:", e);
+      return false;
+    }
+  }
+
+  /* =========================================================
+     LES 30 BADGES (inchangés)
      ========================================================= */
   const BADGES = [
-    // ===== ASSIDUITÉ (6) =====
-    { id: "streak_3",   cat: "assiduity", name: "Premier Élan",      desc: "3 jours consécutifs",     tier: "bronze",  shape: "lantern",  letter: "ث", check: function(s) { return s.streak >= 3; } },
-    { id: "streak_7",   cat: "assiduity", name: "Une Semaine",       desc: "7 jours consécutifs",     tier: "bronze",  shape: "moon",     letter: "س", check: function(s) { return s.streak >= 7; } },
-    { id: "streak_30",  cat: "assiduity", name: "Constance",         desc: "30 jours consécutifs",    tier: "silver",  shape: "octagon",  letter: "ث", check: function(s) { return s.streak >= 30; } },
-    { id: "streak_100", cat: "assiduity", name: "Veilleur",          desc: "100 jours consécutifs",   tier: "gold",    shape: "star8",    letter: "ر", check: function(s) { return s.streak >= 100; } },
-    { id: "streak_365", cat: "assiduity", name: "L'Année Sacrée",    desc: "365 jours consécutifs",   tier: "ruby",    shape: "medallion",letter: "ع", check: function(s) { return s.streak >= 365; } },
-    { id: "streak_1000",cat: "assiduity", name: "L'Éternel",         desc: "1000 jours consécutifs",  tier: "rare",    shape: "sun",      letter: "خ", check: function(s) { return s.streak >= 1000; } },
+    // ASSIDUITÉ (6)
+    { id: "streak_3",   cat: "assiduity", name: "Premier Élan",    desc: "3 jours consécutifs",    tier: "bronze",  shape: "lantern",  letter: "ث", check: function(s) { return s.streak >= 3; } },
+    { id: "streak_7",   cat: "assiduity", name: "Une Semaine",     desc: "7 jours consécutifs",    tier: "bronze",  shape: "moon",     letter: "س", check: function(s) { return s.streak >= 7; } },
+    { id: "streak_30",  cat: "assiduity", name: "Constance",       desc: "30 jours consécutifs",   tier: "silver",  shape: "octagon",  letter: "ث", check: function(s) { return s.streak >= 30; } },
+    { id: "streak_100", cat: "assiduity", name: "Veilleur",        desc: "100 jours consécutifs",  tier: "gold",    shape: "star8",    letter: "ر", check: function(s) { return s.streak >= 100; } },
+    { id: "streak_365", cat: "assiduity", name: "L'Année Sacrée",  desc: "365 jours consécutifs",  tier: "ruby",    shape: "medallion",letter: "ع", check: function(s) { return s.streak >= 365; } },
+    { id: "streak_1000",cat: "assiduity", name: "L'Éternel",       desc: "1000 jours consécutifs", tier: "rare",    shape: "sun",      letter: "خ", check: function(s) { return s.streak >= 1000; } },
 
-    // ===== VOCABULAIRE (6) =====
+    // VOCABULAIRE (6)
     { id: "vocab_10",    cat: "vocab", name: "Premiers Mots",   desc: "10 mots appris",     tier: "bronze",  shape: "octagon",  letter: "أ", check: function(s) { return (s.masteredWords || 0) >= 10; } },
     { id: "vocab_50",    cat: "vocab", name: "Lexique Naissant", desc: "50 mots appris",    tier: "bronze",  shape: "octagon",  letter: "ب", check: function(s) { return (s.masteredWords || 0) >= 50; } },
     { id: "vocab_100",   cat: "vocab", name: "Centurion",       desc: "100 mots appris",    tier: "silver",  shape: "shield",   letter: "م", check: function(s) { return (s.masteredWords || 0) >= 100; } },
@@ -194,7 +354,7 @@ const XP = (function() {
     { id: "vocab_1000",  cat: "vocab", name: "Érudit",          desc: "1 000 mots appris",  tier: "lapis",   shape: "book",     letter: "ع", check: function(s) { return (s.masteredWords || 0) >= 1000; } },
     { id: "vocab_5000",  cat: "vocab", name: "Maître des Mots", desc: "5 000 mots appris",  tier: "rare",    shape: "crown",    letter: "ح", check: function(s) { return (s.masteredWords || 0) >= 5000; } },
 
-    // ===== XP (6) =====
+    // XP (6)
     { id: "xp_1k",   cat: "xp", name: "Étincelle",       desc: "1 000 XP",     tier: "bronze",  shape: "star8",    letter: "١", check: function(s) { return (s.xp || 0) >= 1000; } },
     { id: "xp_10k",  cat: "xp", name: "Brasier",         desc: "10 000 XP",    tier: "silver",  shape: "star8",    letter: "٢", check: function(s) { return (s.xp || 0) >= 10000; } },
     { id: "xp_50k",  cat: "xp", name: "Phare",           desc: "50 000 XP",    tier: "gold",    shape: "star8",    letter: "٣", check: function(s) { return (s.xp || 0) >= 50000; } },
@@ -202,25 +362,25 @@ const XP = (function() {
     { id: "xp_300k", cat: "xp", name: "Étoile Polaire",  desc: "300 000 XP",   tier: "lapis",   shape: "compass",  letter: "٥", check: function(s) { return (s.xp || 0) >= 300000; } },
     { id: "xp_700k", cat: "xp", name: "Cosmos",          desc: "700 000 XP",   tier: "rare",    shape: "galaxy",   letter: "٧", check: function(s) { return (s.xp || 0) >= 700000; } },
 
-    // ===== PERFORMANCE (4) =====
+    // PERFORMANCE (4)
     { id: "perf_perfect_quiz", cat: "performance", name: "Œil de Faucon",   desc: "Quiz 10/10 sans faute",   tier: "silver", shape: "eye",     letter: "د", check: function(s) { return (s.stats && s.stats.perfectQuizzes >= 1); } },
     { id: "perf_combo_20",     cat: "performance", name: "Combo Maître",    desc: "Combo ×20 en révision",   tier: "gold",   shape: "lightning",letter: "ك", check: function(s) { return (s.stats && s.stats.bestRapidCombo >= 20); } },
     { id: "perf_combo_50",     cat: "performance", name: "Foudre Pure",     desc: "Combo ×50 en révision",   tier: "rare",   shape: "lightning",letter: "ق", check: function(s) { return (s.stats && s.stats.bestRapidCombo >= 50); } },
     { id: "perf_quiz_master",  cat: "performance", name: "Maître Quiziste", desc: "100 questions correctes", tier: "lapis",  shape: "scroll",   letter: "ج", check: function(s) { return (s.stats && s.stats.totalCorrect >= 100); } },
 
-    // ===== LECTURE (3) =====
+    // LECTURE (3)
     { id: "read_10",   cat: "reading", name: "Premiers Tracés",  desc: "10 lettres apprises",   tier: "bronze", shape: "feather",  letter: "ا", check: function(s) { return (s.lettersLearned && s.lettersLearned.length >= 10); } },
     { id: "read_28",   cat: "reading", name: "Alphabet Complet", desc: "Les 28 lettres",        tier: "gold",   shape: "rosette",  letter: "ل", check: function(s) { return (s.lettersLearned && s.lettersLearned.length >= 28); } },
     { id: "read_word", cat: "reading", name: "Première Lecture", desc: "Premier mot lu seul",   tier: "silver", shape: "book",     letter: "ق", check: function(s) { return s.firstWordRead === true; } },
 
-    // ===== THÈMES (3) =====
-    { id: "theme_1",   cat: "themes", name: "Premier Voyage",   desc: "1 thème terminé",   tier: "bronze",  shape: "compass",  letter: "ف", check: function(s) { return (s.stats && s.stats.themesCompleted >= 1); } },
-    { id: "theme_5",   cat: "themes", name: "Cinq Horizons",    desc: "5 thèmes terminés", tier: "gold",    shape: "compass",  letter: "ه", check: function(s) { return (s.stats && s.stats.themesCompleted >= 5); } },
-    { id: "theme_all", cat: "themes", name: "Maître des Thèmes",desc: "Tous les thèmes",   tier: "rare",    shape: "crown",    letter: "ت", check: function(s) { return (s.stats && s.stats.themesCompleted >= 11); } },
+    // THÈMES (3)
+    { id: "theme_1",   cat: "themes", name: "Premier Voyage",    desc: "1 thème terminé",   tier: "bronze",  shape: "compass",  letter: "ف", check: function(s) { return (s.stats && s.stats.themesCompleted >= 1); } },
+    { id: "theme_5",   cat: "themes", name: "Cinq Horizons",     desc: "5 thèmes terminés", tier: "gold",    shape: "compass",  letter: "ه", check: function(s) { return (s.stats && s.stats.themesCompleted >= 5); } },
+    { id: "theme_all", cat: "themes", name: "Maître des Thèmes", desc: "Tous les thèmes",   tier: "rare",    shape: "crown",    letter: "ت", check: function(s) { return (s.stats && s.stats.themesCompleted >= 11); } },
 
-    // ===== SPÉCIAL (2) =====
-    { id: "special_premium",       cat: "special", name: "Pass Premium",  desc: "Membre Premium",     tier: "rare",   shape: "crown",     letter: "★", check: function(s) { return s.isPremium === true; } },
-    { id: "special_early_adopter", cat: "special", name: "Early Adopter", desc: "Premier supporter",  tier: "rare",   shape: "medallion", letter: "أ", check: function(s) {
+    // SPÉCIAL (2)
+    { id: "special_premium",       cat: "special", name: "Pass Premium",  desc: "Membre Premium",     tier: "rare", shape: "crown",     letter: "★", check: function(s) { return s.isPremium === true; } },
+    { id: "special_early_adopter", cat: "special", name: "Early Adopter", desc: "Premier supporter",  tier: "rare", shape: "medallion", letter: "أ", check: function(s) {
       if (!s.createdAt) return false;
       const monthMs = 30 * 24 * 3600 * 1000;
       return (Date.now() - s.createdAt) < monthMs && s.createdAt < new Date("2026-12-31").getTime();
@@ -228,7 +388,7 @@ const XP = (function() {
   ];
 
   /* =========================================================
-     COULEURS DES TIERS
+     COULEURS DES TIERS (inchangés)
      ========================================================= */
   const TIER_COLORS = {
     bronze:  { primary: "#E8B07A", secondary: "#7A4A1E", grad: "bronzeGrad"  },
@@ -241,7 +401,7 @@ const XP = (function() {
   };
 
   /* =========================================================
-     GÉNÉRATION SVG DES BADGES
+     GÉNÉRATION SVG DES BADGES (inchangé)
      ========================================================= */
   function getBadgeSVG(badge) {
     const tier = TIER_COLORS[badge.tier] || TIER_COLORS.gold;
@@ -253,133 +413,63 @@ const XP = (function() {
     const innerStar = isRare ? '<circle cx="50" cy="14" r="2.5" fill="#FFFCE0"/>' : "";
 
     let shapeSVG = "";
-
     switch (shape) {
       case "lantern":
-        shapeSVG =
-          '<rect x="32" y="22" width="36" height="50" rx="8" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>' +
-          '<rect x="36" y="26" width="28" height="42" rx="4" fill="rgba(0,0,0,0.15)"/>' +
-          '<path d="M40 18 L60 18 L62 22 L38 22 Z" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1"/>' +
-          '<path d="M50 12 L50 18" stroke="' + grad + '" stroke-width="1.5"/>';
+        shapeSVG = '<rect x="32" y="22" width="36" height="50" rx="8" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/><rect x="36" y="26" width="28" height="42" rx="4" fill="rgba(0,0,0,0.15)"/><path d="M40 18 L60 18 L62 22 L38 22 Z" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1"/><path d="M50 12 L50 18" stroke="' + grad + '" stroke-width="1.5"/>';
         break;
       case "moon":
-        shapeSVG =
-          '<path d="M 70 20 A 30 30 0 1 0 70 80 A 22 22 0 1 1 70 20 Z" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>';
+        shapeSVG = '<path d="M 70 20 A 30 30 0 1 0 70 80 A 22 22 0 1 1 70 20 Z" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>';
         break;
       case "octagon":
-        shapeSVG =
-          '<polygon points="35,15 65,15 85,35 85,65 65,85 35,85 15,65 15,35" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>' +
-          '<polygon points="40,22 60,22 78,40 78,60 60,78 40,78 22,60 22,40" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="0.8"/>';
+        shapeSVG = '<polygon points="35,15 65,15 85,35 85,65 65,85 35,85 15,65 15,35" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/><polygon points="40,22 60,22 78,40 78,60 60,78 40,78 22,60 22,40" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="0.8"/>';
         break;
       case "star8":
-        shapeSVG =
-          '<polygon points="50,8 58,30 80,22 70,42 92,50 70,58 80,78 58,70 50,92 42,70 20,78 30,58 8,50 30,42 20,22 42,30" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>' +
-          '<circle cx="50" cy="50" r="18" fill="rgba(0,0,0,0.18)"/>';
+        shapeSVG = '<polygon points="50,8 58,30 80,22 70,42 92,50 70,58 80,78 58,70 50,92 42,70 20,78 30,58 8,50 30,42 20,22 42,30" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/><circle cx="50" cy="50" r="18" fill="rgba(0,0,0,0.18)"/>';
         break;
       case "medallion":
-        shapeSVG =
-          '<circle cx="50" cy="50" r="38" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.5"/>' +
-          '<circle cx="50" cy="50" r="32" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="0.8"/>' +
-          '<circle cx="50" cy="50" r="26" fill="rgba(0,0,0,0.12)"/>' +
-          '<path d="M30 50 Q50 30 70 50 Q50 70 30 50" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="0.5"/>';
+        shapeSVG = '<circle cx="50" cy="50" r="38" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.5"/><circle cx="50" cy="50" r="32" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="0.8"/><circle cx="50" cy="50" r="26" fill="rgba(0,0,0,0.12)"/><path d="M30 50 Q50 30 70 50 Q50 70 30 50" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="0.5"/>';
         break;
       case "sun":
-        shapeSVG =
-          '<g>' +
-          '<circle cx="50" cy="50" r="22" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1"/>' +
-          '<g stroke="' + tier.secondary + '" stroke-width="1.4" stroke-linecap="round">' +
-          '<line x1="50" y1="14" x2="50" y2="22"/>' +
-          '<line x1="50" y1="78" x2="50" y2="86"/>' +
-          '<line x1="14" y1="50" x2="22" y2="50"/>' +
-          '<line x1="78" y1="50" x2="86" y2="50"/>' +
-          '<line x1="24" y1="24" x2="30" y2="30"/>' +
-          '<line x1="70" y1="70" x2="76" y2="76"/>' +
-          '<line x1="24" y1="76" x2="30" y2="70"/>' +
-          '<line x1="70" y1="30" x2="76" y2="24"/>' +
-          '</g></g>';
+        shapeSVG = '<g><circle cx="50" cy="50" r="22" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1"/><g stroke="' + tier.secondary + '" stroke-width="1.4" stroke-linecap="round"><line x1="50" y1="14" x2="50" y2="22"/><line x1="50" y1="78" x2="50" y2="86"/><line x1="14" y1="50" x2="22" y2="50"/><line x1="78" y1="50" x2="86" y2="50"/><line x1="24" y1="24" x2="30" y2="30"/><line x1="70" y1="70" x2="76" y2="76"/><line x1="24" y1="76" x2="30" y2="70"/><line x1="70" y1="30" x2="76" y2="24"/></g></g>';
         break;
       case "shield":
-        shapeSVG =
-          '<path d="M50 10 L82 22 L82 50 Q82 75 50 90 Q18 75 18 50 L18 22 Z" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>' +
-          '<path d="M50 18 L74 28 L74 52 Q74 70 50 82 Q26 70 26 52 L26 28 Z" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="0.6"/>';
+        shapeSVG = '<path d="M50 10 L82 22 L82 50 Q82 75 50 90 Q18 75 18 50 L18 22 Z" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/><path d="M50 18 L74 28 L74 52 Q74 70 50 82 Q26 70 26 52 L26 28 Z" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="0.6"/>';
         break;
       case "book":
-        shapeSVG =
-          '<path d="M14 22 Q50 14 86 22 L86 76 Q50 68 14 76 Z" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>' +
-          '<line x1="50" y1="20" x2="50" y2="74" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>' +
-          '<path d="M22 32 H40 M22 40 H38 M60 32 H78 M62 40 H78" stroke="rgba(0,0,0,0.25)" stroke-width="0.6"/>';
+        shapeSVG = '<path d="M14 22 Q50 14 86 22 L86 76 Q50 68 14 76 Z" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/><line x1="50" y1="20" x2="50" y2="74" stroke="rgba(0,0,0,0.3)" stroke-width="1"/><path d="M22 32 H40 M22 40 H38 M60 32 H78 M62 40 H78" stroke="rgba(0,0,0,0.25)" stroke-width="0.6"/>';
         break;
       case "crown":
-        shapeSVG =
-          '<path d="M14 32 L26 52 L38 24 L50 56 L62 24 L74 52 L86 32 L82 76 H18 Z" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>' +
-          '<circle cx="14" cy="32" r="3" fill="' + tier.primary + '" stroke="' + tier.secondary + '" stroke-width="0.8"/>' +
-          '<circle cx="86" cy="32" r="3" fill="' + tier.primary + '" stroke="' + tier.secondary + '" stroke-width="0.8"/>' +
-          '<circle cx="50" cy="22" r="3" fill="' + tier.primary + '" stroke="' + tier.secondary + '" stroke-width="0.8"/>';
+        shapeSVG = '<path d="M14 32 L26 52 L38 24 L50 56 L62 24 L74 52 L86 32 L82 76 H18 Z" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/><circle cx="14" cy="32" r="3" fill="' + tier.primary + '" stroke="' + tier.secondary + '" stroke-width="0.8"/><circle cx="86" cy="32" r="3" fill="' + tier.primary + '" stroke="' + tier.secondary + '" stroke-width="0.8"/><circle cx="50" cy="22" r="3" fill="' + tier.primary + '" stroke="' + tier.secondary + '" stroke-width="0.8"/>';
         break;
       case "eye":
-        shapeSVG =
-          '<path d="M10 50 Q50 18 90 50 Q50 82 10 50 Z" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>' +
-          '<circle cx="50" cy="50" r="14" fill="rgba(0,0,0,0.7)"/>' +
-          '<circle cx="50" cy="50" r="6" fill="' + tier.primary + '"/>';
+        shapeSVG = '<path d="M10 50 Q50 18 90 50 Q50 82 10 50 Z" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/><circle cx="50" cy="50" r="14" fill="rgba(0,0,0,0.7)"/><circle cx="50" cy="50" r="6" fill="' + tier.primary + '"/>';
         break;
       case "lightning":
-        shapeSVG =
-          '<polygon points="35,15 35,15 65,15 85,35 85,65 65,85 35,85 15,65 15,35" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>' +
-          '<path d="M52 18 L34 50 L46 50 L40 82 L66 44 L52 44 Z" fill="rgba(0,0,0,0.7)" stroke="' + tier.primary + '" stroke-width="0.8"/>';
+        shapeSVG = '<polygon points="35,15 35,15 65,15 85,35 85,65 65,85 35,85 15,65 15,35" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/><path d="M52 18 L34 50 L46 50 L40 82 L66 44 L52 44 Z" fill="rgba(0,0,0,0.7)" stroke="' + tier.primary + '" stroke-width="0.8"/>';
         break;
       case "scroll":
-        shapeSVG =
-          '<rect x="18" y="20" width="64" height="60" rx="6" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>' +
-          '<line x1="18" y1="32" x2="82" y2="32" stroke="rgba(0,0,0,0.3)" stroke-width="0.6"/>' +
-          '<line x1="18" y1="68" x2="82" y2="68" stroke="rgba(0,0,0,0.3)" stroke-width="0.6"/>' +
-          '<path d="M28 42 H72 M28 50 H68 M28 58 H72" stroke="rgba(0,0,0,0.25)" stroke-width="0.6"/>';
+        shapeSVG = '<rect x="18" y="20" width="64" height="60" rx="6" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/><line x1="18" y1="32" x2="82" y2="32" stroke="rgba(0,0,0,0.3)" stroke-width="0.6"/><line x1="18" y1="68" x2="82" y2="68" stroke="rgba(0,0,0,0.3)" stroke-width="0.6"/><path d="M28 42 H72 M28 50 H68 M28 58 H72" stroke="rgba(0,0,0,0.25)" stroke-width="0.6"/>';
         break;
       case "feather":
-        shapeSVG =
-          '<path d="M30 80 Q40 60 50 50 Q60 40 70 24 Q72 40 64 56 Q56 72 40 80 Z" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>' +
-          '<line x1="30" y1="80" x2="65" y2="32" stroke="rgba(0,0,0,0.3)" stroke-width="0.5"/>';
+        shapeSVG = '<path d="M30 80 Q40 60 50 50 Q60 40 70 24 Q72 40 64 56 Q56 72 40 80 Z" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/><line x1="30" y1="80" x2="65" y2="32" stroke="rgba(0,0,0,0.3)" stroke-width="0.5"/>';
         break;
       case "rosette":
-        shapeSVG =
-          '<g>' +
-          '<circle cx="50" cy="50" r="30" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>' +
-          '<g stroke="rgba(0,0,0,0.25)" stroke-width="0.6" fill="none">' +
-          '<circle cx="50" cy="32" r="8"/>' +
-          '<circle cx="50" cy="68" r="8"/>' +
-          '<circle cx="32" cy="50" r="8"/>' +
-          '<circle cx="68" cy="50" r="8"/>' +
-          '</g></g>';
+        shapeSVG = '<g><circle cx="50" cy="50" r="30" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/><g stroke="rgba(0,0,0,0.25)" stroke-width="0.6" fill="none"><circle cx="50" cy="32" r="8"/><circle cx="50" cy="68" r="8"/><circle cx="32" cy="50" r="8"/><circle cx="68" cy="50" r="8"/></g></g>';
         break;
       case "compass":
-        shapeSVG =
-          '<circle cx="50" cy="50" r="36" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>' +
-          '<circle cx="50" cy="50" r="30" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="0.5"/>' +
-          '<polygon points="50,18 56,50 50,82 44,50" fill="rgba(0,0,0,0.5)" stroke="' + tier.primary + '" stroke-width="0.5"/>' +
-          '<polygon points="18,50 50,44 82,50 50,56" fill="rgba(0,0,0,0.3)"/>';
+        shapeSVG = '<circle cx="50" cy="50" r="36" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/><circle cx="50" cy="50" r="30" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="0.5"/><polygon points="50,18 56,50 50,82 44,50" fill="rgba(0,0,0,0.5)" stroke="' + tier.primary + '" stroke-width="0.5"/><polygon points="18,50 50,44 82,50 50,56" fill="rgba(0,0,0,0.3)"/>';
         break;
       case "galaxy":
-        shapeSVG =
-          '<circle cx="50" cy="50" r="40" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>' +
-          '<path d="M20 50 Q50 20 80 50 Q50 80 20 50" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="0.8"/>' +
-          '<circle cx="30" cy="36" r="1.5" fill="#FFFCE0"/>' +
-          '<circle cx="70" cy="64" r="1.5" fill="#FFFCE0"/>' +
-          '<circle cx="64" cy="34" r="1" fill="#FFFCE0"/>' +
-          '<circle cx="36" cy="66" r="1" fill="#FFFCE0"/>';
+        shapeSVG = '<circle cx="50" cy="50" r="40" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/><path d="M20 50 Q50 20 80 50 Q50 80 20 50" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="0.8"/><circle cx="30" cy="36" r="1.5" fill="#FFFCE0"/><circle cx="70" cy="64" r="1.5" fill="#FFFCE0"/><circle cx="64" cy="34" r="1" fill="#FFFCE0"/><circle cx="36" cy="66" r="1" fill="#FFFCE0"/>';
         break;
       default:
         shapeSVG = '<circle cx="50" cy="50" r="36" fill="' + grad + '" stroke="' + tier.secondary + '" stroke-width="1.2"/>';
     }
 
     const letterColor = (badge.tier === "silver" || badge.tier === "bronze") ? "#2a1d00" : "#FFFCE0";
-    const centerLetter =
-      '<text x="50" y="60" text-anchor="middle" font-family="Amiri, serif" font-size="28" font-weight="700" fill="' + letterColor + '" opacity="0.85">' + letter + '</text>';
+    const centerLetter = '<text x="50" y="60" text-anchor="middle" font-family="Amiri, serif" font-size="28" font-weight="700" fill="' + letterColor + '" opacity="0.85">' + letter + '</text>';
 
-    return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
-      rareGlow +
-      shapeSVG +
-      centerLetter +
-      innerStar +
-      '</svg>';
+    return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' + rareGlow + shapeSVG + centerLetter + innerStar + '</svg>';
   }
 
   /* =========================================================
@@ -424,17 +514,48 @@ const XP = (function() {
   }
 
   /* =========================================================
-     GAINS XP PRÉ-CONFIGURÉS
+     GAINS XP PRÉ-CONFIGURÉS (avec themeId optionnel)
      ========================================================= */
-  function gainQCMCorrect()      { return addXP((CFG.XP && CFG.XP.QCM_CORRECT) || 10, "Bonne réponse QCM"); }
-  function gainRapidCorrect(combo) {
+  function gainQCMCorrect(themeId) {
+    return addXP((CFG.XP && CFG.XP.QCM_CORRECT) || 10, {
+      reason: "qcm_correct",
+      sourceType: themeId ? "theme" : "quiz",
+      sourceId: themeId || null,
+      themeId: themeId || null
+    });
+  }
+  function gainRapidCorrect(combo, themeId) {
     const base = (CFG.XP && CFG.XP.RAPID_BASE) || 5;
     const bonus = Math.min(combo * ((CFG.XP && CFG.XP.RAPID_COMBO_BONUS) || 2), (CFG.XP && CFG.XP.RAPID_COMBO_MAX) || 20);
-    return addXP(base + bonus, "Combo ×" + combo);
+    return addXP(base + bonus, {
+      reason: "rapid_combo_" + combo,
+      sourceType: themeId ? "theme" : "rapid",
+      sourceId: themeId || null,
+      themeId: themeId || null
+    });
   }
-  function gainWordKnown()       { return addXP((CFG.XP && CFG.XP.WORD_KNOWN) || 10, "Mot connu"); }
-  function gainLetterLearned()   { return addXP((CFG.XP && CFG.XP.LETTER_LEARNED) || 15, "Lettre apprise"); }
-  function gainReadingMilestone(){ return addXP((CFG.XP && CFG.XP.READING_MILESTONE) || 50, "Palier lecture"); }
+  function gainWordKnown(themeId) {
+    return addXP((CFG.XP && CFG.XP.WORD_KNOWN) || 10, {
+      reason: "word_known",
+      sourceType: themeId ? "theme" : "vocab",
+      sourceId: themeId || null,
+      themeId: themeId || null
+    });
+  }
+  function gainLetterLearned() {
+    return addXP((CFG.XP && CFG.XP.LETTER_LEARNED) || 15, {
+      reason: "letter_learned",
+      sourceType: "letter",
+      sourceId: null
+    });
+  }
+  function gainReadingMilestone() {
+    return addXP((CFG.XP && CFG.XP.READING_MILESTONE) || 50, {
+      reason: "reading_milestone",
+      sourceType: "milestone",
+      sourceId: null
+    });
+  }
 
   /* =========================================================
      INIT
@@ -456,7 +577,7 @@ const XP = (function() {
     init();
   }
 
-  // Re-verifier les badges apres le pull cloud (quand l'user se connecte)
+  // Re-vérifier badges après login cloud
   document.addEventListener("firebase-user-changed", function(e) {
     if (e.detail && e.detail.user) {
       setTimeout(function() { checkBadges(); }, 500);
@@ -471,8 +592,12 @@ const XP = (function() {
     xpInCurrentLevel: xpInCurrentLevel,
     levelTitle: levelTitle,
     addXP: addXP,
+    logXpEvent: logXpEvent,
+    upsertThemeProgress: upsertThemeProgress,
+    incrementThemeQuiz: incrementThemeQuiz,
     incrementWordCount: incrementWordCount,
     incrementUnlockCount: incrementUnlockCount,
+    logUnlock: logUnlock,
     gainQCMCorrect: gainQCMCorrect,
     gainRapidCorrect: gainRapidCorrect,
     gainWordKnown: gainWordKnown,
@@ -489,4 +614,4 @@ const XP = (function() {
 })();
 
 window.XP = XP;
-console.log("✓ XP & Badges chargés (" + XP.getTotalBadges() + " badges disponibles)");
+console.log("XP v3 cloud-tracked chargé (" + XP.getTotalBadges() + " badges)");
