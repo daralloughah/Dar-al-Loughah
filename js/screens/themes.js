@@ -125,8 +125,8 @@ const ThemesScreen = (function() {
     if (btnLb) {
       btnLb.onclick = function() {
         if (window.LeaderboardScreen && window.LeaderboardScreen.showWithTheme) {
-          if (window.Main && window.Main.showScreen) {
-            window.Main.showScreen("leaderboard");
+          if (window.Main && window.Main.goto) {
+            window.Main.goto("leaderboard");
           }
           setTimeout(function() {
             window.LeaderboardScreen.showWithTheme(currentTheme.id);
