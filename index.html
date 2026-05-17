@@ -29,6 +29,239 @@
 </head>
 
 <body>
+  <!-- ===== Bibliothèque SVG baroque (chargée une seule fois) ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="goldRimV" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fdeec3"/>
+      <stop offset="14%" stop-color="#f7dc88"/>
+      <stop offset="38%" stop-color="#c89a3a"/>
+      <stop offset="55%" stop-color="#9c7019"/>
+      <stop offset="78%" stop-color="#c89a3a"/>
+      <stop offset="100%" stop-color="#6b4a0e"/>
+    </linearGradient>
+    <linearGradient id="goldRimH" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6b4a0e"/>
+      <stop offset="20%" stop-color="#c89a3a"/>
+      <stop offset="50%" stop-color="#f7dc88"/>
+      <stop offset="80%" stop-color="#c89a3a"/>
+      <stop offset="100%" stop-color="#6b4a0e"/>
+    </linearGradient>
+    <radialGradient id="goldDome" cx="50%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#fdeec3"/>
+      <stop offset="35%" stop-color="#f0c860"/>
+      <stop offset="70%" stop-color="#9c7019"/>
+      <stop offset="100%" stop-color="#3d2806"/>
+    </radialGradient>
+    <linearGradient id="navyPanel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#162455"/>
+      <stop offset="50%" stop-color="#0c1738"/>
+      <stop offset="100%" stop-color="#070e24"/>
+    </linearGradient>
+    <radialGradient id="gemBlue" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#9ecdff"/>
+      <stop offset="40%" stop-color="#3a6fc4"/>
+      <stop offset="100%" stop-color="#0a2160"/>
+    </radialGradient>
+    <radialGradient id="gemRed" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffc4c4"/>
+      <stop offset="45%" stop-color="#c43a3a"/>
+      <stop offset="100%" stop-color="#5a0a0a"/>
+    </radialGradient>
+    <linearGradient id="goldBright" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fdeec3"/>
+      <stop offset="50%" stop-color="#f0c860"/>
+      <stop offset="100%" stop-color="#9c7019"/>
+    </linearGradient>
+
+    <symbol id="ornateFrame" viewBox="0 0 340 200" preserveAspectRatio="none">
+      <rect x="6" y="6" width="328" height="188" rx="14" fill="#000" opacity=".45"/>
+      <rect x="6" y="6" width="328" height="188" rx="12" fill="url(#goldRimV)"/>
+      <rect x="8" y="8" width="324" height="28" rx="10" fill="url(#goldBright)" opacity=".55"/>
+      <rect x="26" y="26" width="288" height="148" rx="6" fill="url(#navyPanel)"/>
+      <rect x="26" y="26" width="288" height="148" rx="6" fill="none" stroke="#6b4a0e" stroke-width="1.2"/>
+      <rect x="29" y="29" width="282" height="142" rx="4" fill="none" stroke="#9c7019" stroke-width=".6" opacity=".7"/>
+      <rect x="29" y="29" width="282" height="40" rx="4" fill="url(#goldBright)" opacity=".06"/>
+    </symbol>
+
+    <symbol id="cornerFlourish" viewBox="0 0 60 60" overflow="visible">
+      <path d="M 4 26 C 4 12, 12 4, 26 4 L 38 4 C 30 6, 22 12, 16 20 C 12 24, 8 25, 4 26 Z" fill="url(#goldDome)"/>
+      <path d="M 6 22 C 8 14, 14 8, 22 6 C 18 10, 14 14, 10 20 Z" fill="#fdeec3" opacity=".55"/>
+      <path d="M 12 22 C 16 18, 22 14, 28 12 C 22 16, 18 20, 14 26 C 13 25, 12 24, 12 22 Z" fill="#3d2806" opacity=".6"/>
+      <circle cx="14" cy="14" r="2.4" fill="url(#gemBlue)"/>
+      <circle cx="13.4" cy="13.4" r=".9" fill="#fff" opacity=".7"/>
+      <path d="M 28 8 C 34 10, 38 14, 40 20 C 36 16, 32 12, 28 10 Z" fill="url(#goldBright)"/>
+    </symbol>
+
+    <symbol id="sideCart" viewBox="0 0 24 50" overflow="visible">
+      <path d="M 4 25 L 12 8 L 20 25 L 12 42 Z" fill="url(#goldDome)" stroke="#6b4a0e" stroke-width=".6"/>
+      <path d="M 6 25 L 12 11 L 18 25 L 12 21 Z" fill="#fdeec3" opacity=".4"/>
+      <circle cx="12" cy="25" r="2.5" fill="url(#gemRed)"/>
+      <circle cx="11.3" cy="24.3" r=".9" fill="#fff" opacity=".8"/>
+    </symbol>
+
+    <symbol id="midCart" viewBox="0 0 40 16" overflow="visible">
+      <path d="M 4 8 L 12 2 L 28 2 L 36 8 L 28 14 L 12 14 Z" fill="url(#goldDome)" stroke="#6b4a0e" stroke-width=".6"/>
+      <path d="M 12 4 L 28 4 L 32 8 L 28 6 L 12 6 L 8 8 Z" fill="#fdeec3" opacity=".5"/>
+      <circle cx="20" cy="8" r="2" fill="url(#gemBlue)"/>
+    </symbol>
+
+    <symbol id="rosette" viewBox="0 0 22 22" overflow="visible">
+      <path d="M 11 1 L 13 6 L 18 4 L 16 9 L 21 11 L 16 13 L 18 18 L 13 16 L 11 21 L 9 16 L 4 18 L 6 13 L 1 11 L 6 9 L 4 4 L 9 6 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".4"/>
+      <path d="M 11 5 L 12 9 L 15 8 L 14 11 L 15 14 L 12 13 L 11 17 L 10 13 L 7 14 L 8 11 L 7 8 L 10 9 Z" fill="url(#goldBright)" opacity=".75"/>
+      <circle cx="11" cy="11" r="2.6" fill="url(#gemBlue)"/>
+      <circle cx="10.3" cy="10.3" r=".9" fill="#fff" opacity=".8"/>
+    </symbol>
+
+    <symbol id="iconBook" viewBox="0 0 60 60">
+      <path d="M 8 16 C 18 12, 26 12, 30 16 L 30 50 C 26 46, 18 46, 8 50 Z" fill="#3d2806"/>
+      <path d="M 52 16 C 42 12, 34 12, 30 16 L 30 50 C 34 46, 42 46, 52 50 Z" fill="#3d2806"/>
+      <path d="M 10 18 C 18 14, 26 14, 30 18 L 30 48 C 26 44, 18 44, 10 48 Z" fill="url(#goldBright)"/>
+      <path d="M 50 18 C 42 14, 34 14, 30 18 L 30 48 C 34 44, 42 44, 50 48 Z" fill="url(#goldBright)"/>
+      <path d="M 14 24 H 26 M 14 28 H 24 M 14 32 H 26 M 14 36 H 22" stroke="#6b4a0e" stroke-width="1" stroke-linecap="round" opacity=".7"/>
+      <path d="M 34 24 H 46 M 36 28 H 46 M 34 32 H 46 M 38 36 H 46" stroke="#6b4a0e" stroke-width="1" stroke-linecap="round" opacity=".7"/>
+      <path d="M 30 16 L 30 48" stroke="#3d2806" stroke-width="1.4"/>
+    </symbol>
+
+    <symbol id="iconAlphabet" viewBox="0 0 60 60">
+      <rect x="10" y="10" width="40" height="44" rx="3" fill="url(#goldBright)" stroke="#3d2806" stroke-width="1"/>
+      <rect x="12" y="12" width="36" height="40" rx="2" fill="#0c1738"/>
+      <rect x="10" y="10" width="4" height="44" fill="#3d2806"/>
+      <g font-family="Cinzel, serif" font-weight="700" fill="url(#goldBright)" font-size="9" text-anchor="middle">
+        <text x="22" y="24">A</text><text x="30" y="24">B</text><text x="38" y="24">C</text>
+        <text x="22" y="34">E</text><text x="30" y="34">F</text><text x="38" y="34">G</text>
+        <text x="22" y="44">X</text><text x="30" y="44">Y</text><text x="38" y="44">Z</text>
+      </g>
+    </symbol>
+
+    <symbol id="iconGroups" viewBox="0 0 60 60">
+      <circle cx="44" cy="22" r="6" fill="url(#goldBright)" stroke="#3d2806" stroke-width="1"/>
+      <path d="M 32 44 C 32 34, 38 30, 44 30 C 50 30, 56 34, 56 44 Z" fill="url(#goldBright)" stroke="#3d2806" stroke-width="1"/>
+      <circle cx="16" cy="22" r="6" fill="url(#goldBright)" stroke="#3d2806" stroke-width="1"/>
+      <path d="M 4 44 C 4 34, 10 30, 16 30 C 22 30, 28 34, 28 44 Z" fill="url(#goldBright)" stroke="#3d2806" stroke-width="1"/>
+      <circle cx="30" cy="26" r="7" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
+      <path d="M 16 52 C 16 40, 22 34, 30 34 C 38 34, 44 40, 44 52 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
+    </symbol>
+
+    <symbol id="iconStar" viewBox="0 0 60 60">
+      <path d="M 30 6 L 36 22 L 54 24 L 40 36 L 44 54 L 30 44 L 16 54 L 20 36 L 6 24 L 24 22 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="M 30 14 L 34 24 L 44 25 L 36 32 L 39 42 L 30 36 L 21 42 L 24 32 L 16 25 L 26 24 Z" fill="url(#goldBright)" opacity=".7"/>
+      <circle cx="30" cy="30" r="3.5" fill="url(#gemBlue)"/>
+      <circle cx="28.5" cy="28.5" r="1.2" fill="#fff" opacity=".8"/>
+    </symbol>
+
+    <symbol id="iconLists" viewBox="0 0 60 60">
+      <g fill="url(#goldDome)" stroke="#3d2806" stroke-width=".6">
+        <path d="M 12 14 L 14 18 L 18 19 L 15 22 L 16 26 L 12 24 L 8 26 L 9 22 L 6 19 L 10 18 Z"/>
+        <path d="M 12 30 L 14 34 L 18 35 L 15 38 L 16 42 L 12 40 L 8 42 L 9 38 L 6 35 L 10 34 Z"/>
+        <path d="M 12 46 L 14 50 L 18 51 L 15 54 L 16 58 L 12 56 L 8 58 L 9 54 L 6 51 L 10 50 Z"/>
+      </g>
+      <rect x="24" y="17" width="32" height="4" rx="2" fill="url(#goldBright)"/>
+      <rect x="24" y="33" width="32" height="4" rx="2" fill="url(#goldBright)"/>
+      <rect x="24" y="49" width="28" height="4" rx="2" fill="url(#goldBright)"/>
+    </symbol>
+
+    <symbol id="iconBadge" viewBox="0 0 60 60">
+      <path d="M 30 4 L 52 17 L 52 43 L 30 56 L 8 43 L 8 17 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
+      <path d="M 30 12 L 46 21 L 46 39 L 30 48 L 14 39 L 14 21 Z" fill="#0c1738" stroke="url(#goldBright)" stroke-width="1"/>
+      <path d="M 30 18 L 33 27 L 42 30 L 33 33 L 30 42 L 27 33 L 18 30 L 27 27 Z" fill="url(#goldBright)"/>
+      <circle cx="30" cy="30" r="3.5" fill="url(#gemBlue)"/>
+      <circle cx="28.7" cy="28.7" r="1.2" fill="#fff" opacity=".8"/>
+    </symbol>
+
+    <symbol id="iconTrophy" viewBox="0 0 60 60">
+      <rect x="18" y="50" width="24" height="4" rx="1" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
+      <rect x="22" y="46" width="16" height="5" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
+      <path d="M 26 42 L 24 46 L 36 46 L 34 42 Z" fill="url(#goldBright)" stroke="#3d2806" stroke-width=".6"/>
+      <path d="M 18 18 C 10 18, 6 24, 8 32 C 10 36, 14 36, 18 34 L 18 30 C 14 30, 12 28, 14 24 C 16 22, 18 22, 20 22 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
+      <path d="M 42 18 C 50 18, 54 24, 52 32 C 50 36, 46 36, 42 34 L 42 30 C 46 30, 48 28, 46 24 C 44 22, 42 22, 40 22 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
+      <path d="M 16 12 L 44 12 L 42 36 C 42 40, 38 44, 30 44 C 22 44, 18 40, 18 36 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
+      <path d="M 20 14 L 28 14 L 26 28 C 26 32, 24 34, 22 34 L 20 28 Z" fill="#fdeec3" opacity=".5"/>
+      <rect x="14" y="11" width="32" height="3.5" rx="1" fill="url(#goldRimH)" stroke="#3d2806" stroke-width=".6"/>
+      <circle cx="30" cy="24" r="3" fill="url(#gemBlue)"/>
+      <circle cx="29" cy="23" r="1" fill="#fff" opacity=".8"/>
+    </symbol>
+
+    <symbol id="iconScroll" viewBox="0 0 60 60">
+      <ellipse cx="14" cy="30" rx="6" ry="20" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
+      <ellipse cx="14" cy="30" rx="3" ry="18" fill="#3d2806" opacity=".4"/>
+      <path d="M 14 12 L 46 12 L 46 48 L 14 48 Z" fill="#fdeec3" stroke="#6b4a0e" stroke-width=".8"/>
+      <ellipse cx="46" cy="30" rx="6" ry="20" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
+      <ellipse cx="46" cy="30" rx="3" ry="18" fill="#3d2806" opacity=".4"/>
+      <g stroke="#6b4a0e" stroke-width=".9" stroke-linecap="round" opacity=".75">
+        <line x1="20" y1="20" x2="40" y2="20"/>
+        <line x1="20" y1="25" x2="42" y2="25"/>
+        <line x1="20" y1="30" x2="38" y2="30"/>
+        <line x1="20" y1="35" x2="42" y2="35"/>
+        <line x1="20" y1="40" x2="40" y2="40"/>
+      </g>
+    </symbol>
+
+    <symbol id="iconQuill" viewBox="0 0 60 60">
+      <rect x="9" y="13" width="42" height="42" rx="2.5" fill="#000" opacity=".4"/>
+      <rect x="8" y="10" width="42" height="42" rx="2.5" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.4"/>
+      <rect x="8" y="10" width="42" height="5" rx="2.5" fill="#fdeec3" opacity=".45"/>
+      <rect x="12" y="14" width="34" height="34" rx="1.2" fill="#0c1738" stroke="#3d2806" stroke-width=".8"/>
+      <rect x="13.5" y="15.5" width="31" height="31" rx=".6" fill="none" stroke="url(#goldBright)" stroke-width=".5"/>
+      <path d="M 13.5 15.5 L 19 15.5 L 13.5 21 Z" fill="url(#goldBright)" opacity=".85"/>
+      <path d="M 44.5 15.5 L 39 15.5 L 44.5 21 Z" fill="url(#goldBright)" opacity=".85"/>
+      <path d="M 13.5 46.5 L 19 46.5 L 13.5 41 Z" fill="url(#goldBright)" opacity=".85"/>
+      <path d="M 44.5 46.5 L 39 46.5 L 44.5 41 Z" fill="url(#goldBright)" opacity=".85"/>
+      <g transform="translate(29, 31)">
+        <path d="M 0 -9 L 2.5 -2.5 L 9 0 L 2.5 2.5 L 0 9 L -2.5 2.5 L -9 0 L -2.5 -2.5 Z" fill="url(#goldBright)" stroke="#3d2806" stroke-width=".4"/>
+        <circle r="4" fill="#0c1738" stroke="#3d2806" stroke-width=".4"/>
+        <circle r="1" cx="0" cy="0" fill="url(#gemBlue)"/>
+      </g>
+      <g transform="translate(52, 2) rotate(40)">
+        <path d="M 0 0 Q 5 5, 6 14 Q 4 16, 1 17 L 0 20 L -1 17 Q -3 14, -1 6 Z" fill="url(#goldBright)" stroke="#3d2806" stroke-width=".5"/>
+        <line x1="0" y1="20" x2="0" y2="34" stroke="url(#goldBright)" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M -1.6 32 L 1.6 32 L 0 37 Z" fill="#3d2806"/>
+      </g>
+    </symbol>
+
+    <symbol id="iconKey" viewBox="0 0 60 60">
+      <circle cx="18" cy="22" r="11" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
+      <circle cx="18" cy="22" r="5" fill="#0c1738"/>
+      <rect x="28" y="19" width="22" height="6" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
+      <rect x="38" y="25" width="3" height="6" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
+      <rect x="44" y="25" width="3" height="8" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
+      <rect x="22" y="38" width="20" height="18" rx="2" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1"/>
+      <path d="M 26 38 L 26 32 C 26 28, 30 26, 32 26 C 34 26, 38 28, 38 32 L 38 38" fill="none" stroke="url(#goldBright)" stroke-width="2.2"/>
+      <circle cx="32" cy="46" r="2" fill="#3d2806"/>
+      <rect x="31" y="46" width="2" height="5" fill="#3d2806"/>
+    </symbol>
+
+    <symbol id="iconCompass" viewBox="0 0 60 60">
+      <circle cx="30" cy="30" r="24" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.4"/>
+      <circle cx="30" cy="30" r="20" fill="#0c1738" stroke="url(#goldBright)" stroke-width=".8"/>
+      <g fill="url(#goldBright)" font-family="Cinzel, serif" font-size="6" font-weight="700" text-anchor="middle">
+        <text x="30" y="16">N</text><text x="46" y="32">E</text><text x="30" y="48">S</text><text x="14" y="32">W</text>
+      </g>
+      <path d="M 30 14 L 33 30 L 30 46 L 27 30 Z" fill="url(#gemRed)" stroke="#3d2806" stroke-width=".6"/>
+      <path d="M 30 14 L 33 30 L 27 30 Z" fill="#c43a3a"/>
+      <circle cx="30" cy="30" r="2.5" fill="url(#goldBright)" stroke="#3d2806" stroke-width=".4"/>
+    </symbol>
+
+    <symbol id="iconGear" viewBox="0 0 60 60">
+      <path d="M 30 6 L 33 14 L 41 11 L 43 19 L 51 21 L 48 29 L 54 35 L 47 39 L 49 47 L 41 47 L 37 54 L 30 50 L 23 54 L 19 47 L 11 47 L 13 39 L 6 35 L 12 29 L 9 21 L 17 19 L 19 11 L 27 14 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
+      <circle cx="30" cy="30" r="10" fill="#0c1738" stroke="url(#goldBright)" stroke-width="1.2"/>
+      <circle cx="30" cy="30" r="4" fill="url(#gemBlue)"/>
+    </symbol>
+
+    <symbol id="iconProfile" viewBox="0 0 60 60">
+      <circle cx="30" cy="22" r="10" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
+      <path d="M 10 54 C 10 42, 18 36, 30 36 C 42 36, 50 42, 50 54 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
+    </symbol>
+
+    <symbol id="iconMail" viewBox="0 0 60 60">
+      <rect x="6" y="14" width="48" height="32" rx="2" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
+      <path d="M 6 14 L 30 34 L 54 14" fill="none" stroke="#3d2806" stroke-width="1.4"/>
+      <circle cx="30" cy="34" r="4" fill="url(#gemRed)" stroke="#3d2806" stroke-width=".6"/>
+    </symbol>
+  </defs>
+</svg>
+<!-- ===== Fin bibliothèque SVG baroque ===== -->
+
   <!-- LOADING SCREEN -->
   <div class="loading-screen" id="loadingScreen" aria-hidden="true">
     <div class="loading-bg-stars" aria-hidden="true"></div>
