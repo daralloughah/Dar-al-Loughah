@@ -1,0 +1,188 @@
+/* =========================================================
+   DAR AL LOUGHAH — 07-baroque.css
+   ---------------------------------------------------------
+   CSS pour les cards baroque générées par baroque-renderer.js
+   Classes préfixées .baroque-* pour éviter tout conflit
+   ========================================================= */
+
+/* ===== GRID ===== */
+.baroque-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 10px;
+  padding: 0 4px;
+  margin: 12px 0;
+}
+
+/* ===== CARD ===== */
+.baroque-card {
+  position: relative;
+  aspect-ratio: 1.7 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: transform .15s ease, filter .15s ease;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.55));
+  min-width: 0;
+  font: inherit;
+  color: inherit;
+  animation: baroqueCardIn .55s cubic-bezier(.2,.7,.3,1.2) backwards;
+}
+.baroque-card:nth-child(1) { animation-delay: .02s; }
+.baroque-card:nth-child(2) { animation-delay: .07s; }
+.baroque-card:nth-child(3) { animation-delay: .12s; }
+.baroque-card:nth-child(4) { animation-delay: .17s; }
+.baroque-card:nth-child(5) { animation-delay: .22s; }
+.baroque-card:nth-child(6) { animation-delay: .27s; }
+.baroque-card:nth-child(7) { animation-delay: .32s; }
+.baroque-card:nth-child(8) { animation-delay: .37s; }
+.baroque-card:nth-child(n+9) { animation-delay: .42s; }
+
+@keyframes baroqueCardIn {
+  from { opacity: 0; transform: translateY(14px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.baroque-card:hover {
+  transform: translateY(-3px);
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,.6)) drop-shadow(0 0 16px rgba(232,192,96,.45));
+}
+.baroque-card:hover .baroque-card__shimmer::before {
+  animation-duration: 1.8s;
+}
+.baroque-card:active { transform: translateY(0) scale(.97); }
+.baroque-card--full { grid-column: 1 / -1; }
+
+/* ===== FRAME SVG ===== */
+.baroque-card__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* ===== SHIMMER ===== */
+.baroque-card__shimmer {
+  position: absolute;
+  inset: 6px;
+  border-radius: 10px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+.baroque-card__shimmer::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(110deg, transparent 30%, rgba(255,235,170,.22) 50%, transparent 70%);
+  transform: rotate(15deg);
+  animation: baroqueShimmer 6s ease-in-out infinite;
+  animation-delay: var(--shimmer-delay, 0s);
+}
+@keyframes baroqueShimmer {
+  0%, 100% { transform: translateX(-50%) rotate(15deg); opacity: 0; }
+  40%      { opacity: 1; }
+  60%      { opacity: 1; }
+  100%     { transform: translateX(450%) rotate(15deg); opacity: 0; }
+}
+
+/* ===== INNER (icon + text) ===== */
+.baroque-card__inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  min-width: 0;
+  animation: baroqueFloat 5s ease-in-out infinite;
+  animation-delay: var(--float-delay, 0s);
+}
+@keyframes baroqueFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-1.5px); }
+}
+
+.baroque-card__icon {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.5));
+}
+
+.baroque-card__text {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  line-height: 1.1;
+  overflow: hidden;
+}
+
+.baroque-card__title {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: .76rem;
+  letter-spacing: .03em;
+  color: #fdeec3;
+  text-shadow: 0 1px 2px rgba(0,0,0,.7), 0 0 8px rgba(232,192,96,.25);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.baroque-card__sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: .72rem;
+  color: #c9b682;
+  margin-top: 2px;
+}
+
+.baroque-card--full .baroque-card__inner { gap: 14px; padding: 10px 22px; }
+.baroque-card--full .baroque-card__icon { width: 48px; height: 48px; }
+.baroque-card--full .baroque-card__title { font-size: .95rem; }
+
+/* ===== SECTION HEAD ===== */
+.baroque-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 18px 14px 12px;
+}
+.baroque-section-head__line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #9c7019 30%, #e8c060 50%, #9c7019 70%, transparent);
+}
+.baroque-section-head__text {
+  font-family: 'Cinzel', serif;
+  font-size: .72rem;
+  letter-spacing: .18em;
+  color: #f7dc88;
+  white-space: nowrap;
+  text-shadow: 0 0 10px rgba(232,192,96,.3);
+  text-transform: uppercase;
+}
+.baroque-section-head__rosette {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 0 4px rgba(232,192,96,.4));
+}
