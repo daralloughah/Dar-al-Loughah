@@ -32,7 +32,7 @@ const FB = (function() {
 
   // Tables qui stockent tout le contenu dans une colonne JSONB "data"
   // (pattern clé/JSON au lieu de colonnes individuelles)
-  const DATA_WRAPPED_TABLES = ["themes", "badges_content", "official_lists", "words", "vocab"];
+  const DATA_WRAPPED_TABLES = ["themes", "badges_content", "official_lists", "words", "vocab", "groups"];
 
   function isDataWrapped(table) {
     return DATA_WRAPPED_TABLES.indexOf(table) !== -1;
