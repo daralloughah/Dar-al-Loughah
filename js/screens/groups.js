@@ -222,7 +222,7 @@ const GroupsScreen = (function() {
     const totalXP = members.reduce(function(s, m) { return s + (m.xp || 0); }, 0);
 
     const currentUid = getCurrentUserId();
-    const isCreator = currentUid && group.createdBy === currentUid;
+    const isCreator = currentUid && (group.owner_id === currentUid || group.createdBy === currentUid);
 
     content.innerHTML =
       '<div class="panel">' +
@@ -294,13 +294,13 @@ const GroupsScreen = (function() {
         name: name,
         description: desc,
         type: type,
-        createdBy: uid,
+        owner_id: uid,
         createdByPseudo: getCurrentPseudo(),
         members: [uid],
         invitCode: invitCode,
         totalXP: getCurrentXP(),
         totalWords: 0,
-        createdAt: Date.now()
+        created_at: new Date().toISOString()
       });
       toast("Groupe cree ! Code : " + invitCode);
       currentView = "myGroups";
