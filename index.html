@@ -1723,5 +1723,46 @@
   <script src="js/baroque-renderer.js"></script>
   <script src="js/main.js"></script>
 
+<script>
+
+  /* ===== INJECTION DU MENU BAROQUE ===== */
+  document.addEventListener('DOMContentLoaded', function() {
+  const menuItems = [
+    // SECTION 1 : APPRENTISSAGE ET COMMUNAUTÉ
+    { icon:'themes',      title:'Thèmes',           sub:'expressions & vocabulaire', target:'themes' },
+    { icon:'reading',     title:'Apprendre à Lire', sub:'l\'alphabet arabe',         target:'reading' },
+    { icon:'groups',      title:'Mes Groupes',      sub:'communauté',                target:'groups' },
+    { icon:'wotd',        title:'Mot du Jour',      sub:'une perle quotidienne',     target:'wotd' },
+    { icon:'lists',       title:'Mes Listes',       sub:'révisions personnalisées',  target:'lists' },
+    { icon:'badges',      title:'Badges',           sub:'récompenses',               target:'badges' },
+    { icon:'leaderboard', title:'Classements',      sub:'défie la communauté',       target:'leaderboard', full:true },
+
+    // SECTION 2 : VOTRE COMPTE ET INFORMATIONS
+    { icon:'profile',     title:'Profil',           sub:'mon compte',                target:'profile' },
+    { icon:'contenus',    title:'Contenus',         sub:'Déblocables',               target:'contenus-debloquables' },
+    { icon:'dictionnaire',title:'Dictionnaire',     sub:'Étymologique',              target:'dictionnaire' },
+    { icon:'notions',     title:'Notions',          sub:'Étymologiques',             target:'notions-etymo' },
+    { icon:'methode',     title:'Notre Méthode',    sub:'à propos',                  target:'methode' },
+    { icon:'settings',    title:'Paramètres',       sub:'préférences',               target:'settings' },
+    { icon:'contact',     title:'Contact',          sub:'écris-nous',                target:'contact', full:true },
+  ];
+
+  function renderMenu() {
+    const container = document.getElementById('menuBaroqueContent');
+    if (!container || !window.Baroque) return;
+
+    const html =
+      window.Baroque.makeSection('APPRENTISSAGE ET COMMUNAUTÉ') +
+      window.Baroque.makeGrid(menuItems.slice(0, 7)) +
+      window.Baroque.makeSection('VOTRE COMPTE ET INFORMATIONS') +
+      window.Baroque.makeGrid(menuItems.slice(7));
+
+    container.innerHTML = html;
+  }
+
+  renderMenu();
+});
+</script>
 </body>
+
 </html>
