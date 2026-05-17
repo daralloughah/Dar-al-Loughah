@@ -119,6 +119,44 @@ const ThemesScreen = (function() {
     if (window.Main) {
       window.Main.goto("theme-levels");
     }
+
+    // Bouton classement du thème
+    const btnLb = document.getElementById("btnThemeLeaderboard");
+    if (btnLb) {
+      btnLb.onclick = function() {
+        if (window.LeaderboardScreen && window.LeaderboardScreen.showWithTheme) {
+          if (window.Main && window.Main.showScreen) {
+            window.Main.showScreen("leaderboard");
+          }
+          setTimeout(function() {
+            window.LeaderboardScreen.showWithTheme(currentTheme.id);
+          }, 100);
+        }
+      };
+    }
+
+    // Stats personnelles sur ce thème
+    const myStatsEl = document.getElementById("themeMyStats");
+    if (myStatsEl && window.FB && window.FB.getClient) {
+      myStatsEl.textContent = "Chargement...";
+      const client = window.FB.getClient();
+      const user = window.FB.getCurrentUser && window.FB.getCurrentUser();
+      if (client && user) {
+        client.from("theme_progress")
+          .select("xp,words_learned")
+          .eq("user_id", user.uid)
+          .eq("theme_id", currentTheme.id)
+          .maybeSingle()
+          .then(function(res) {
+            if (res.data) {
+              myStatsEl.innerHTML = "Mon score : <b>" + (res.data.xp || 0) + " XP</b> · <b>" + (res.data.words_learned || 0) + " mots</b>";
+            } else {
+              myStatsEl.innerHTML = "Mon score : <b>0 XP</b> · <b>0 mots</b>";
+            }
+          })
+          .catch(function() { myStatsEl.textContent = ""; });
+      }
+    }
   }
 
   /* =========================================================

@@ -1,0 +1,66 @@
+TÂCHE : Modifier js/screens/themes.js pour :
+1. Passer le themeId courant aux fonctions XP
+2. Brancher le bouton "Classement de ce thème" (id="btnThemeLeaderboard")
+3. Afficher "Mon score: X XP / Y mots" dans #themeMyStats quand on entre dans un thème
+
+INSTRUCTIONS :
+
+A) Cherche dans themes.js TOUS les appels à :
+   - XP.gainQCMCorrect()
+   - XP.gainRapidCorrect(...)
+   - XP.gainWordKnown()
+   - XP.addXP(...)
+   
+   Et ajoute le themeId courant en argument. Exemples :
+   - XP.gainQCMCorrect()  →  XP.gainQCMCorrect(currentThemeId)
+   - XP.gainWordKnown()   →  XP.gainWordKnown(currentThemeId)
+   - XP.gainRapidCorrect(combo)  →  XP.gainRapidCorrect(combo, currentThemeId)
+   
+   Le themeId courant est probablement stocké dans une variable comme `currentTheme.id` ou `selectedTheme.id` selon ton code. Identifie-la et utilise-la.
+
+B) Dans la fonction qui affiche l'écran theme-levels (probablement showThemeLevels ou showLevels), ajoute À LA FIN :
+
+   // Bouton classement du thème
+   const btnLb = document.getElementById("btnThemeLeaderboard");
+   if (btnLb) {
+     btnLb.onclick = function() {
+       if (window.LeaderboardScreen && window.LeaderboardScreen.showWithTheme) {
+         if (window.Main && window.Main.showScreen) {
+           window.Main.showScreen("leaderboard");
+         }
+         setTimeout(function() {
+           window.LeaderboardScreen.showWithTheme(currentTheme.id);
+         }, 100);
+       }
+     };
+   }
+
+   // Stats personnelles sur ce thème
+   const myStatsEl = document.getElementById("themeMyStats");
+   if (myStatsEl && window.FB && window.FB.getClient) {
+     myStatsEl.textContent = "Chargement...";
+     const client = window.FB.getClient();
+     const user = window.FB.getCurrentUser && window.FB.getCurrentUser();
+     if (client && user) {
+       client.from("theme_progress")
+         .select("xp,words_learned")
+         .eq("user_id", user.uid)
+         .eq("theme_id", currentTheme.id)
+         .maybeSingle()
+         .then(function(res) {
+           if (res.data) {
+             myStatsEl.innerHTML = "Mon score : <b>" + (res.data.xp || 0) + " XP</b> · <b>" + (res.data.words_learned || 0) + " mots</b>";
+           } else {
+             myStatsEl.innerHTML = "Mon score : <b>0 XP</b> · <b>0 mots</b>";
+           }
+         })
+         .catch(function() { myStatsEl.textContent = ""; });
+     }
+   }
+
+   Adapte `currentTheme.id` au nom réel de ta variable de thème courant.
+
+C) Confirme-moi :
+   - Le nombre de remplacements d'appels XP faits
+   - La ligne où tu as inséré le code du bouton
+   - Le nom exact de la variable du thème courant que tu as utilisée
