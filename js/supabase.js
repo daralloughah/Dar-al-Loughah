@@ -224,7 +224,13 @@ const FB = (function() {
     const table = mapCollectionName(name);
     const payload = Object.assign({}, data, { id: id });
     const { error } = await supabase.from(table).upsert(payload);
-    if (error) { console.warn("setDocument error:", error); return false; }
+    if (error) {
+      console.warn("setDocument error:", error);
+      var err = new Error(error.message || JSON.stringify(error));
+      err.supabaseCode = error.code;
+      err.supabaseDetails = error.details;
+      throw err;
+    }
     return true;
   }
 

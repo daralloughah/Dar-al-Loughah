@@ -174,22 +174,44 @@ const AdminScreen = (function() {
       { id:"temps",      name:"Le Temps & le Ciel",      nameAr:"الزمن والسماء",    icon:"🌙", description:"Jour, nuit, saisons",          order:8 },
       { id:"couleurs",   name:"Couleurs & Formes",       nameAr:"الألوان والأشكال", icon:"🎨", description:"Voir le monde en arabe",       order:9 },
       { id:"travail",    name:"Travail & Savoir",        nameAr:"العمل والعلم",     icon:"💼", description:"Metiers, ecole",               order:10 },
-      { id:"nature",     name:"La Nature",               nameAr:"الطبيعة",          icon:"🌿", description:"Animaux, plantes",             order:11 }, 
-       { id:"coran",      name:"Le Coran",                nameAr:"القرآن",           icon:"📖", description:"Mots sacres",                  order:12 }
+      { id:"nature",     name:"La Nature",               nameAr:"الطبيعة",          icon:"🌿", description:"Animaux, plantes",             order:11 },
+      { id:"coran",      name:"Le Coran",                nameAr:"القرآن",           icon:"📖", description:"Mots sacres",                  order:12 }
     ];
-    toast("Initialisation...");
-    try {
-      for (const t of defaults) {
+
+    const listEl = document.getElementById("themesList");
+    if (listEl) listEl.innerHTML = '<div class="admin-loading">Initialisation en cours...</div>';
+
+    var successCount = 0;
+    var firstError = null;
+
+    for (var i = 0; i < defaults.length; i++) {
+      var t = defaults[i];
+      try {
         await window.FB.setDocument("themes", t.id, Object.assign({}, t, {
           levels:{debutant:[],intermediaire:[],avance:[],expert:[],mouallim:[]},
           chunks:[], imageUrl:"",
           createdAt: Date.now()
         }));
+        successCount++;
+      } catch (e) {
+        if (!firstError) firstError = { theme: t.id, message: e.message, code: e.supabaseCode, details: e.supabaseDetails };
       }
+    }
 
-      toast("12 themes crees");
+    if (firstError) {
+      var msg = "ERREUR Supabase sur '" + firstError.theme + "' :\n" +
+                "Message : " + firstError.message + "\n" +
+                (firstError.code ? "Code : " + firstError.code : "") +
+                (firstError.details ? "\nDetails : " + firstError.details : "");
+      toast("Erreur - voir details ci-dessous");
+      if (listEl) {
+        listEl.innerHTML = '<div class="admin-error" style="white-space:pre-wrap;padding:16px;background:rgba(255,80,80,0.15);border-radius:8px;font-size:0.85em;">' +
+          escapeHTML(msg) + '\n\n(' + successCount + '/12 reussis)</div>';
+      }
+    } else {
+      toast(successCount + " themes crees avec succes");
       await loadThemesList();
-    } catch (e) { toast("Erreur: " + e.message); }
+    }
   }
 
   function openThemeCreator() { showThemeForm({}); }
