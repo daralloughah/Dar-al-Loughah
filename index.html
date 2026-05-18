@@ -1462,240 +1462,183 @@
   <script src="js/main.js"></script>
 
 <script>
-/* =====================================================
-   INJECTION BAROQUE — Menu + Home + Themes + Profile + Settings + Premium
-   ===================================================== */
+<script>
+/* INJECTION BAROQUE — version blindée (erreurs isolées par écran) */
 document.addEventListener('DOMContentLoaded', function() {
+  function safe(name, fn) {
+    try { fn(); }
+    catch (e) { console.warn('[Baroque ' + name + '] erreur:', e); }
+  }
+
   if (!window.Baroque) {
-    console.warn('[Baroque] renderer non chargé');
+    console.warn('[Baroque] renderer non chargé — fallback sur HTML standard');
+    fallbackEverything();
     return;
   }
 
-  /* ========== MENU ========== */
-  const menuItems = [
-    { icon:'themes',      title:'Thèmes',           sub:'expressions & vocabulaire', target:'themes' },
-    { icon:'reading',     title:'Apprendre à Lire', sub:'l\'alphabet arabe',         target:'reading' },
-    { icon:'groups',      title:'Mes Groupes',      sub:'communauté',                target:'groups' },
-    { icon:'wotd',        title:'Mot du Jour',      sub:'une perle quotidienne',     target:'wotd' },
-    { icon:'lists',       title:'Mes Listes',       sub:'révisions personnalisées',  target:'lists' },
-    { icon:'badges',      title:'Badges',           sub:'récompenses',               target:'badges' },
-    { icon:'leaderboard', title:'Classements',      sub:'défie la communauté',       target:'leaderboard', full:true },
-    { icon:'profile',     title:'Profil',           sub:'mon compte',                target:'profile' },
-    { icon:'contenus',    title:'Contenus',         sub:'Déblocables',               target:'contenus-debloquables' },
-    { icon:'dictionnaire',title:'Dictionnaire',     sub:'Étymologique',              target:'dictionnaire' },
-    { icon:'notions',     title:'Notions',          sub:'Étymologiques',             target:'notions-etymo' },
-    { icon:'methode',     title:'Notre Méthode',    sub:'à propos',                  target:'methode' },
-    { icon:'settings',    title:'Paramètres',       sub:'préférences',               target:'settings' },
-    { icon:'contact',     title:'Contact',          sub:'écris-nous',                target:'contact', full:true },
-  ];
-
-  const menuContainer = document.getElementById('menuBaroqueContent');
-  if (menuContainer) {
-    menuContainer.innerHTML =
+  /* ========== MENU (le seul qui marchait déjà) ========== */
+  safe('menu', function() {
+    const c = document.getElementById('menuBaroqueContent');
+    if (!c) return;
+    const items = [
+      { icon:'themes',      title:'Thèmes',           sub:'expressions & vocabulaire', target:'themes' },
+      { icon:'reading',     title:'Apprendre à Lire', sub:"l'alphabet arabe",          target:'reading' },
+      { icon:'groups',      title:'Mes Groupes',      sub:'communauté',                target:'groups' },
+      { icon:'wotd',        title:'Mot du Jour',      sub:'une perle quotidienne',     target:'wotd' },
+      { icon:'lists',       title:'Mes Listes',       sub:'révisions personnalisées',  target:'lists' },
+      { icon:'badges',      title:'Badges',           sub:'récompenses',               target:'badges' },
+      { icon:'leaderboard', title:'Classements',      sub:'défie la communauté',       target:'leaderboard', full:true },
+      { icon:'profile',     title:'Profil',           sub:'mon compte',                target:'profile' },
+      { icon:'contenus',    title:'Contenus',         sub:'Déblocables',               target:'contenus-debloquables' },
+      { icon:'dictionnaire',title:'Dictionnaire',     sub:'Étymologique',              target:'dictionnaire' },
+      { icon:'notions',     title:'Notions',          sub:'Étymologiques',             target:'notions-etymo' },
+      { icon:'methode',     title:'Notre Méthode',    sub:'à propos',                  target:'methode' },
+      { icon:'settings',    title:'Paramètres',       sub:'préférences',               target:'settings' },
+      { icon:'contact',     title:'Contact',          sub:'écris-nous',                target:'contact', full:true },
+    ];
+    c.innerHTML =
       Baroque.makeSection('APPRENTISSAGE ET COMMUNAUTÉ') +
-      Baroque.makeGrid(menuItems.slice(0, 7)) +
+      Baroque.makeGrid(items.slice(0, 7)) +
       Baroque.makeSection('VOTRE COMPTE ET INFORMATIONS') +
-      Baroque.makeGrid(menuItems.slice(7));
-  }
+      Baroque.makeGrid(items.slice(7));
+  });
 
-  /* ========== HOME ========== */
-  const homeContainer = document.getElementById('homeBaroqueContent');
-  if (homeContainer) {
-    const homeMain = [
-      { icon:'themes',  title:'Thèmes',          sub:'expressions & vocabulaire', target:'themes' },
-      { icon:'reading', title:'Apprendre à Lire', sub:'l\'alphabet arabe',        target:'reading' },
-      { icon:'quiz',    title:'Quiz QCM',        sub:'questions-réponses',        target:'quiz' },
-      { icon:'rapid',   title:'Révision Rapide', sub:'chronométrée',              target:'rapid' },
-      { icon:'chat',    title:'IA Chat',         sub:'conversation & voix',       target:'chat' },
-      { icon:'lists',   title:'Mes Listes',      sub:'mots personnels',           target:'lists' },
+  /* ========== HOME — cards baroque uniquement (pas de panel/header buggés) ========== */
+  safe('home', function() {
+    const c = document.getElementById('homeBaroqueContent');
+    if (!c) return;
+    const main = [
+      { icon:'themes',  title:'Thèmes',           sub:'expressions & vocabulaire', target:'themes' },
+      { icon:'reading', title:'Apprendre à Lire', sub:"l'alphabet arabe",          target:'reading' },
+      { icon:'quiz',    title:'Quiz QCM',         sub:'questions-réponses',        target:'quiz' },
+      { icon:'rapid',   title:'Révision Rapide',  sub:'chronométrée',              target:'rapid' },
+      { icon:'chat',    title:'IA Chat',          sub:'conversation & voix',       target:'chat' },
+      { icon:'lists',   title:'Mes Listes',       sub:'mots personnels',           target:'lists' },
+      { icon:'wotd',    title:'Mot du Jour',      sub:'une perle quotidienne',     target:'wotd' },
+      { icon:'badge',   title:'Badges',           sub:'récompenses',               target:'badges' },
+      { icon:'premium', title:'Premium',          sub:'accès illimité',            target:'premium', full:true },
     ];
+    c.innerHTML =
+      '<div class="panel daily-lesson"><div class="panel-title">La Leçon du Jour</div>' +
+      '<div class="word-ar" data-bind="daily-ar">—</div>' +
+      '<div class="transliter" data-bind="daily-translit">—</div>' +
+      '<div class="word-fr" data-bind="daily-fr">—</div>' +
+      '<button class="btn btn-gold mt-12" data-action="goto" data-target="lesson" type="button">Commencer</button></div>' +
+      Baroque.makeSection('APPRENTISSAGE') +
+      Baroque.makeGrid(main) +
+      '<div class="stats-row">' +
+        '<div class="stat"><span class="num" data-bind="streak">0</span><div class="lbl">Streak</div></div>' +
+        '<div class="stat"><span class="num"><span data-bind="xp">0</span> XP</span><div class="lbl">Points</div></div>' +
+        '<div class="stat"><span class="num" data-bind="level">1</span><div class="lbl">Niveau</div></div>' +
+      '</div>';
+  });
 
-    const homeMini = [
-      { icon:'wotd',    title:'Mot du Jour', target:'wotd' },
-      { icon:'badge',   title:'Badges',      target:'badges' },
-      { icon:'premium', title:'Premium',     target:'premium' },
-    ];
+  /* ========== THEMES — la vraie grille themes.js continue de marcher, on ajoute juste le header ========== */
+  safe('themes', function() {
+    const c = document.getElementById('themesBaroqueContent');
+    if (!c) return;
+    c.innerHTML = Baroque.makeSection('CHOISISSEZ UN THÈME');
+    // On rétablit l'ancien grid pour que themes.js puisse remplir
+    const oldGrid = document.getElementById('themesGrid');
+    if (oldGrid) oldGrid.hidden = false;
+  });
 
-    homeContainer.innerHTML =
-      Baroque.makeHeader('Bienvenue', 'دار اللغة') +
-      Baroque.makePanel({
-        title: 'La Leçon du Jour',
-        content: `
-          <div class="word-ar" data-bind="daily-ar" style="text-align:center; font-family:'Amiri', serif; font-size:1.8rem; color:#f7dc88;">—</div>
-          <div class="transliter" data-bind="daily-translit" style="text-align:center; font-style:italic; color:#c9b682;">—</div>
-          <div class="word-fr" data-bind="daily-fr" style="text-align:center; color:#f0e2b8; margin-top:6px;">—</div>
-        `
-      }) +
-      `<div style="text-align:center; margin:14px 0;">${Baroque.makeButton('Commencer', { action:'goto', target:'lesson' })}</div>` +
-      Baroque.makeSection('MODULES D\'APPRENTISSAGE') +
-      Baroque.makeGrid(homeMain) +
-      `<div class="baroque-mini-grid">${homeMini.map(m => Baroque.makeMiniCard(m)).join('')}</div>` +
-      `<div class="baroque-stats">
-        <div class="baroque-stat"><span class="baroque-stat__num" data-bind="streak">0</span><div class="baroque-stat__lbl">Streak</div></div>
-        <div class="baroque-stat"><span class="baroque-stat__num" data-bind="xp">0</span><div class="baroque-stat__lbl">XP</div></div>
-        <div class="baroque-stat"><span class="baroque-stat__num" data-bind="level">1</span><div class="baroque-stat__lbl">Niveau</div></div>
-      </div>`;
+  /* ========== PROFILE — restauration de l'ancien profile + bandeau baroque ========== */
+  safe('profile', function() {
+    const c = document.getElementById('profileBaroqueContent');
+    if (!c) return;
+    c.innerHTML =
+      Baroque.makeSection('MON PROFIL') +
+      '<div class="panel profile-head">' +
+        '<div class="avatar" id="profileAvatar">A</div>' +
+        '<div class="pseudo" data-bind="pseudo">—</div>' +
+        '<div class="level-chip">Niveau <span data-bind="level">—</span> · <span id="levelTitle">Apprenti</span></div>' +
+        '<div class="xp-bar"><div class="fill" id="xpFill"></div></div>' +
+        '<div class="xp-label"><span><span id="xpCurrent">0</span> XP</span><span>Suivant: <span id="xpNext">0</span></span></div>' +
+        '<div class="profile-stats">' +
+          '<div class="mini-stat"><b id="wordsLearned">0</b><span>mots appris</span></div>' +
+          '<div class="mini-stat"><b id="lettersDone">0</b><span>lettres lues</span></div>' +
+          '<div class="mini-stat"><b id="badgesUnlocked">0</b><span>badges</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="panel mt-12">' +
+        '<div class="panel-title">Derniers badges</div>' +
+        '<div class="badges-preview" id="badgesPreview"></div>' +
+        '<button class="btn btn-outline mt-12" data-action="goto" data-target="badges" type="button">Voir tous les badges</button>' +
+      '</div>';
+  });
+
+  /* ========== SETTINGS — restauration toggles standards ========== */
+  safe('settings', function() {
+    const c = document.getElementById('settingsBaroqueContent');
+    if (!c) return;
+    c.innerHTML =
+      Baroque.makeSection('PARAMÈTRES') +
+      '<div class="panel">' +
+        '<div class="panel-title">Son</div>' +
+        '<label class="toggle-row"><input type="checkbox" id="settingTapSound" checked/><span>Son au toucher</span></label>' +
+        '<label class="toggle-row"><input type="checkbox" id="settingFeedbackSound" checked/><span>Son bonne/mauvaise réponse</span></label>' +
+        '<label class="toggle-row"><input type="checkbox" id="settingAmbientSound"/><span>Ambiance sonore (oud/nay)</span></label>' +
+      '</div>' +
+      '<div class="panel mt-12">' +
+        '<div class="panel-title">Notifications</div>' +
+        '<label class="toggle-row"><input type="checkbox" id="settingStreakNotif" checked/><span>Rappel quotidien du streak</span></label>' +
+        '<label class="toggle-row"><input type="checkbox" id="settingWotdNotif" checked/><span>Notification mot du jour</span></label>' +
+      '</div>' +
+      '<div class="panel mt-12">' +
+        '<div class="panel-title">Apprentissage</div>' +
+        '<label class="toggle-row"><input type="checkbox" id="settingShowTranslit" checked/><span>Afficher la translittération</span></label>' +
+        '<label class="toggle-row"><input type="checkbox" id="settingOfflineCache" checked/><span>Cache hors-ligne</span></label>' +
+        '<label class="toggle-row"><input type="checkbox" id="settingShareProgress"/><span>Partage social</span></label>' +
+      '</div>';
+  });
+
+  /* ========== PREMIUM (le contenu original est encore dans le HTML, on n'injecte rien) ========== */
+  // Le premium a déjà tout son HTML d'origine — rien à faire
+
+  /* ========== FALLBACK (si Baroque non chargé) ========== */
+  function fallbackEverything() {
+    // Restaure des contenus simples sans baroque
+    const home = document.getElementById('homeBaroqueContent');
+    if (home) home.innerHTML =
+      '<div class="panel"><div class="panel-title">Accueil</div>' +
+      '<button class="btn btn-gold" data-action="goto" data-target="themes">Thèmes</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="reading">Apprendre à lire</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="quiz">Quiz QCM</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="rapid">Révision rapide</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="chat">IA Chat</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="lists">Mes Listes</button></div>';
+
+    const profile = document.getElementById('profileBaroqueContent');
+    if (profile) profile.innerHTML =
+      '<div class="panel profile-head">' +
+      '<div class="avatar" id="profileAvatar">A</div>' +
+      '<div class="pseudo" data-bind="pseudo">—</div></div>';
+
+    const settings = document.getElementById('settingsBaroqueContent');
+    if (settings) settings.innerHTML =
+      '<div class="panel"><div class="panel-title">Paramètres</div>' +
+      '<p>Chargement…</p></div>';
+
+    const menu = document.getElementById('menuBaroqueContent');
+    if (menu) menu.innerHTML =
+      '<div class="panel"><div class="panel-title">Menu</div>' +
+      '<button class="btn btn-outline" data-action="goto" data-target="themes">Thèmes</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="reading">Apprendre à lire</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="groups">Mes Groupes</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="wotd">Mot du Jour</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="lists">Mes Listes</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="badges">Badges</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="leaderboard">Classements</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="profile">Profil</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="contenus-debloquables">Contenus déblocables</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="dictionnaire">Dictionnaire</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="notions-etymo">Notions</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="methode">Notre Méthode</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="premium">Pass Premium</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="settings">Paramètres</button>' +
+      '<button class="btn btn-outline mt-8" data-action="goto" data-target="contact">Contact</button></div>';
   }
-
-  /* ========== THEMES ========== */
-  const themesContainer = document.getElementById('themesBaroqueContent');
-  if (themesContainer) {
-    themesContainer.innerHTML =
-      Baroque.makeHeader('Thèmes', 'Choisissez votre voie') +
-      `<div id="themesGridBaroque" class="baroque-grid"></div>`;
-
-    // Si themes.js a déjà rempli #themesGrid, on copie ses items
-    setTimeout(() => {
-      const oldGrid = document.getElementById('themesGrid');
-      const newGrid = document.getElementById('themesGridBaroque');
-      if (oldGrid && newGrid && oldGrid.children.length) {
-        const themes = Array.from(oldGrid.querySelectorAll('[data-target], [data-theme-id]')).map(el => ({
-          icon: 'book',
-          title: (el.querySelector('.name, .title')?.textContent || el.textContent).trim().slice(0, 30),
-          sub: (el.querySelector('.fr, .sub')?.textContent || '').trim().slice(0, 40),
-          target: el.dataset.target || 'theme-levels',
-          action: el.dataset.action || 'goto',
-        }));
-        if (themes.length) {
-          newGrid.innerHTML = themes.map((t, i) => Baroque.makeCard({ ...t, idx: i })).join('');
-        }
-      }
-    }, 500);
-  }
-
-  /* ========== PROFILE ========== */
-  const profileContainer = document.getElementById('profileBaroqueContent');
-  if (profileContainer) {
-    profileContainer.innerHTML =
-      Baroque.makeHeader('Mon Profil') +
-      Baroque.makePanel({
-        content: `
-          <div class="baroque-profile">
-            <div class="baroque-profile__avatar" id="profileAvatarBaroque">A</div>
-            <div class="baroque-profile__pseudo" data-bind="pseudo">—</div>
-            <div class="baroque-profile__chip">Niveau <span data-bind="level">—</span> · <span id="levelTitleBaroque">Apprenti</span></div>
-            <div class="baroque-xpbar"><div class="baroque-xpbar__fill" id="xpFillBaroque" style="width:0%"></div></div>
-            <div class="baroque-xplabel">
-              <span><span id="xpCurrentBaroque">0</span> XP</span>
-              <span>Suivant: <span id="xpNextBaroque">0</span></span>
-            </div>
-          </div>
-        `
-      }) +
-      Baroque.makeSection('STATISTIQUES') +
-      `<div class="baroque-stats">
-        <div class="baroque-stat"><span class="baroque-stat__num" id="wordsLearnedBaroque">0</span><div class="baroque-stat__lbl">Mots</div></div>
-        <div class="baroque-stat"><span class="baroque-stat__num" id="lettersDoneBaroque">0</span><div class="baroque-stat__lbl">Lettres</div></div>
-        <div class="baroque-stat"><span class="baroque-stat__num" id="badgesUnlockedBaroque">0</span><div class="baroque-stat__lbl">Badges</div></div>
-      </div>` +
-      Baroque.makeSection('NAVIGATION') +
-      Baroque.makeGrid([
-        { icon:'badge', title:'Mes Badges', sub:'collection complète', target:'badges' },
-        { icon:'gear',  title:'Paramètres', sub:'préférences',         target:'settings' },
-      ]);
-  }
-
-  /* ========== SETTINGS ========== */
-  const settingsContainer = document.getElementById('settingsBaroqueContent');
-  if (settingsContainer) {
-    settingsContainer.innerHTML =
-      Baroque.makeHeader('Paramètres') +
-      Baroque.makePanel({
-        title: 'Son',
-        content: `
-          <label class="baroque-toggle"><span>Son au toucher</span><input type="checkbox" id="settingTapSound" checked/></label>
-          <label class="baroque-toggle"><span>Son bonne/mauvaise réponse</span><input type="checkbox" id="settingFeedbackSound" checked/></label>
-          <label class="baroque-toggle"><span>Ambiance sonore (oud/nay)</span><input type="checkbox" id="settingAmbientSound"/></label>
-        `
-      }) +
-      Baroque.makePanel({
-        title: 'Notifications',
-        content: `
-          <label class="baroque-toggle"><span>Rappel quotidien du streak</span><input type="checkbox" id="settingStreakNotif" checked/></label>
-          <label class="baroque-toggle"><span>Notification mot du jour</span><input type="checkbox" id="settingWotdNotif" checked/></label>
-        `
-      }) +
-      Baroque.makePanel({
-        title: 'Apprentissage',
-        content: `
-          <label class="baroque-toggle"><span>Afficher la translittération</span><input type="checkbox" id="settingShowTranslit" checked/></label>
-          <label class="baroque-toggle"><span>Cache hors-ligne</span><input type="checkbox" id="settingOfflineCache" checked/></label>
-          <label class="baroque-toggle"><span>Partage social</span><input type="checkbox" id="settingShareProgress"/></label>
-        `
-      });
-  }
-
-  /* ========== PREMIUM ========== */
-  const premiumContainer = document.getElementById('premiumBaroqueContent');
-  if (premiumContainer) {
-    premiumContainer.innerHTML =
-      Baroque.makePanel({
-        content: `
-          <div class="baroque-premium-hero">
-            <svg class="baroque-premium-hero__crown" viewBox="0 0 64 64" fill="url(#goldBright)" stroke="#3d2806" stroke-width="1">
-              <path d="M6 20 L16 34 L24 16 L32 36 L40 16 L48 34 L58 20 L54 48 H10 Z"/>
-              <circle cx="6" cy="20" r="3"/><circle cx="58" cy="20" r="3"/><circle cx="32" cy="14" r="3"/>
-            </svg>
-            <div class="baroque-premium-hero__title">PASS PREMIUM</div>
-            <div class="baroque-premium-hero__price">Accès illimité pour <b data-bind="premium-price">7,99€</b> / mois</div>
-          </div>
-        `
-      }) +
-      Baroque.makePanel({
-        title: 'Vos avantages',
-        content: `
-          <div class="baroque-benefit"><div class="baroque-benefit__check">✓</div><div class="baroque-benefit__text">IA Conversationnelle illimitée<small>Plus de limite de 10 messages / jour</small></div></div>
-          <div class="baroque-benefit"><div class="baroque-benefit__check">✓</div><div class="baroque-benefit__text">Corrections avancées &amp; mode vocal<small>Explications grammaticales, voix</small></div></div>
-          <div class="baroque-benefit"><div class="baroque-benefit__check">✓</div><div class="baroque-benefit__text">Progression accélérée<small>Bonus XP × 2 sur tous les exercices</small></div></div>
-          <div class="baroque-benefit"><div class="baroque-benefit__check">✓</div><div class="baroque-benefit__text">Niveau Mouallim débloqué<small>Expressions rares &amp; littéraires</small></div></div>
-          <div class="baroque-benefit"><div class="baroque-benefit__check">✓</div><div class="baroque-benefit__text">Badges dorés exclusifs<small>Prestige &amp; reconnaissance</small></div></div>
-          <div class="baroque-benefit"><div class="baroque-benefit__check">✓</div><div class="baroque-benefit__text">Sans publicité · Hors-ligne<small>Cache complet pour voyager</small></div></div>
-        `
-      }) +
-      Baroque.makePanel({
-        title: 'Mode de paiement',
-        content: `
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            ${Baroque.makeButton('💳 Carte bancaire', { action:'pay-stripe' })}
-            ${Baroque.makeButton('💰 PayPal',        { action:'pay-paypal' })}
-            ${Baroque.makeButton(' Apple Pay',     { action:'pay-apple' })}
-            ${Baroque.makeButton('G Google Pay',    { action:'pay-google' })}
-          </div>
-        `
-      });
-  }
-
-  /* ========== Synchroniser les data-binds dupliqués ========== */
-  // Le profile baroque utilise des ids différents pour pas casser les anciens scripts
-  // On synchronise ici les valeurs si state existe
-  setTimeout(() => {
-    try {
-      const pairs = [
-        ['xpFill', 'xpFillBaroque'],
-        ['xpCurrent', 'xpCurrentBaroque'],
-        ['xpNext', 'xpNextBaroque'],
-        ['wordsLearned', 'wordsLearnedBaroque'],
-        ['lettersDone', 'lettersDoneBaroque'],
-        ['badgesUnlocked', 'badgesUnlockedBaroque'],
-        ['levelTitle', 'levelTitleBaroque'],
-        ['profileAvatar', 'profileAvatarBaroque'],
-      ];
-      pairs.forEach(([oldId, newId]) => {
-        const oldEl = document.getElementById(oldId);
-        const newEl = document.getElementById(newId);
-        if (!oldEl || !newEl) return;
-        const sync = () => {
-          if (oldEl.style.width) newEl.style.width = oldEl.style.width;
-          newEl.textContent = oldEl.textContent;
-        };
-        sync();
-        // Observe l'ancien élément pour synchroniser
-        new MutationObserver(sync).observe(oldEl, { childList:true, characterData:true, attributes:true, subtree:true });
-      });
-    } catch (e) {
-      console.warn('[Baroque sync]', e);
-    }
-  }, 800);
 });
 </script>
 </body>
