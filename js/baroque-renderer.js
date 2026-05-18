@@ -200,14 +200,108 @@
       });
     }
   }
+  /**
+   * Génère un panel baroque (cadre doré ornementé pour contenir du contenu)
+   * @param {Object} opts
+   * @param {string} opts.title    - titre du panel (optionnel)
+   * @param {string} opts.content  - HTML interne
+   * @param {string} opts.id       - id optionnel
+   * @returns {string} HTML
+   */
+  function makeBaroquePanel(opts) {
+    const { title = '', content = '', id = '' } = opts;
+    return `
+      <div class="baroque-panel" ${id ? `id="${id}"` : ''}>
+        <svg class="baroque-panel__frame" preserveAspectRatio="none" viewBox="0 0 340 200">
+          <use href="#ornateFrame"/>
+          <g transform="translate(0,0)"><use href="#cornerFlourish" width="50" height="50"/></g>
+          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="50" height="50"/></g>
+          <g transform="translate(0,200) scale(1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
+          <g transform="translate(340,200) scale(-1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
+        </svg>
+        <div class="baroque-panel__inner">
+          ${title ? `<div class="baroque-panel__title">${title}</div>` : ''}
+          <div class="baroque-panel__content">${content}</div>
+        </div>
+      </div>
+    `;
+  }
 
-  // ===== Expose globalement =====
+  /**
+   * Génère un header baroque (titre médaillon doré au sommet d'un écran)
+   * @param {string} title - le titre à afficher
+   * @param {string} subtitle - sous-titre optionnel
+   * @returns {string} HTML
+   */
+  function makeBaroqueHeader(title, subtitle = '') {
+    return `
+      <div class="baroque-header">
+        <div class="baroque-header__line"></div>
+        <h2 class="baroque-header__title">${title}</h2>
+        ${subtitle ? `<p class="baroque-header__sub">${subtitle}</p>` : ''}
+        <div class="baroque-header__line"></div>
+      </div>
+    `;
+  }
+
+  /**
+   * Génère un bouton baroque doré (style des cards mais en format bouton)
+   * @param {string} label - texte du bouton
+   * @param {Object} opts - { action, target, id, full }
+   * @returns {string} HTML
+   */
+  function makeBaroqueButton(label, opts = {}) {
+    const { action = '', target = '', id = '', full = false } = opts;
+    const dataAttrs = [
+      action ? `data-action="${action}"` : '',
+      target ? `data-target="${target}"` : '',
+      id ? `id="${id}"` : '',
+    ].filter(Boolean).join(' ');
+    return `
+      <button class="baroque-btn${full ? ' baroque-btn--full' : ''}" type="button" ${dataAttrs}>
+        <span class="baroque-btn__label">${label}</span>
+      </button>
+    `;
+  }
+
+  /**
+   * Génère une mini-card baroque carrée (pour Mot du jour, Badges, Premium)
+   * @param {Object} opts - { icon, title, target }
+   * @returns {string} HTML
+   */
+  function makeBaroqueMiniCard(opts) {
+    const { icon = 'star', title = '', target = '', action = 'goto' } = opts;
+    const symbolId = ICON_MAP[icon] || ICON_MAP.star;
+    return `
+      <button class="baroque-mini" type="button"
+              ${action ? `data-action="${action}"` : ''}
+              ${target ? `data-target="${target}"` : ''}>
+        <svg class="baroque-mini__frame" preserveAspectRatio="none" viewBox="0 0 100 100">
+          <rect x="3" y="3" width="94" height="94" rx="8" fill="url(#goldRimV)"/>
+          <rect x="10" y="10" width="80" height="80" rx="4" fill="url(#navyPanel)"/>
+          <rect x="10" y="10" width="80" height="80" rx="4" fill="none" stroke="#6b4a0e" stroke-width="1"/>
+          <g transform="translate(0,0)"><use href="#cornerFlourish" width="30" height="30"/></g>
+          <g transform="translate(100,0) scale(-1,1)"><use href="#cornerFlourish" width="30" height="30"/></g>
+          <g transform="translate(0,100) scale(1,-1)"><use href="#cornerFlourish" width="30" height="30"/></g>
+          <g transform="translate(100,100) scale(-1,-1)"><use href="#cornerFlourish" width="30" height="30"/></g>
+        </svg>
+        <div class="baroque-mini__inner">
+          <svg class="baroque-mini__icon" viewBox="0 0 60 60"><use href="#${symbolId}"/></svg>
+          <span class="baroque-mini__title">${title}</span>
+        </div>
+      </button>
+    `;
+  }
+
   window.Baroque = {
     makeCard: makeBaroqueCard,
     makeGrid: makeBaroqueGrid,
     makeSection: makeBaroqueSection,
+    makePanel: makeBaroquePanel,
+    makeHeader: makeBaroqueHeader,
+    makeButton: makeBaroqueButton,
+    makeMiniCard: makeBaroqueMiniCard,
     renderGrid: renderBaroqueGrid,
     upgradeMenuRows: upgradeMenuRows,
     ICON_MAP,
   };
-})();
