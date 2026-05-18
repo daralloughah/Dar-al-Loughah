@@ -1,0 +1,390 @@
+/* =========================================================
+   DAR AL LOUGHAH — 08-baroque-extras.css
+   Panels baroque, headers, mini-cards, boutons baroque
+   ========================================================= */
+
+/* ===== HEADER BAROQUE (titre médaillon) ===== */
+.baroque-header {
+  text-align: center;
+  margin: 16px 8px 20px;
+  position: relative;
+}
+.baroque-header__line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #9c7019 30%, #f7dc88 50%, #9c7019 70%, transparent);
+  margin: 8px auto;
+  max-width: 80%;
+}
+.baroque-header__title {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: .15em;
+  background: linear-gradient(180deg, #fdeec3 0%, #f7dc88 35%, #c89a3a 70%, #9c7019 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 1px 0 rgba(0,0,0,.4);
+  margin: 8px 0;
+  text-transform: uppercase;
+}
+.baroque-header__sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: .9rem;
+  color: #c9b682;
+  margin-top: 4px;
+}
+
+/* ===== PANEL BAROQUE ===== */
+.baroque-panel {
+  position: relative;
+  margin: 12px 4px;
+  padding: 0;
+  min-height: 100px;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,.55));
+}
+.baroque-panel__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.baroque-panel__inner {
+  position: relative;
+  z-index: 1;
+  padding: 22px 26px 24px;
+}
+.baroque-panel__title {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: .82rem;
+  letter-spacing: .15em;
+  color: #f7dc88;
+  text-align: center;
+  margin-bottom: 14px;
+  text-shadow: 0 0 8px rgba(232,192,96,.3);
+  text-transform: uppercase;
+}
+.baroque-panel__content {
+  color: #f0e2b8;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* ===== BOUTON BAROQUE ===== */
+.baroque-btn {
+  position: relative;
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 14px 22px;
+  margin: 10px 0;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #c89a3a 0%, #f7dc88 30%, #c89a3a 60%, #9c7019 100%);
+  box-shadow:
+    0 0 0 1px #3d2806,
+    inset 0 1px 1px rgba(255,255,255,.5),
+    inset 0 -2px 2px rgba(0,0,0,.3),
+    0 4px 10px rgba(0,0,0,.4);
+  transition: transform .15s ease, filter .15s ease;
+}
+.baroque-btn:hover {
+  filter: drop-shadow(0 0 12px rgba(232,192,96,.5)) brightness(1.05);
+}
+.baroque-btn:active { transform: translateY(1px) scale(.98); }
+.baroque-btn__label {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: .92rem;
+  letter-spacing: .1em;
+  color: #3d2806;
+  text-shadow: 0 1px 0 rgba(255,255,255,.4);
+  text-transform: uppercase;
+}
+.baroque-btn--full { grid-column: 1 / -1; }
+
+/* ===== MINI-CARD BAROQUE (carrée, pour Mot du jour, Badges, Premium) ===== */
+.baroque-mini-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  padding: 0 4px;
+  margin: 12px 0;
+}
+.baroque-mini {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.5));
+  transition: transform .15s ease, filter .15s ease;
+  animation: baroqueCardIn .55s cubic-bezier(.2,.7,.3,1.2) backwards;
+}
+.baroque-mini:hover {
+  transform: translateY(-2px);
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,.6)) drop-shadow(0 0 12px rgba(232,192,96,.4));
+}
+.baroque-mini:active { transform: translateY(0) scale(.96); }
+.baroque-mini__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.baroque-mini__inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 6px;
+}
+.baroque-mini__icon {
+  width: 36px;
+  height: 36px;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.5));
+}
+.baroque-mini__title {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: .62rem;
+  letter-spacing: .08em;
+  color: #fdeec3;
+  text-align: center;
+  line-height: 1.1;
+  text-shadow: 0 1px 2px rgba(0,0,0,.7);
+}
+
+/* ===== STATS BAROQUE (pour Home) ===== */
+.baroque-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin: 16px 4px;
+  padding: 16px 12px;
+  position: relative;
+  background: linear-gradient(180deg, rgba(22,36,85,.7), rgba(7,14,36,.85));
+  border-radius: 12px;
+  border: 1px solid rgba(212,175,55,.3);
+  box-shadow:
+    inset 0 1px 0 rgba(232,192,96,.2),
+    0 4px 10px rgba(0,0,0,.4);
+}
+.baroque-stat {
+  text-align: center;
+  padding: 8px;
+}
+.baroque-stat__num {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  background: linear-gradient(180deg, #fdeec3, #f7dc88 50%, #c89a3a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.baroque-stat__lbl {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: .85rem;
+  color: #c9b682;
+  margin-top: 4px;
+}
+
+/* ===== PROFILE BAROQUE ===== */
+.baroque-profile {
+  text-align: center;
+  padding: 20px;
+}
+.baroque-profile__avatar {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #c89a3a, #9c7019);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 2rem;
+  color: #fdeec3;
+  text-shadow: 0 1px 2px rgba(0,0,0,.6);
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,.3),
+    inset 0 -2px 4px rgba(0,0,0,.3),
+    0 0 20px rgba(232,192,96,.4);
+  border: 2px solid #f7dc88;
+}
+.baroque-profile__pseudo {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #fdeec3;
+  letter-spacing: .1em;
+  margin: 8px 0;
+}
+.baroque-profile__chip {
+  display: inline-block;
+  background: linear-gradient(180deg, rgba(212,175,55,.2), rgba(212,175,55,.05));
+  border: 1px solid rgba(212,175,55,.4);
+  padding: 4px 14px;
+  border-radius: 14px;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: #f7dc88;
+  font-size: .9rem;
+}
+
+/* ===== XP BAR BAROQUE ===== */
+.baroque-xpbar {
+  margin: 16px 0 8px;
+  height: 10px;
+  background: rgba(0,0,0,.4);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #6b4a0e;
+  position: relative;
+}
+.baroque-xpbar__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c89a3a 0%, #f7dc88 50%, #c89a3a 100%);
+  box-shadow: 0 0 8px rgba(232,192,96,.6);
+  transition: width .5s ease;
+}
+.baroque-xplabel {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: .85rem;
+  color: #c9b682;
+  margin-top: 4px;
+}
+
+/* ===== TOGGLE BAROQUE (pour Settings) ===== */
+.baroque-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 4px;
+  border-bottom: 1px solid rgba(212,175,55,.15);
+  font-family: 'Cormorant Garamond', serif;
+  color: #f0e2b8;
+  font-size: 1rem;
+}
+.baroque-toggle:last-child { border-bottom: none; }
+.baroque-toggle input[type="checkbox"] {
+  appearance: none;
+  width: 44px;
+  height: 24px;
+  background: rgba(0,0,0,.5);
+  border: 1px solid #6b4a0e;
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background .2s ease;
+}
+.baroque-toggle input[type="checkbox"]::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: linear-gradient(180deg, #f7dc88, #c89a3a);
+  border-radius: 50%;
+  transition: transform .25s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+.baroque-toggle input[type="checkbox"]:checked {
+  background: linear-gradient(180deg, #c89a3a, #6b4a0e);
+}
+.baroque-toggle input[type="checkbox"]:checked::after {
+  transform: translateX(20px);
+}
+
+/* ===== BENEFIT BAROQUE (Premium) ===== */
+.baroque-benefit {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 4px;
+  border-bottom: 1px solid rgba(212,175,55,.15);
+}
+.baroque-benefit:last-child { border-bottom: none; }
+.baroque-benefit__check {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #f7dc88, #c89a3a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3d2806;
+  font-weight: 700;
+  font-size: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,.4);
+}
+.baroque-benefit__text {
+  flex: 1;
+  color: #f0e2b8;
+  font-family: 'Cormorant Garamond', serif;
+}
+.baroque-benefit__text small {
+  display: block;
+  color: #c9b682;
+  font-style: italic;
+  font-size: .85rem;
+  margin-top: 2px;
+}
+
+/* ===== PREMIUM HERO ===== */
+.baroque-premium-hero {
+  text-align: center;
+  padding: 24px;
+}
+.baroque-premium-hero__crown {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 12px;
+  filter: drop-shadow(0 0 12px rgba(232,192,96,.6));
+}
+.baroque-premium-hero__title {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: .2em;
+  background: linear-gradient(180deg, #fdeec3, #f7dc88 50%, #c89a3a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.baroque-premium-hero__price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  color: #c9b682;
+  margin-top: 6px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 380px) {
+  .baroque-mini-grid { gap: 8px; }
+  .baroque-mini__title { font-size: .56rem; }
+  .baroque-panel__inner { padding: 18px 20px 20px; }
+}
