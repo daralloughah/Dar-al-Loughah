@@ -837,7 +837,7 @@
       </div>
     </section>
 
-    <!-- QUIZ -->
+        <!-- QUIZ -->
     <section class="screen" id="screen-quiz" data-screen="quiz">
       <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
       <div class="top-bar">
@@ -848,27 +848,59 @@
         <div class="spacer-40"></div>
       </div>
 
-      <div class="quiz-meta">
-        <span>Question <b id="quizNum">—</b> / <span id="quizTotal">—</span></span>
-        <span id="quizReward">+10 XP</span>
+      <!-- Bandeau de progression baroque -->
+      <div class="quiz-progress-baroque">
+        <svg class="qpb-icon" viewBox="0 0 22 22" aria-hidden="true"><use href="#rosette"/></svg>
+        <div class="qpb-info">
+          <span class="qpb-label">Question</span>
+          <span class="qpb-num"><b id="quizNum">—</b> / <span id="quizTotal">—</span></span>
+        </div>
+        <div class="qpb-xp" id="quizReward">+10 XP</div>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">Choisissez la bonne réponse</div>
-        <div class="section-divider"><span class="diamond"></span></div>
+      <!-- Barre de progression -->
+      <div class="quiz-progress-bar">
+        <div class="qpb-fill" id="quizProgressFill" style="width:0%"></div>
+      </div>
 
-        <div class="quiz-question" id="quizQuestion">—</div>
-        <div class="quiz-question-fr" id="quizQuestionFr">—</div>
+      <!-- Cadre baroque question -->
+      <div class="baroque-card-frame">
+        <svg class="bcf-frame" viewBox="0 0 340 280" preserveAspectRatio="none" aria-hidden="true">
+          <use href="#ornateFrame"/>
+          <g transform="translate(0,0)"><use href="#cornerFlourish" width="55" height="55"/></g>
+          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="55" height="55"/></g>
+          <g transform="translate(0,280) scale(1,-1)"><use href="#cornerFlourish" width="55" height="55"/></g>
+          <g transform="translate(340,280) scale(-1,-1)"><use href="#cornerFlourish" width="55" height="55"/></g>
+        </svg>
+        <div class="bcf-inner">
+          <div class="bcf-title">Choisissez la bonne réponse</div>
 
-        <div id="quizAnswers" role="radiogroup" aria-label="Réponses possibles"></div>
+          <div class="quiz-divider" aria-hidden="true">
+            <span class="qd-line"></span>
+            <svg class="qd-rosette" viewBox="0 0 22 22"><use href="#rosette"/></svg>
+            <span class="qd-line"></span>
+          </div>
 
-        <div class="cta-wrap mt-16">
-          <button class="btn btn-gold" data-action="quiz-next" id="quizNextBtn" type="button" disabled>Vérifier</button>
+          <div class="quiz-question" id="quizQuestion">—</div>
+          <div class="quiz-question-fr" id="quizQuestionFr">—</div>
+
+          <div class="quiz-answers" id="quizAnswers" role="radiogroup" aria-label="Réponses possibles"></div>
         </div>
       </div>
+
+      <button class="btn-baroque-primary mt-12" data-action="quiz-next" id="quizNextBtn" type="button" disabled>
+        <svg class="bbp-frame" viewBox="0 0 280 56" preserveAspectRatio="none" aria-hidden="true">
+          <rect x="2" y="2" width="276" height="52" rx="26" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
+          <rect x="6" y="6" width="268" height="44" rx="22" fill="none" stroke="#fdeec3" stroke-width=".6" opacity=".6"/>
+          <g transform="translate(8,18)"><use href="#sideCart" width="14" height="20"/></g>
+          <g transform="translate(258,18)"><use href="#sideCart" width="14" height="20"/></g>
+        </svg>
+        <span class="bbp-label">Vérifier</span>
+      </button>
     </section>
 
-    <!-- RAPID -->
+
+        <!-- RAPID -->
     <section class="screen" id="screen-rapid" data-screen="rapid">
       <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
       <div class="top-bar">
@@ -879,27 +911,70 @@
         <div class="spacer-40"></div>
       </div>
 
-      <div class="panel text-center">
-        <div class="panel-title">Sprint chronométré</div>
-
-        <div class="timer-ring">
-          <svg viewBox="0 0 120 120" aria-hidden="true">
-            <circle class="bg-circle" cx="60" cy="60" r="52"/>
-            <circle class="progress-circle" id="timerCircle" cx="60" cy="60" r="52"/>
-          </svg>
-          <div class="t-value" id="timerVal">30</div>
+      <!-- Combo badge -->
+      <div class="rapid-combo-baroque" id="comboBadge" hidden>
+        <svg class="rcb-flame" viewBox="0 0 24 24" fill="url(#goldBright)" aria-hidden="true">
+          <path d="M12 2 Q8 6 8 10 Q8 13 10 14 Q9 11 11 9 Q11 12 13 13 Q15 12 15 10 Q15 7 13 5 Q13 8 12 9 Q12 6 12 2 Z M5 14 Q5 20 12 22 Q19 20 19 14 Q19 18 12 20 Q5 18 5 14 Z"/>
+        </svg>
+        <div class="rcb-text">
+          <span class="rcb-label">Combo</span>
+          <span class="rcb-val">×<span id="comboVal">0</span></span>
         </div>
-
-        <div class="combo-badge" id="comboBadge" hidden>Combo ×<span id="comboVal">0</span></div>
-
-        <div class="quiz-question" id="rapidQuestion">—</div>
-        <div class="quiz-question-fr" id="rapidQuestionFr">Appuyez sur Démarrer</div>
-
-        <div id="rapidAnswers" role="radiogroup" aria-label="Réponses rapides"></div>
-
-        <button class="btn btn-gold mt-16" id="rapidStartBtn" data-action="start-rapid" type="button">Démarrer</button>
       </div>
+
+      <!-- Cadre baroque principal -->
+      <div class="baroque-card-frame">
+        <svg class="bcf-frame" viewBox="0 0 340 360" preserveAspectRatio="none" aria-hidden="true">
+          <use href="#ornateFrame"/>
+          <g transform="translate(0,0)"><use href="#cornerFlourish" width="60" height="60"/></g>
+          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="60" height="60"/></g>
+          <g transform="translate(0,360) scale(1,-1)"><use href="#cornerFlourish" width="60" height="60"/></g>
+          <g transform="translate(340,360) scale(-1,-1)"><use href="#cornerFlourish" width="60" height="60"/></g>
+        </svg>
+        <div class="bcf-inner text-center">
+          <div class="bcf-title">Sprint Chronométré</div>
+
+          <!-- Timer doré -->
+          <div class="rapid-timer-baroque">
+            <svg class="rtb-ring" viewBox="0 0 120 120" aria-hidden="true">
+              <defs>
+                <linearGradient id="timerGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#fdeec3"/>
+                  <stop offset="50%" stop-color="#f0c860"/>
+                  <stop offset="100%" stop-color="#9c7019"/>
+                </linearGradient>
+              </defs>
+              <circle class="rtb-bg" cx="60" cy="60" r="52" fill="none" stroke="rgba(212,175,55,.15)" stroke-width="5"/>
+              <circle class="rtb-progress" id="timerCircle" cx="60" cy="60" r="52" fill="none" stroke="url(#timerGold)" stroke-width="5" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+            </svg>
+            <div class="rtb-value" id="timerVal">30</div>
+            <div class="rtb-unit">sec</div>
+          </div>
+
+          <div class="quiz-divider" aria-hidden="true">
+            <span class="qd-line"></span>
+            <svg class="qd-rosette" viewBox="0 0 22 22"><use href="#rosette"/></svg>
+            <span class="qd-line"></span>
+          </div>
+
+          <div class="quiz-question" id="rapidQuestion">—</div>
+          <div class="quiz-question-fr" id="rapidQuestionFr">Appuyez sur Démarrer</div>
+
+          <div class="quiz-answers" id="rapidAnswers" role="radiogroup" aria-label="Réponses rapides"></div>
+        </div>
+      </div>
+
+      <button class="btn-baroque-primary mt-12" id="rapidStartBtn" data-action="start-rapid" type="button">
+        <svg class="bbp-frame" viewBox="0 0 280 56" preserveAspectRatio="none" aria-hidden="true">
+          <rect x="2" y="2" width="276" height="52" rx="26" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
+          <rect x="6" y="6" width="268" height="44" rx="22" fill="none" stroke="#fdeec3" stroke-width=".6" opacity=".6"/>
+          <g transform="translate(8,18)"><use href="#sideCart" width="14" height="20"/></g>
+          <g transform="translate(258,18)"><use href="#sideCart" width="14" height="20"/></g>
+        </svg>
+        <span class="bbp-label">Démarrer</span>
+      </button>
     </section>
+
 
     <!-- CHAT -->
     <section class="screen" id="screen-chat" data-screen="chat">
