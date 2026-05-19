@@ -1427,3 +1427,178 @@
 .themes-footer-text {
   font-size: .8rem !important;
 }
+/* ============================================================
+   THEMES — Reset complet + hero minimal + cards encadrées
+   ============================================================ */
+
+/* 1) CACHE complètement tout le hero baroque (titre, parchemin, etc.) */
+.themes-hero,
+.themes-hero-frame,
+.themes-hero-inner,
+.themes-hero-icon,
+.themes-back-btn,
+.themes-rosette-divider,
+.themes-hero-title,
+.themes-hero-sub {
+  display: none !important;
+}
+
+/* 2) On garde uniquement le bandeau de section "PARCOURIR LES THÈMES" simple */
+#screen-themes .baroque-section-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  margin: 18px 0 16px !important;
+  padding: 0 12px !important;
+}
+#screen-themes .baroque-section-head .bsh-line {
+  flex: 1 !important;
+  height: 1px !important;
+  background: linear-gradient(to right, transparent, #c89a3a, transparent) !important;
+  max-width: 70px !important;
+}
+#screen-themes .baroque-section-head .bsh-rosette {
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
+}
+#screen-themes .baroque-section-head .bsh-text {
+  font-family: 'Cinzel', serif !important;
+  font-size: .78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 3px !important;
+  text-transform: uppercase !important;
+  color: #c9b682 !important;
+  white-space: nowrap !important;
+}
+
+/* 3) GRILLE plus serrée pour que ça tienne bien à l'écran */
+.themes-grid,
+.baroque-themes-grid,
+#themesGrid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+  padding: 8px 10px !important;
+  margin: 0 0 24px !important;
+  background: none !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 4) ENCADRER CHAQUE CARD THÈME — cible large pour gagner contre themes.js */
+.themes-grid > *,
+.baroque-themes-grid > *,
+#themesGrid > * {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  min-height: 160px !important;
+  max-height: 200px !important;
+  padding: 14px 10px !important;
+  background: linear-gradient(135deg, #162455 0%, #0c1738 55%, #070e24 100%) !important;
+  border: 2px solid #c89a3a !important;
+  border-radius: 12px !important;
+  box-shadow:
+    inset 0 0 0 1px #6b4a0e,
+    inset 0 0 0 3px rgba(212, 175, 55, .12),
+    0 4px 12px rgba(0,0,0,.5),
+    0 0 10px rgba(212, 175, 55, .2) !important;
+  cursor: pointer !important;
+  color: #f0e2b8 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  transition: transform .25s ease, box-shadow .3s ease, border-color .3s ease !important;
+  list-style: none !important;
+}
+
+/* Coin doré haut-gauche */
+.themes-grid > *::before,
+.baroque-themes-grid > *::before,
+#themesGrid > *::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 5px !important;
+  left: 5px !important;
+  width: 14px !important;
+  height: 14px !important;
+  border-top: 2px solid #f7dc88 !important;
+  border-left: 2px solid #f7dc88 !important;
+  border-top-left-radius: 4px !important;
+  pointer-events: none !important;
+  z-index: 3 !important;
+}
+
+/* Coin doré bas-droite */
+.themes-grid > *::after,
+.baroque-themes-grid > *::after,
+#themesGrid > *::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 5px !important;
+  right: 5px !important;
+  width: 14px !important;
+  height: 14px !important;
+  border-bottom: 2px solid #f7dc88 !important;
+  border-right: 2px solid #f7dc88 !important;
+  border-bottom-right-radius: 4px !important;
+  pointer-events: none !important;
+  z-index: 3 !important;
+}
+
+.themes-grid > *:hover,
+.themes-grid > *:active,
+.baroque-themes-grid > *:hover,
+.baroque-themes-grid > *:active,
+#themesGrid > *:hover,
+#themesGrid > *:active {
+  transform: translateY(-2px) scale(1.02) !important;
+  border-color: #f7dc88 !important;
+  box-shadow:
+    inset 0 0 0 1px #6b4a0e,
+    inset 0 0 0 3px rgba(247, 220, 136, .25),
+    0 8px 18px rgba(0,0,0,.6),
+    0 0 18px rgba(247, 220, 136, .45) !important;
+}
+
+/* Le contenu interne se place au-dessus des coins */
+.themes-grid > * > *,
+.baroque-themes-grid > * > *,
+#themesGrid > * > * {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Réduire taille du texte arabe + label si ça déborde */
+.themes-grid > * .word-ar,
+#themesGrid > * .word-ar {
+  font-size: 1.4rem !important;
+  margin: 4px 0 !important;
+  line-height: 1.2 !important;
+}
+.themes-grid > * .name,
+.themes-grid > * .title,
+#themesGrid > * .name,
+#themesGrid > * .title {
+  font-size: .82rem !important;
+  letter-spacing: 1.5px !important;
+  margin: 4px 0 !important;
+  line-height: 1.2 !important;
+}
+.themes-grid > * .fr,
+.themes-grid > * .sub,
+#themesGrid > * .fr,
+#themesGrid > * .sub {
+  font-size: .72rem !important;
+  margin: 2px 0 0 !important;
+  opacity: .75 !important;
+}
+
+/* Cacher le footer "Que la science vous éclaire" qui apparaissait derrière */
+.themes-footer {
+  display: none !important;
+}
