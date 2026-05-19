@@ -493,12 +493,22 @@
         </button>
       </div>
 
-      <div class="panel daily-lesson">
-        <div class="panel-title">La Leçon du Jour</div>
-        <div class="word-ar" data-bind="daily-ar">—</div>
-        <div class="transliter" data-bind="daily-translit">—</div>
-        <div class="word-fr" data-bind="daily-fr">—</div>
+            <div class="baroque-card-frame">
+        <svg class="bcf-frame" viewBox="0 0 340 200" preserveAspectRatio="none" aria-hidden="true">
+          <use href="#ornateFrame"/>
+          <g transform="translate(0,0)"><use href="#cornerFlourish" width="50" height="50"/></g>
+          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="50" height="50"/></g>
+          <g transform="translate(0,200) scale(1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
+          <g transform="translate(340,200) scale(-1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
+        </svg>
+        <div class="bcf-inner">
+          <div class="bcf-title">La Leçon du Jour</div>
+          <div class="word-ar" data-bind="daily-ar">—</div>
+          <div class="transliter" data-bind="daily-translit">—</div>
+          <div class="word-fr" data-bind="daily-fr">—</div>
+        </div>
       </div>
+
 
       <!-- Cards baroques injectées par le script -->
       <div id="homeBaroqueContent"></div>
