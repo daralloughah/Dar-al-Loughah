@@ -1648,44 +1648,80 @@
   <script src="js/main.js"></script>
 
 <script>
-
   /* ===== INJECTION DU MENU BAROQUE ===== */
   document.addEventListener('DOMContentLoaded', function() {
-  const menuItems = [
-    // SECTION 1 : APPRENTISSAGE ET COMMUNAUTÉ
-    { icon:'themes',      title:'Thèmes',           sub:'expressions & vocabulaire', target:'themes' },
-    { icon:'reading',     title:'Apprendre à Lire', sub:'l\'alphabet arabe',         target:'reading' },
-    { icon:'groups',      title:'Mes Groupes',      sub:'communauté',                target:'groups' },
-    { icon:'wotd',        title:'Mot du Jour',      sub:'une perle quotidienne',     target:'wotd' },
-    { icon:'lists',       title:'Mes Listes',       sub:'révisions personnalisées',  target:'lists' },
-    { icon:'badges',      title:'Badges',           sub:'récompenses',               target:'badges' },
-    { icon:'leaderboard', title:'Classements',      sub:'défie la communauté',       target:'leaderboard', full:true },
+    const menuItems = [
+      // SECTION 1 : APPRENTISSAGE ET COMMUNAUTÉ
+      { icon:'themes',      title:'Thèmes',           sub:'expressions & vocabulaire', target:'themes' },
+      { icon:'reading',     title:'Apprendre à Lire', sub:"l'alphabet arabe",          target:'reading' },
+      { icon:'groups',      title:'Mes Groupes',      sub:'communauté',                target:'groups' },
+      { icon:'wotd',        title:'Mot du Jour',      sub:'une perle quotidienne',     target:'wotd' },
+      { icon:'lists',       title:'Mes Listes',       sub:'révisions personnalisées',  target:'lists' },
+      { icon:'badges',      title:'Badges',           sub:'récompenses',               target:'badges' },
+      { icon:'leaderboard', title:'Classements',      sub:'défie la communauté',       target:'leaderboard', full:true },
+      // SECTION 2 : VOTRE COMPTE ET INFORMATIONS
+      { icon:'profile',     title:'Profil',           sub:'mon compte',                target:'profile' },
+      { icon:'contenus',    title:'Contenus',         sub:'Déblocables',               target:'contenus-debloquables' },
+      { icon:'dictionnaire',title:'Dictionnaire',     sub:'Étymologique',              target:'dictionnaire' },
+      { icon:'notions',     title:'Notions',          sub:'Étymologiques',             target:'notions-etymo' },
+      { icon:'methode',     title:'Notre Méthode',    sub:'à propos',                  target:'methode' },
+      { icon:'settings',    title:'Paramètres',       sub:'préférences',               target:'settings' },
+      { icon:'contact',     title:'Contact',          sub:'écris-nous',                target:'contact' },
+      { icon:'gear',        title:'Mode Admin',       sub:'console privée',            target:'admin', adminOnly:true, full:true },
+    ];
 
-    // SECTION 2 : VOTRE COMPTE ET INFORMATIONS
-    { icon:'profile',     title:'Profil',           sub:'mon compte',                target:'profile' },
-    { icon:'contenus',    title:'Contenus',         sub:'Déblocables',               target:'contenus-debloquables' },
-    { icon:'dictionnaire',title:'Dictionnaire',     sub:'Étymologique',              target:'dictionnaire' },
-    { icon:'notions',     title:'Notions',          sub:'Étymologiques',             target:'notions-etymo' },
-    { icon:'methode',     title:'Notre Méthode',    sub:'à propos',                  target:'methode' },
-    { icon:'settings',    title:'Paramètres',       sub:'préférences',               target:'settings' },
-    { icon:'contact',     title:'Contact',          sub:'écris-nous',                target:'contact', full:true },
-  ];
+    function renderMenu() {
+      const container = document.getElementById('menuBaroqueContent');
+      if (!container || !window.Baroque) return;
 
-  function renderMenu() {
-    const container = document.getElementById('menuBaroqueContent');
-    if (!container || !window.Baroque) return;
+      const html =
+        window.Baroque.makeSection('APPRENTISSAGE ET COMMUNAUTÉ') +
+        window.Baroque.makeGrid(menuItems.slice(0, 7)) +
+        window.Baroque.makeSection('VOTRE COMPTE ET INFORMATIONS') +
+        window.Baroque.makeGrid(menuItems.slice(7));
+      container.innerHTML = html;
 
-    const html =
-      window.Baroque.makeSection('APPRENTISSAGE ET COMMUNAUTÉ') +
-      window.Baroque.makeGrid(menuItems.slice(0, 7)) +
-      window.Baroque.makeSection('VOTRE COMPTE ET INFORMATIONS') +
-      window.Baroque.makeGrid(menuItems.slice(7));
+      // Masquer Admin si pas admin
+      setTimeout(function() {
+        const isAdmin =
+          (window.state && window.state.user && window.state.user.isAdmin) ||
+          (window.state && window.state.isAdmin) ||
+          localStorage.getItem('isAdmin') === 'true';
+        const adminCard = container.querySelector('[data-target="admin"]');
+        if (adminCard && !isAdmin) adminCard.style.display = 'none';
+      }, 300);
+    }
 
-    container.innerHTML = html;
-  }
+    renderMenu();
 
-  renderMenu();
-});
+    /* ===== INJECTION DU HOME BAROQUE ===== */
+    const homeItems = [
+      { icon:'themes',  title:'Thèmes',           sub:'expressions & vocabulaire', target:'themes' },
+      { icon:'reading', title:'Apprendre à Lire', sub:"l'alphabet arabe",          target:'reading' },
+      { icon:'quiz',    title:'Quiz QCM',         sub:'questions-réponses',        target:'quiz' },
+      { icon:'rapid',   title:'Révision Rapide',  sub:'chronométrée',              target:'rapid' },
+      { icon:'chat',    title:'IA Chat',          sub:'conversation & voix',       target:'chat' },
+      { icon:'lists',   title:'Mes Listes',       sub:'mots personnels',           target:'lists' },
+    ];
+
+    const homeMini = [
+      { icon:'wotd',    title:'Mot du Jour', target:'wotd' },
+      { icon:'badge',   title:'Badges',      target:'badges' },
+      { icon:'premium', title:'Premium',     target:'premium', premium:true },
+    ];
+
+    function renderHome() {
+      const container = document.getElementById('homeBaroqueContent');
+      if (!container || !window.Baroque) return;
+      const html =
+        window.Baroque.makeSection('MODULES D\'APPRENTISSAGE') +
+        window.Baroque.makeGrid(homeItems) +
+        window.Baroque.makeSection('À DÉCOUVRIR') +
+        window.Baroque.makeGrid(homeMini);
+      container.innerHTML = html;
+    }
+    renderHome();
+  });
 </script>
 </body>
 </html>
