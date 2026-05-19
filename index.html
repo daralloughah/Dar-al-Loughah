@@ -665,22 +665,68 @@
       </div>
     </section>
 
-    <!-- THEMES -->
+        <!-- THEMES -->
     <section class="screen" id="screen-themes" data-screen="themes">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
-        <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
-        </button>
-        <div class="hello"><b>Thèmes</b></div>
-        <div class="spacer-40"></div>
+
+      <!-- ✦ Hero baroque (titre + sous-titre) -->
+      <div class="themes-hero">
+        <svg class="themes-hero-frame" viewBox="0 0 340 160" preserveAspectRatio="none" aria-hidden="true">
+          <use href="#ornateFrame"/>
+          <g transform="translate(0,0)"><use href="#cornerFlourish" width="60" height="60"/></g>
+          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="60" height="60"/></g>
+          <g transform="translate(0,160) scale(1,-1)"><use href="#cornerFlourish" width="60" height="60"/></g>
+          <g transform="translate(340,160) scale(-1,-1)"><use href="#cornerFlourish" width="60" height="60"/></g>
+          <g transform="translate(-2,60)"><use href="#sideCart" width="24" height="40"/></g>
+          <g transform="translate(318,60)"><use href="#sideCart" width="24" height="40"/></g>
+          <g transform="translate(150,-4)"><use href="#midCart" width="40" height="16"/></g>
+          <g transform="translate(150,148)"><use href="#midCart" width="40" height="16"/></g>
+        </svg>
+
+        <div class="themes-hero-inner">
+          <button class="themes-back-btn" data-action="goto" data-target="home" aria-label="Retour" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M15 18 L9 12 L15 6"/>
+            </svg>
+          </button>
+
+          <!-- Petite décoration livre ouvert -->
+          <svg class="themes-hero-icon" viewBox="0 0 60 60" aria-hidden="true">
+            <use href="#iconBook"/>
+          </svg>
+
+          <h2 class="themes-hero-title">Les Thèmes</h2>
+
+          <div class="themes-rosette-divider" aria-hidden="true">
+            <span class="div-line"></span>
+            <svg viewBox="0 0 22 22"><use href="#rosette"/></svg>
+            <span class="div-line"></span>
+          </div>
+
+          <p class="themes-hero-sub">Choisissez la voie de votre apprentissage</p>
+        </div>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">Choisissez un thème</div>
-        <div class="themes-grid" id="themesGrid" role="list"></div>
+      <!-- ✦ Section "Parcourir les thèmes" -->
+      <div class="baroque-section-head">
+        <span class="bsh-line"></span>
+        <svg class="bsh-rosette" viewBox="0 0 22 22"><use href="#rosette"/></svg>
+        <span class="bsh-text">PARCOURIR LES THÈMES</span>
+        <svg class="bsh-rosette" viewBox="0 0 22 22"><use href="#rosette"/></svg>
+        <span class="bsh-line"></span>
       </div>
+
+      <!-- ✦ Grille des thèmes (remplie par themes.js) -->
+      <div class="themes-grid baroque-themes-grid" id="themesGrid" role="list"></div>
+
+      <!-- ✦ Footer décoratif -->
+      <div class="themes-footer" aria-hidden="true">
+        <svg viewBox="0 0 22 22"><use href="#rosette"/></svg>
+        <span class="themes-footer-text">Que la science vous éclaire</span>
+        <svg viewBox="0 0 22 22"><use href="#rosette"/></svg>
+      </div>
+
     </section>
+
 
     <!-- THEME LEVELS -->
     <section class="screen" id="screen-theme-levels" data-screen="theme-levels">
