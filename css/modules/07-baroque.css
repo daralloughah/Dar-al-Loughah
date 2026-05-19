@@ -1866,3 +1866,213 @@
 
 /* Texte center utilitaire si pas déjà défini */
 .text-center { text-align: center; }
+/* ============================================================
+   FIX FINAL — Themes propre + Quiz étoile virée
+   ============================================================ */
+
+/* ════ 1. THEMES : on cache TOUT ce qui apparaît derrière ════ */
+#screen-themes .themes-hero,
+#screen-themes .themes-hero-frame,
+#screen-themes .themes-hero-inner,
+#screen-themes .themes-hero-icon,
+#screen-themes .themes-hero-title,
+#screen-themes .themes-hero-sub,
+#screen-themes .themes-back-btn,
+#screen-themes .themes-rosette-divider,
+#screen-themes .themes-footer,
+#screen-themes svg.themes-hero-frame,
+#screen-themes .brand,
+#screen-themes .brand-small,
+#screen-themes [class*="hero"],
+#screen-themes [class*="parchemin"],
+#screen-themes [class*="scroll-bg"] {
+  display: none !important;
+}
+
+/* On garde la top-bar (retour + titre Thèmes) */
+#screen-themes > .brand-small,
+#screen-themes > .top-bar {
+  display: block !important;
+}
+#screen-themes > .top-bar {
+  display: flex !important;
+}
+
+/* Petit bandeau "PARCOURIR LES THÈMES" sobre */
+#screen-themes .baroque-section-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  margin: 14px 12px 12px !important;
+  padding: 0 !important;
+  background: none !important;
+}
+#screen-themes .baroque-section-head .bsh-line {
+  flex: 1 !important;
+  height: 1px !important;
+  background: linear-gradient(to right, transparent, #c89a3a, transparent) !important;
+  max-width: 60px !important;
+}
+#screen-themes .baroque-section-head .bsh-rosette {
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
+}
+#screen-themes .baroque-section-head .bsh-text {
+  font-family: 'Cinzel', serif !important;
+  font-size: .78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 3px !important;
+  text-transform: uppercase !important;
+  color: #c9b682 !important;
+  white-space: nowrap !important;
+}
+
+/* Grille thèmes 2 colonnes propres */
+#screen-themes .themes-grid,
+#screen-themes .baroque-themes-grid,
+#screen-themes #themesGrid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+  padding: 8px 12px !important;
+  margin: 0 0 24px !important;
+  background: none !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Chaque card thème encadrée doré */
+#screen-themes .themes-grid > *,
+#screen-themes .baroque-themes-grid > *,
+#screen-themes #themesGrid > * {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  min-height: 150px !important;
+  max-height: 200px !important;
+  padding: 14px 10px !important;
+  background: linear-gradient(135deg, #162455 0%, #0c1738 55%, #070e24 100%) !important;
+  border: 2px solid #c89a3a !important;
+  border-radius: 12px !important;
+  box-shadow:
+    inset 0 0 0 1px #6b4a0e,
+    inset 0 0 0 3px rgba(212, 175, 55, .12),
+    0 4px 12px rgba(0,0,0,.5),
+    0 0 10px rgba(212, 175, 55, .25) !important;
+  cursor: pointer !important;
+  color: #f0e2b8 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Coins ornementaux dorés */
+#screen-themes .themes-grid > *::before,
+#screen-themes .baroque-themes-grid > *::before,
+#screen-themes #themesGrid > *::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 5px !important;
+  left: 5px !important;
+  width: 14px !important;
+  height: 14px !important;
+  border-top: 2px solid #f7dc88 !important;
+  border-left: 2px solid #f7dc88 !important;
+  border-top-left-radius: 4px !important;
+  pointer-events: none !important;
+  z-index: 3 !important;
+}
+#screen-themes .themes-grid > *::after,
+#screen-themes .baroque-themes-grid > *::after,
+#screen-themes #themesGrid > *::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 5px !important;
+  right: 5px !important;
+  width: 14px !important;
+  height: 14px !important;
+  border-bottom: 2px solid #f7dc88 !important;
+  border-right: 2px solid #f7dc88 !important;
+  border-bottom-right-radius: 4px !important;
+  pointer-events: none !important;
+  z-index: 3 !important;
+}
+
+/* Taille texte ajustée pour que ça tienne */
+#screen-themes .themes-grid > * .word-ar,
+#screen-themes #themesGrid > * .word-ar {
+  font-size: 1.3rem !important;
+  line-height: 1.2 !important;
+  margin: 2px 0 !important;
+}
+#screen-themes .themes-grid > * .name,
+#screen-themes .themes-grid > * .title,
+#screen-themes #themesGrid > * .name,
+#screen-themes #themesGrid > * .title {
+  font-size: .78rem !important;
+  letter-spacing: 1.5px !important;
+  line-height: 1.2 !important;
+  margin: 3px 0 !important;
+}
+#screen-themes .themes-grid > * .fr,
+#screen-themes .themes-grid > * .sub,
+#screen-themes #themesGrid > * .fr,
+#screen-themes #themesGrid > * .sub {
+  font-size: .7rem !important;
+  margin: 1px 0 0 !important;
+  opacity: .75 !important;
+}
+
+/* ════ 2. QUIZ : virer l'étoile du haut (le bcf-frame de la 1ère card baroque) ════ */
+#screen-quiz .baroque-card-frame .bcf-frame {
+  display: none !important;
+}
+/* On garde un cadre simple à la place */
+#screen-quiz .baroque-card-frame {
+  background: linear-gradient(135deg, rgba(22, 36, 85, .9), rgba(12, 23, 56, .95)) !important;
+  border: 2px solid #c89a3a !important;
+  border-radius: 14px !important;
+  box-shadow:
+    inset 0 0 0 1px #6b4a0e,
+    inset 0 0 0 3px rgba(212, 175, 55, .12),
+    0 4px 12px rgba(0,0,0,.4),
+    0 0 12px rgba(212, 175, 55, .25) !important;
+  margin: 14px 12px !important;
+  padding: 0 !important;
+  min-height: auto !important;
+}
+#screen-quiz .baroque-card-frame .bcf-inner {
+  padding: 22px 18px !important;
+}
+
+/* Coins ornementaux à la place du SVG */
+#screen-quiz .baroque-card-frame::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 6px !important;
+  left: 6px !important;
+  width: 18px !important;
+  height: 18px !important;
+  border-top: 2px solid #f7dc88 !important;
+  border-left: 2px solid #f7dc88 !important;
+  border-top-left-radius: 6px !important;
+  pointer-events: none !important;
+  z-index: 3 !important;
+}
+#screen-quiz .baroque-card-frame::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 6px !important;
+  right: 6px !important;
+  width: 18px !important;
+  height: 18px !important;
+  border-bottom: 2px solid #f7dc88 !important;
+  border-right: 2px solid #f7dc88 !important;
+  border-bottom-right-radius: 6px !important;
+  pointer-events: none !important;
+  z-index: 3 !important;
+}
