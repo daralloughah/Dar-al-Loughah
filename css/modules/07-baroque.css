@@ -1166,3 +1166,112 @@
   color: #c9b682;
   letter-spacing: 1px;
 }
+/* ============================================================
+   FIX THEMES — Hero contenu + cards thèmes baroque
+   ============================================================ */
+
+/* Le hero des thèmes doit rester compact */
+.themes-hero {
+  max-height: 160px !important;
+  min-height: 140px !important;
+  overflow: hidden;
+}
+.themes-hero-frame {
+  max-height: 160px !important;
+}
+.themes-hero-inner {
+  max-height: 160px !important;
+  padding: 18px 60px 14px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.themes-hero-icon {
+  width: 32px !important;
+  height: 32px !important;
+  margin: 0 auto 4px !important;
+}
+.themes-hero-title {
+  font-size: 1.3rem !important;
+  margin: 2px 0 !important;
+}
+.themes-hero-sub {
+  font-size: .88rem !important;
+  margin: 2px 0 0 !important;
+}
+
+/* — Grille des thèmes en baroque — */
+.baroque-themes-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 14px !important;
+  padding: 0 6px !important;
+  margin: 8px 0 24px !important;
+}
+
+/* Chaque card thème — encadrement baroque doré */
+.baroque-themes-grid > * {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  min-height: 180px !important;
+  padding: 18px 14px !important;
+  background: linear-gradient(135deg, rgba(22, 36, 85, .92) 0%, rgba(12, 23, 56, .96) 50%, rgba(7, 14, 36, 1) 100%) !important;
+  border: 1.5px solid transparent !important;
+  border-radius: 14px !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
+  color: #f0e2b8 !important;
+  transition: transform .25s ease, box-shadow .3s ease !important;
+  isolation: isolate;
+}
+
+/* Bordure dorée gradient (effet "encadré") */
+.baroque-themes-grid > *::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  border-radius: 14px !important;
+  padding: 1.5px !important;
+  background: linear-gradient(135deg, #fdeec3 0%, #c89a3a 25%, #6b4a0e 50%, #c89a3a 75%, #fdeec3 100%) !important;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0) !important;
+  -webkit-mask-composite: xor !important;
+          mask-composite: exclude !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+}
+
+/* Bord intérieur fin */
+.baroque-themes-grid > *::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: 8px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(212, 175, 55, .25) !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+/* Tout le contenu interne au-dessus */
+.baroque-themes-grid > * > * {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.baroque-themes-grid > *:hover,
+.baroque-themes-grid > *:active {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5), 0 0 22px rgba(247, 220, 136, .35) !important;
+}
+
+/* Footer plus discret */
+.themes-footer {
+  margin: 16px 0 90px !important;
+}
+.themes-footer-text {
+  font-size: .82rem !important;
+}
