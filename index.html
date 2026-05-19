@@ -1436,13 +1436,31 @@
       <div id="adminContent"></div>
     </section>
 
-    <!-- MENU -->
-   <section class="screen" id="screen-menu" data-screen="menu">
-     <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
+        <!-- MENU -->
+    <section class="screen" id="screen-menu" data-screen="menu">
+      <div class="menu-hero">
+        <svg class="menu-hero-frame" viewBox="0 0 340 120" preserveAspectRatio="none" aria-hidden="true">
+          <use href="#ornateFrame"/>
+          <g transform="translate(0,0)"><use href="#cornerFlourish" width="55" height="55"/></g>
+          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="55" height="55"/></g>
+          <g transform="translate(0,120) scale(1,-1)"><use href="#cornerFlourish" width="55" height="55"/></g>
+          <g transform="translate(340,120) scale(-1,-1)"><use href="#cornerFlourish" width="55" height="55"/></g>
+          <g transform="translate(150,-4)"><use href="#midCart" width="40" height="16"/></g>
+          <g transform="translate(150,108)"><use href="#midCart" width="40" height="16"/></g>
+          <g transform="translate(-2,42)"><use href="#sideCart" width="24" height="40"/></g>
+          <g transform="translate(318,42)"><use href="#sideCart" width="24" height="40"/></g>
+        </svg>
+        <div class="menu-hero-inner">
+          <h1 class="brand-title menu-hero-title">دار اللغة</h1>
+          <div class="menu-hero-divider" aria-hidden="true">
+            <svg viewBox="0 0 22 22"><use href="#rosette"/></svg>
+          </div>
+          <p class="menu-hero-sub">Menu Principal</p>
+        </div>
+      </div>
+      <div id="menuBaroqueContent"></div>
+    </section>
 
-  <!-- Le contenu baroque sera injecté ici par baroque-renderer.js -->
-  <div id="menuBaroqueContent"></div>
-</section>
     
  <!-- BOTTOM NAV -->
   <nav class="nav-bar" id="navBar" aria-label="Navigation principale">
