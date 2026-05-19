@@ -824,3 +824,112 @@
   color: #c9b682;
   letter-spacing: 2px;
 }
+/* ============================================================
+   FIX URGENT — Tailles SVG pour LOGIN + THEMES
+   ============================================================ */
+
+/* Tailles forcées sur tous les SVG décoratifs */
+.login-hero-frame,
+.themes-hero-frame,
+.lff-frame,
+.bbp-frame,
+.bcf-frame,
+.menu-hero-frame {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Lune login */
+.login-crescent {
+  width: 110px !important;
+  height: 110px !important;
+  flex: 0 0 110px;
+}
+.login-crescent svg {
+  width: 110px !important;
+  height: 110px !important;
+}
+
+/* Icône livre Thèmes */
+.themes-hero-icon {
+  width: 38px !important;
+  height: 38px !important;
+  max-width: 38px;
+}
+
+/* Toutes les rosettes des dividers */
+.login-rosette-divider svg,
+.themes-rosette-divider svg,
+.menu-hero-divider svg,
+.baroque-section-head .bsh-rosette,
+.themes-footer svg,
+.login-footer svg {
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0;
+}
+
+/* Icônes inputs (cadenas, email) */
+.input-group .input-icon {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* Icônes boutons secondaires */
+.btn-baroque-secondary svg,
+.btn-baroque-create svg,
+.themes-back-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0;
+}
+
+/* Lanternes login */
+.login-lanterns .lantern {
+  width: 16px !important;
+  height: 22px !important;
+}
+
+/* Étoiles scintillantes */
+.login-stars .twink {
+  width: 3px !important;
+  height: 3px !important;
+}
+
+/* Le bouton "Se connecter" ne doit pas dépasser */
+.btn-baroque-primary {
+  width: 100% !important;
+  min-height: 54px !important;
+  max-height: 60px;
+  display: block;
+  position: relative;
+}
+.btn-baroque-primary .bbp-frame {
+  width: 100% !important;
+  height: 100% !important;
+}
+.btn-baroque-primary .bbp-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Le hero login doit être contenu */
+.login-hero {
+  max-width: 100%;
+  overflow: visible;
+}
+.login-hero-inner {
+  position: relative;
+  z-index: 2;
+}
+
+/* Les inputs ne doivent pas être collés au bord */
+.login-form-frame .lff-inner {
+  padding: 30px 24px 26px;
+}
