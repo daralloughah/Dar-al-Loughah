@@ -931,5 +931,238 @@
 
 /* Les inputs ne doivent pas être collés au bord */
 .login-form-frame .lff-inner {
-  padding: 30px 24px 26px;
+  padding: 30px 24px /* ============================================================
+   THEMES — Page baroque premium
+   ============================================================ */
+
+/* — Hero principal (titre + livre + sous-titre) — */
+.themes-hero {
+  position: relative;
+  margin: 18px 0 22px;
+  min-height: 150px;
+}
+.themes-hero-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  filter: drop-shadow(0 0 14px rgba(212, 175, 55, .3));
+  animation: themesHeroPulse 5s ease-in-out infinite;
+}
+@keyframes themesHeroPulse {
+  0%, 100% { filter: drop-shadow(0 0 14px rgba(212, 175, 55, .3)); }
+  50% { filter: drop-shadow(0 0 22px rgba(247, 220, 136, .5)); }
+}
+.themes-hero-inner {
+  position: relative;
+  z-index: 2;
+  padding: 26px 24px 22px;
+  text-align: center;
+}
+
+/* — Bouton retour positionné — */
+.themes-back-btn {
+  position: absolute;
+  top: 50%;
+  left: 18px;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, .15), rgba(212, 175, 55, .04));
+  border: 1px solid rgba(212, 175, 55, .45);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+  transition: all .25s ease;
+}
+.themes-back-btn:hover {
+  background: linear-gradient(135deg, rgba(247, 220, 136, .25), rgba(212, 175, 55, .08));
+  box-shadow: 0 0 12px rgba(247, 220, 136, .35);
+}
+.themes-back-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* — Icône livre flottant — */
+.themes-hero-icon {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 8px;
+  display: block;
+  filter: drop-shadow(0 0 10px rgba(247, 220, 136, .5));
+  animation: bookFloat 4s ease-in-out infinite;
+}
+@keyframes bookFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* — Titre principal — */
+.themes-hero-title {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 1.6rem;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #fdeec3 0%, #f7dc88 30%, #f0c860 60%, #c89a3a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 6px rgba(247, 220, 136, .4));
+  margin: 0;
+  padding: 0;
+}
+
+/* — Diviseur rosette — */
+.themes-rosette-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 10px 0 6px;
+}
+.themes-rosette-divider .div-line {
+  height: 1px;
+  width: 60px;
+  background: linear-gradient(to right, transparent, #c89a3a, transparent);
+}
+.themes-rosette-divider svg {
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 0 5px rgba(247, 220, 136, .5));
+}
+
+.themes-hero-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-style: italic;
+  color: #d4c285;
+  margin: 0;
+  letter-spacing: .5px;
+}
+
+/* — Diviseur de section centré — */
+.baroque-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 22px 0 18px;
+  padding: 0 8px;
+}
+.baroque-section-head .bsh-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(212, 175, 55, .5), transparent);
+  max-width: 80px;
+}
+.baroque-section-head .bsh-rosette {
+  width: 16px;
+  height: 16px;
+  filter: drop-shadow(0 0 4px rgba(247, 220, 136, .5));
+}
+.baroque-section-head .bsh-text {
+  font-family: 'Cinzel', serif;
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #c9b682;
+  text-shadow: 0 0 6px rgba(201, 182, 130, .3);
+  white-space: nowrap;
+}
+
+/* — Grille de thèmes baroque — */
+.baroque-themes-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  padding: 4px 2px;
+  margin-bottom: 20px;
+}
+@media (min-width: 480px) {
+  .baroque-themes-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* — Style appliqué à CHAQUE thème généré par themes.js — */
+/* On stylise les enfants directs de la grille sans casser le JS */
+.baroque-themes-grid > * {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, rgba(22, 36, 85, .9) 0%, rgba(12, 23, 56, .95) 50%, rgba(7, 14, 36, 1) 100%);
+  border: 1.5px solid transparent;
+  border-radius: 14px;
+  cursor: pointer;
+  overflow: hidden;
+  min-height: 80px;
+  transition: transform .25s ease, box-shadow .3s ease, border-color .3s ease;
+  background-clip: padding-box;
+  text-align: left;
+  color: #f0e2b8;
+}
+/* Bordure dorée avec gradient (truc en double) */
+.baroque-themes-grid > *::before {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 14px;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #fdeec3 0%, #c89a3a 30%, #6b4a0e 50%, #c89a3a 70%, #fdeec3 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  z-index: 0;
+}
+/* Petits coins ornementaux */
+.baroque-themes-grid > *::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 175, 55, .15);
+  pointer-events: none;
+  z-index: 0;
+}
+.baroque-themes-grid > *:hover,
+.baroque-themes-grid > *:active {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(0,0,0,.45), 0 0 18px rgba(247, 220, 136, .25);
+}
+/* Tout le contenu interne au dessus du décor */
+.baroque-themes-grid > * > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* — Footer décoratif — */
+.themes-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 24px 0 100px;
+  opacity: .55;
+}
+.themes-footer svg {
+  width: 14px;
+  height: 14px;
+  filter: drop-shadow(0 0 4px rgba(247, 220, 136, .4));
+}
+.themes-footer-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: .9rem;
+  font-style: italic;
+  color: #c9b682;
+  letter-spacing: 1px;
 }
