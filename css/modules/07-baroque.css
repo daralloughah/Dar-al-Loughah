@@ -1602,3 +1602,267 @@
 .themes-footer {
   display: none !important;
 }
+/* ============================================================
+   QUIZ + RAPID — Design baroque
+   ============================================================ */
+
+/* — Bandeau de progression Quiz — */
+.quiz-progress-baroque {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  margin: 14px 12px 8px;
+  background: linear-gradient(135deg, rgba(22, 36, 85, .9), rgba(12, 23, 56, .95));
+  border: 1.5px solid #c89a3a;
+  border-radius: 12px;
+  box-shadow:
+    inset 0 0 0 1px #6b4a0e,
+    0 4px 12px rgba(0,0,0,.4);
+}
+.quiz-progress-baroque .qpb-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 4px rgba(247, 220, 136, .5));
+}
+.quiz-progress-baroque .qpb-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.quiz-progress-baroque .qpb-label {
+  font-family: 'Cinzel', serif;
+  font-size: .7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #c9b682;
+}
+.quiz-progress-baroque .qpb-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  color: #f0e2b8;
+}
+.quiz-progress-baroque .qpb-num b {
+  color: #f7dc88;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+.quiz-progress-baroque .qpb-xp {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: .85rem;
+  letter-spacing: 1.5px;
+  color: #f7dc88;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, rgba(247, 220, 136, .15), rgba(212, 175, 55, .05));
+  border: 1px solid rgba(247, 220, 136, .4);
+  border-radius: 999px;
+  text-shadow: 0 0 6px rgba(247, 220, 136, .4);
+}
+
+/* — Barre de progression linéaire dorée — */
+.quiz-progress-bar {
+  height: 8px;
+  margin: 0 12px 14px;
+  background: rgba(0, 0, 0, .35);
+  border: 1px solid rgba(212, 175, 55, .3);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.quiz-progress-bar .qpb-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c89a3a 0%, #f7dc88 50%, #c89a3a 100%);
+  border-radius: 999px;
+  box-shadow: 0 0 10px rgba(247, 220, 136, .5);
+  transition: width .4s ease;
+}
+
+/* — Diviseur quiz (rosette + lignes) — */
+.quiz-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 14px 0 16px;
+}
+.quiz-divider .qd-line {
+  height: 1px;
+  flex: 1;
+  max-width: 60px;
+  background: linear-gradient(to right, transparent, #c89a3a, transparent);
+}
+.quiz-divider .qd-rosette {
+  width: 16px;
+  height: 16px;
+  filter: drop-shadow(0 0 4px rgba(247, 220, 136, .4));
+}
+
+/* — Question style — */
+.quiz-question {
+  font-family: 'Amiri', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-align: center;
+  color: #f7dc88;
+  margin: 14px 0 6px;
+  text-shadow: 0 0 12px rgba(247, 220, 136, .35);
+  letter-spacing: 1px;
+}
+.quiz-question-fr {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: #c9b682;
+  text-align: center;
+  margin: 0 0 14px;
+}
+
+/* — Réponses QCM — */
+.quiz-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+.quiz-answers > * {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  padding: 14px 16px !important;
+  background: linear-gradient(135deg, rgba(22, 36, 85, .8), rgba(12, 23, 56, .9)) !important;
+  border: 1.5px solid rgba(212, 175, 55, .5) !important;
+  border-radius: 10px !important;
+  color: #f0e2b8 !important;
+  font-family: 'Cormorant Garamond', serif !important;
+  font-size: 1.05rem !important;
+  cursor: pointer !important;
+  transition: all .2s ease !important;
+  position: relative !important;
+}
+.quiz-answers > *:hover,
+.quiz-answers > *:active {
+  border-color: #f7dc88 !important;
+  background: linear-gradient(135deg, rgba(22, 36, 85, 1), rgba(12, 23, 56, 1)) !important;
+  box-shadow: 0 0 14px rgba(247, 220, 136, .35) !important;
+  transform: translateX(2px) !important;
+}
+.quiz-answers > *.selected,
+.quiz-answers > *.is-selected,
+.quiz-answers > *.active {
+  border-color: #f7dc88 !important;
+  background: linear-gradient(135deg, rgba(247, 220, 136, .15), rgba(212, 175, 55, .08)) !important;
+  box-shadow: 0 0 16px rgba(247, 220, 136, .5), inset 0 0 0 1px #f7dc88 !important;
+  color: #fdeec3 !important;
+}
+.quiz-answers > *.correct {
+  border-color: #5EE0A5 !important;
+  background: linear-gradient(135deg, rgba(94, 224, 165, .15), rgba(15, 90, 58, .15)) !important;
+  box-shadow: 0 0 16px rgba(94, 224, 165, .5) !important;
+  color: #c8f5dc !important;
+}
+.quiz-answers > *.wrong,
+.quiz-answers > *.incorrect {
+  border-color: #c43a3a !important;
+  background: linear-gradient(135deg, rgba(196, 58, 58, .15), rgba(90, 10, 10, .15)) !important;
+  box-shadow: 0 0 16px rgba(196, 58, 58, .5) !important;
+  color: #f5c8c8 !important;
+}
+
+/* ============================================================
+   RAPID — Combo + Timer
+   ============================================================ */
+
+/* — Badge combo doré — */
+.rapid-combo-baroque {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  margin: 14px auto 8px;
+  background: linear-gradient(135deg, rgba(247, 220, 136, .15), rgba(212, 175, 55, .05));
+  border: 1.5px solid #f7dc88;
+  border-radius: 999px;
+  box-shadow: 0 0 18px rgba(247, 220, 136, .5);
+  width: fit-content;
+  animation: comboPulse 1.5s ease-in-out infinite;
+}
+@keyframes comboPulse {
+  0%, 100% { box-shadow: 0 0 18px rgba(247, 220, 136, .5); }
+  50% { box-shadow: 0 0 30px rgba(247, 220, 136, .9), 0 0 50px rgba(247, 220, 136, .3); }
+}
+.rapid-combo-baroque .rcb-flame {
+  width: 22px;
+  height: 22px;
+  filter: drop-shadow(0 0 4px rgba(247, 220, 136, .8));
+}
+.rapid-combo-baroque .rcb-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1;
+}
+.rapid-combo-baroque .rcb-label {
+  font-family: 'Cinzel', serif;
+  font-size: .65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #c9b682;
+}
+.rapid-combo-baroque .rcb-val {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #f7dc88;
+  text-shadow: 0 0 8px rgba(247, 220, 136, .6);
+}
+
+/* — Timer baroque circulaire — */
+.rapid-timer-baroque {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 18px auto 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rapid-timer-baroque .rtb-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 8px rgba(247, 220, 136, .4));
+}
+.rapid-timer-baroque .rtb-progress {
+  stroke-dasharray: 326.7;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear;
+}
+.rapid-timer-baroque .rtb-value {
+  position: relative;
+  z-index: 1;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 2.4rem;
+  background: linear-gradient(180deg, #fdeec3, #f7dc88, #c89a3a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px rgba(247, 220, 136, .4));
+  line-height: 1;
+}
+.rapid-timer-baroque .rtb-unit {
+  position: absolute;
+  bottom: 14px;
+  font-family: 'Cinzel', serif;
+  font-size: .65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #c9b682;
+}
+
+/* Texte center utilitaire si pas déjà défini */
+.text-center { text-align: center; }
