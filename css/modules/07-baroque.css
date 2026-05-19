@@ -409,3 +409,418 @@
   opacity: .25;
   filter: grayscale(.8);
 }
+/* ============================================================
+   LOGIN — Page d'accueil baroque premium
+   ============================================================ */
+
+/* — Hero principal (lune + lanternes + titre) — */
+.login-hero {
+  position: relative;
+  margin: 20px 0 24px;
+  min-height: 360px;
+}
+.login-hero-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  filter: drop-shadow(0 0 18px rgba(212, 175, 55, .35));
+  animation: heroFrameGlow 6s ease-in-out infinite;
+}
+@keyframes heroFrameGlow {
+  0%, 100% { filter: drop-shadow(0 0 18px rgba(212, 175, 55, .35)); }
+  50% { filter: drop-shadow(0 0 28px rgba(247, 220, 136, .55)); }
+}
+.login-hero-inner {
+  position: relative;
+  z-index: 2;
+  padding: 32px 28px 26px;
+  text-align: center;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* — Lanternes alignées en haut — */
+.login-lanterns {
+  position: absolute;
+  top: 8px;
+  left: 30px;
+  right: 30px;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 1;
+}
+.login-lanterns .lantern {
+  width: 18px;
+  height: 26px;
+  position: relative;
+  background: radial-gradient(ellipse at 50% 40%, #ffd966 0%, #d4a52a 60%, #6b4a0e 100%);
+  border-radius: 50% 50% 45% 45%;
+  box-shadow: 0 0 16px rgba(255, 217, 102, .7), inset 0 -3px 6px rgba(0,0,0,.3);
+  animation: lanternSway 4s ease-in-out infinite;
+}
+.login-lanterns .lantern::before {
+  content: '';
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 22px;
+  background: linear-gradient(to bottom, transparent, rgba(212, 175, 55, .6));
+}
+.login-lanterns .l2 { animation-delay: -1s; }
+.login-lanterns .l3 { animation-delay: -2s; }
+.login-lanterns .l4 { animation-delay: -3s; }
+@keyframes lanternSway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+/* — Lune avec halo doré — */
+.login-crescent {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 18px auto 10px;
+}
+.login-crescent .moon-halo {
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle, rgba(247, 220, 136, .35) 0%, rgba(247, 220, 136, .15) 35%, transparent 70%);
+  border-radius: 50%;
+  animation: moonPulse 4s ease-in-out infinite;
+  z-index: 0;
+}
+@keyframes moonPulse {
+  0%, 100% { opacity: .6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+.login-crescent svg {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 14px rgba(247, 220, 136, .6));
+}
+
+/* — Étoiles scintillantes décoratives — */
+.login-stars {
+  position: absolute;
+  inset: 30px 50px;
+  pointer-events: none;
+  z-index: 1;
+}
+.login-stars .twink {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: #fdeec3;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #fdeec3, 0 0 16px rgba(247, 220, 136, .5);
+  animation: twinkle 3s ease-in-out infinite;
+}
+.login-stars .t1 { top: 15%; left: 18%; animation-delay: 0s; }
+.login-stars .t2 { top: 25%; right: 14%; animation-delay: -.6s; }
+.login-stars .t3 { top: 55%; left: 8%; animation-delay: -1.2s; }
+.login-stars .t4 { top: 60%; right: 10%; animation-delay: -1.8s; }
+.login-stars .t5 { top: 80%; left: 22%; animation-delay: -.3s; }
+.login-stars .t6 { top: 85%; right: 24%; animation-delay: -2.4s; }
+@keyframes twinkle {
+  0%, 100% { opacity: .3; transform: scale(.7); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+/* — Titre arabe géant — */
+.login-brand-title {
+  font-family: 'Amiri', serif;
+  font-size: 3.2rem;
+  font-weight: 700;
+  margin: 4px 0;
+  background: linear-gradient(180deg, #fdeec3 0%, #f7dc88 25%, #f0c860 50%, #c89a3a 75%, #9c7019 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 8px rgba(247, 220, 136, .45));
+  letter-spacing: 4px;
+  position: relative;
+  z-index: 3;
+}
+
+/* — Diviseur rosette — */
+.login-rosette-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0 8px;
+}
+.login-rosette-divider .div-line {
+  height: 1px;
+  width: 70px;
+  background: linear-gradient(to right, transparent, #c89a3a, transparent);
+}
+.login-rosette-divider svg {
+  width: 22px;
+  height: 22px;
+  filter: drop-shadow(0 0 6px rgba(247, 220, 136, .5));
+}
+
+.login-tagline {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-style: italic;
+  color: #e0d09a;
+  margin: 4px 0 0;
+  letter-spacing: .5px;
+}
+.login-tagline .accent {
+  color: #f7dc88;
+  font-weight: 600;
+  text-shadow: 0 0 6px rgba(247, 220, 136, .4);
+}
+
+/* — Cadre formulaire — */
+.login-form-frame {
+  position: relative;
+  margin: 16px 0;
+  min-height: 360px;
+}
+.login-form-frame .lff-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, .2));
+}
+.login-form-frame .lff-inner {
+  position: relative;
+  z-index: 2;
+  padding: 30px 24px 26px;
+}
+
+/* — Titre formulaire (Bienvenue avec lignes) — */
+.lff-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.lff-title-line {
+  height: 1px;
+  width: 50px;
+  background: linear-gradient(to right, transparent, #c89a3a, transparent);
+}
+.lff-title-text {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #f7dc88;
+  text-shadow: 0 0 8px rgba(247, 220, 136, .4);
+}
+
+/* — Inputs avec icône dorée — */
+.input-group {
+  position: relative;
+  margin-bottom: 14px;
+}
+.input-group .input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  z-index: 2;
+}
+.input-gold {
+  width: 100%;
+  padding: 14px 16px 14px 44px !important;
+  background: linear-gradient(to bottom, rgba(0,0,0,.4), rgba(0,0,0,.25)) !important;
+  border: 1px solid rgba(212, 175, 55, .4) !important;
+  border-radius: 10px !important;
+  color: #f0e2b8 !important;
+  font-family: 'Cormorant Garamond', serif !important;
+  font-size: 1.05rem !important;
+  transition: border-color .3s ease, box-shadow .3s ease;
+}
+.input-gold:focus {
+  border-color: rgba(247, 220, 136, .8) !important;
+  box-shadow: 0 0 12px rgba(247, 220, 136, .25), inset 0 0 4px rgba(0,0,0,.3) !important;
+  outline: none !important;
+}
+.input-gold::placeholder {
+  color: rgba(201, 182, 130, .6);
+  font-style: italic;
+}
+
+/* — Checkbox doré — */
+.checkbox-gold {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 14px 4px 18px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: .92rem;
+  color: #c9b682;
+  cursor: pointer;
+}
+.checkbox-gold input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  border: 1.5px solid rgba(212, 175, 55, .5);
+  border-radius: 4px;
+  background: rgba(0,0,0,.3);
+  cursor: pointer;
+  position: relative;
+}
+.checkbox-gold input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, #f7dc88, #c89a3a);
+  border-color: #f7dc88;
+}
+.checkbox-gold input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  left: 3px;
+  color: #3d2806;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* — Bouton principal "Se connecter" baroque or massif — */
+.btn-baroque-primary {
+  position: relative;
+  width: 100%;
+  min-height: 56px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 18px 0 8px;
+  transition: transform .15s ease, filter .25s ease;
+}
+.btn-baroque-primary:active {
+  transform: translateY(1px) scale(.98);
+}
+.btn-baroque-primary:hover {
+  filter: drop-shadow(0 0 14px rgba(247, 220, 136, .6));
+}
+.btn-baroque-primary .bbp-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.4)) drop-shadow(0 0 8px rgba(212, 175, 55, .4));
+}
+.btn-baroque-primary .bbp-label {
+  position: relative;
+  z-index: 2;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #3d2806;
+  text-shadow: 0 1px 0 rgba(253, 238, 195, .6);
+}
+
+/* — Diviseur OU — */
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 18px 0;
+}
+.login-divider::before, .login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(212, 175, 55, .4), transparent);
+}
+.login-divider span {
+  font-family: 'Cinzel', serif;
+  font-size: .8rem;
+  letter-spacing: 4px;
+  color: #c9b682;
+  font-weight: 600;
+}
+
+/* — Boutons secondaires (invité / créer compte) — */
+.btn-baroque-secondary,
+.btn-baroque-create {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 18px;
+  background: linear-gradient(to bottom, rgba(212, 175, 55, .08), rgba(212, 175, 55, .02));
+  border: 1px solid rgba(212, 175, 55, .4);
+  border-radius: 10px;
+  color: #f0e2b8;
+  font-family: 'Cinzel', serif;
+  font-size: .95rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all .25s ease;
+}
+.btn-baroque-secondary svg,
+.btn-baroque-create svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.btn-baroque-secondary:hover,
+.btn-baroque-create:hover {
+  background: linear-gradient(to bottom, rgba(212, 175, 55, .18), rgba(212, 175, 55, .06));
+  border-color: rgba(247, 220, 136, .7);
+  box-shadow: 0 0 14px rgba(247, 220, 136, .25);
+}
+.btn-baroque-create {
+  background: linear-gradient(135deg, rgba(247, 220, 136, .12), rgba(212, 175, 55, .04));
+  border-color: rgba(247, 220, 136, .55);
+  color: #f7dc88;
+}
+
+/* — Footer baroque — */
+.login-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 22px 0 80px;
+  padding: 12px;
+  opacity: .6;
+}
+.login-footer svg {
+  width: 16px;
+  height: 16px;
+  filter: drop-shadow(0 0 4px rgba(247, 220, 136, .4));
+}
+.login-footer-text {
+  font-family: 'Amiri', serif;
+  font-size: 1.05rem;
+  color: #c9b682;
+  letter-spacing: 2px;
+}
