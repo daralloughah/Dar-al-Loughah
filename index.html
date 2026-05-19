@@ -456,7 +456,7 @@
       </div>
     </section>
 
-    <!-- HOME -->
+        <!-- HOME -->
     <section class="screen" id="screen-home" data-screen="home">
       <div class="brand frame">
         <span class="corner-bl" aria-hidden="true"></span>
@@ -500,77 +500,8 @@
         <div class="word-fr" data-bind="daily-fr">—</div>
       </div>
 
-      <div class="modules">
-        <button class="module" data-action="goto" data-target="themes" type="button">
-          <div class="ico">
-            <svg viewBox="0 0 64 64" fill="none" stroke="url(#goldGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M8 14 Q32 6 56 14 V52 Q32 44 8 52 Z"/>
-              <path d="M32 10 V50"/>
-              <path d="M14 22 H26 M14 28 H24 M38 22 H50 M40 28 H50"/>
-            </svg>
-          </div>
-          <div class="name">Thèmes</div>
-          <div class="fr">expressions &amp; vocabulaire</div>
-        </button>
-
-        <button class="module" data-action="goto" data-target="reading" type="button">
-          <div class="ico">
-            <svg viewBox="0 0 64 64" fill="none" stroke="url(#goldGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M14 14 H50 V50 H14 Z"/>
-              <path d="M24 24 L24 40 M40 24 L40 40 M24 32 L40 32"/>
-              <circle cx="32" cy="10" r="2" fill="url(#goldGrad)"/>
-            </svg>
-          </div>
-          <div class="name">Apprendre à lire</div>
-          <div class="fr">l'alphabet arabe</div>
-        </button>
-
-        <button class="module" data-action="goto" data-target="quiz" type="button">
-          <div class="ico">
-            <svg viewBox="0 0 64 64" fill="none" stroke="url(#goldGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M14 8 H46 Q52 8 52 14 V54 Q52 58 48 56 L32 48 L16 56 Q12 58 12 54 V14 Q12 8 14 8 Z"/>
-              <path d="M26 22 Q32 16 38 22 Q38 28 32 30 V34 M32 40 V40.5"/>
-            </svg>
-          </div>
-          <div class="name">Quiz QCM</div>
-          <div class="fr">questions-réponses</div>
-        </button>
-
-        <button class="module" data-action="goto" data-target="rapid" type="button">
-          <div class="ico">
-            <svg viewBox="0 0 64 64" fill="none" stroke="url(#goldGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="32" cy="34" r="20"/>
-              <path d="M32 22 V34 L40 40"/>
-              <path d="M26 6 H38 M32 6 V14"/>
-            </svg>
-          </div>
-          <div class="name">Révision Rapide</div>
-          <div class="fr">chronométrée</div>
-        </button>
-
-        <button class="module" data-action="goto" data-target="chat" type="button">
-          <div class="ico">
-            <svg viewBox="0 0 64 64" fill="none" stroke="url(#goldGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M10 14 Q10 8 16 8 H48 Q54 8 54 14 V38 Q54 44 48 44 H26 L14 54 V44 Q10 44 10 38 Z"/>
-              <path d="M22 22 H42 M22 30 H38"/>
-            </svg>
-          </div>
-          <div class="name">IA Chat</div>
-          <div class="fr">conversation &amp; voix</div>
-        </button>
-
-        <button class="module" data-action="goto" data-target="lists" type="button">
-          <div class="ico">
-            <svg viewBox="0 0 64 64" fill="none" stroke="url(#goldGrad)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 14 H46 M12 26 H46 M12 38 H36"/>
-              <circle cx="46" cy="44" r="8"/>
-              <path d="M46 40 V48 M42 44 H50"/>
-            </svg>
-          </div>
-          <div class="name">Mes Listes</div>
-          <div class="fr">mots personnels</div>
-        </button>
-      </div>
+      <!-- Cards baroques injectées par le script -->
+      <div id="homeBaroqueContent"></div>
 
       <div class="stats-row">
         <div class="stat">
@@ -587,7 +518,6 @@
         </div>
       </div>
 
-      <!-- === v2.1 NOUVEAU : Bandeau Boost XP actif (visible uniquement quand un boost est en cours) === -->
       <div class="panel boost-banner" id="boostBanner" hidden>
         <div class="boost-banner-inner">
           <svg class="boost-icon" viewBox="0 0 24 24" fill="url(#goldGrad)" aria-hidden="true">
@@ -600,32 +530,7 @@
         </div>
       </div>
 
-      <!-- === v2.1 NOUVEAU : Emplacement publicitaire (invisible tant que ADS_ENABLED=false) === -->
       <div class="ad-slot" id="adSlotHome" data-ad-position="home" hidden></div>
-
-      <div class="section-divider"><span class="diamond"></span></div>
-
-      <div class="modules three-col">
-        <button class="module square" data-action="goto" data-target="wotd" type="button">
-          <div class="ico sm">
-            <svg viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 3 L14 9 L20 9 L15 13 L17 19 L12 15 L7 19 L9 13 L4 9 L10 9 Z"/></svg>
-          </div>
-          <div class="name sm">Mot du Jour</div>
-        </button>
-        <button class="module square" data-action="goto" data-target="badges" type="button">
-          <div class="ico sm">
-            <svg viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 2 L15 5 L19 3 L19 9 L22 12 L19 15 L19 21 L15 19 L12 22 L9 19 L5 21 L5 15 L2 12 L5 9 L5 3 L9 5 Z"/></svg>
-          </div>
-          <div class="name sm">Badges</div>
-        </button>
-        <!-- ====== v2.1 MODIF A1 : ajout data-premium="true" (masquage premium) ====== -->
-        <button class="module square" data-action="goto" data-target="premium" type="button" data-premium="true">
-          <div class="ico sm">
-            <svg viewBox="0 0 24 24" fill="url(#goldGrad)" aria-hidden="true"><path d="M3 8 L7 12 L12 6 L17 12 L21 8 V18 H3 Z"/></svg>
-          </div>
-          <div class="name sm">Premium</div>
-        </button>
-      </div>
     </section>
 
     <!-- LESSON -->
