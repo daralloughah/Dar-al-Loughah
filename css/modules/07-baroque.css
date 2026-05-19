@@ -2076,3 +2076,113 @@
   pointer-events: none !important;
   z-index: 3 !important;
 }
+/* ============================================================
+   FIX QUIZ — Virer juste l'étoile, sans cadre supplémentaire
+   ============================================================ */
+
+/* Annule le cadre baroque que j'avais ajouté tout à l'heure */
+#screen-quiz .baroque-card-frame {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 8px 0 !important;
+  min-height: auto !important;
+}
+#screen-quiz .baroque-card-frame::before,
+#screen-quiz .baroque-card-frame::after {
+  display: none !important;
+}
+#screen-quiz .baroque-card-frame .bcf-frame {
+  display: none !important;
+}
+#screen-quiz .baroque-card-frame .bcf-inner {
+  padding: 16px 14px !important;
+  background: rgba(12, 23, 56, .55) !important;
+  border: 1px solid rgba(212, 175, 55, .35) !important;
+  border-radius: 12px !important;
+}
+
+
+/* ============================================================
+   VOCAB — Vrai cadre baroque doré autour de la carte "ماء"
+   ============================================================ */
+
+#screen-vocab .vocab-card,
+#screen-vocab #vocabCard {
+  position: relative !important;
+  background: linear-gradient(135deg, #162455 0%, #0c1738 55%, #070e24 100%) !important;
+  border: 3px solid #c89a3a !important;
+  border-radius: 16px !important;
+  box-shadow:
+    inset 0 0 0 1px #6b4a0e,
+    inset 0 0 0 5px rgba(212, 175, 55, .18),
+    inset 0 0 0 6px #6b4a0e,
+    0 6px 20px rgba(0,0,0,.55),
+    0 0 18px rgba(212, 175, 55, .35) !important;
+  padding: 36px 24px !important;
+  margin: 16px 12px !important;
+  min-height: 240px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+}
+
+/* Coin ornemental haut-gauche */
+#screen-vocab .vocab-card::before,
+#screen-vocab #vocabCard::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 10px !important;
+  left: 10px !important;
+  width: 26px !important;
+  height: 26px !important;
+  border-top: 3px solid #f7dc88 !important;
+  border-left: 3px solid #f7dc88 !important;
+  border-top-left-radius: 8px !important;
+  pointer-events: none !important;
+  filter: drop-shadow(0 0 4px rgba(247, 220, 136, .5));
+}
+
+/* Coin ornemental bas-droite */
+#screen-vocab .vocab-card::after,
+#screen-vocab #vocabCard::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 10px !important;
+  right: 10px !important;
+  width: 26px !important;
+  height: 26px !important;
+  border-bottom: 3px solid #f7dc88 !important;
+  border-right: 3px solid #f7dc88 !important;
+  border-bottom-right-radius: 8px !important;
+  pointer-events: none !important;
+  filter: drop-shadow(0 0 4px rgba(247, 220, 136, .5));
+}
+
+/* Le mot arabe (ماء) bien visible au centre */
+#screen-vocab .vocab-card .word-ar,
+#screen-vocab #vocabCard .word-ar {
+  font-family: 'Amiri', serif !important;
+  font-size: 3.2rem !important;
+  font-weight: 700 !important;
+  color: #f7dc88 !important;
+  text-shadow: 0 0 18px rgba(247, 220, 136, .5) !important;
+  margin: 0 0 12px !important;
+  line-height: 1.2 !important;
+}
+
+/* Texte d'indication "Touchez Retourner la carte" */
+#screen-vocab .vocab-card .hint,
+#screen-vocab .vocab-card .flip-hint,
+#screen-vocab #vocabCard .hint,
+#screen-vocab #vocabCard .flip-hint {
+  font-family: 'Cormorant Garamond', serif !important;
+  font-style: italic !important;
+  font-size: 1rem !important;
+  color: #c9b682 !important;
+  margin-top: 14px !important;
+  opacity: .75 !important;
+}
