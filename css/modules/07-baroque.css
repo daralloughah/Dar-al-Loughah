@@ -928,12 +928,15 @@
   position: relative;
   z-index: 2;
 }
-
 /* Les inputs ne doivent pas être collés au bord */
 .login-form-frame .lff-inner {
-  padding: 30px 24px /* ============================================================
+  padding: 30px 24px 26px;
+}
+
+/* ============================================================
    THEMES — Page baroque premium
    ============================================================ */
+
 
 /* — Hero principal (titre + livre + sous-titre) — */
 .themes-hero {
