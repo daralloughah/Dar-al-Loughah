@@ -2189,3 +2189,67 @@
   margin-top: 14px !important;
   opacity: .75 !important;
 }
+/* ============================================================
+   FIX RAPID — Forcer affichage texte des réponses (bug depuis le début)
+   ============================================================ */
+
+#rapidAnswers {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  margin: 14px 8px !important;
+  padding: 0 !important;
+}
+
+#rapidAnswers .answer,
+#rapidAnswers button.answer,
+#rapidAnswers > button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 56px !important;
+  padding: 14px 16px !important;
+  background: linear-gradient(135deg, rgba(22, 36, 85, .85), rgba(12, 23, 56, .95)) !important;
+  border: 1.5px solid rgba(212, 175, 55, .55) !important;
+  border-radius: 12px !important;
+  color: #f7dc88 !important;
+  -webkit-text-fill-color: #f7dc88 !important;
+  background-clip: border-box !important;
+  -webkit-background-clip: border-box !important;
+  font-family: 'Amiri', serif !important;
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all .2s ease !important;
+  text-align: center !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+#rapidAnswers .answer:hover,
+#rapidAnswers .answer:active {
+  border-color: #f7dc88 !important;
+  background: linear-gradient(135deg, rgba(247, 220, 136, .15), rgba(212, 175, 55, .08)) !important;
+  box-shadow: 0 0 16px rgba(247, 220, 136, .45) !important;
+}
+
+#rapidAnswers .answer.correct {
+  border-color: #5EE0A5 !important;
+  background: linear-gradient(135deg, rgba(94, 224, 165, .25), rgba(15, 90, 58, .15)) !important;
+  color: #c8f5dc !important;
+  -webkit-text-fill-color: #c8f5dc !important;
+  box-shadow: 0 0 18px rgba(94, 224, 165, .6) !important;
+}
+
+#rapidAnswers .answer.wrong {
+  border-color: #c43a3a !important;
+  background: linear-gradient(135deg, rgba(196, 58, 58, .25), rgba(90, 10, 10, .15)) !important;
+  color: #f5c8c8 !important;
+  -webkit-text-fill-color: #f5c8c8 !important;
+  box-shadow: 0 0 18px rgba(196, 58, 58, .6) !important;
+}
+
+#rapidAnswers .answer:disabled {
+  cursor: default !important;
+}
