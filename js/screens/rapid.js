@@ -1,10 +1,10 @@
 /* =========================================================
-   DAR AL LOUGHAH — SCREEN: RAPID REVIEW (v2 avec support lettres)
+   DAR AL LOUGHAH — SCREEN: RAPID REVIEW (v3 sans translit)
    - Timer 30s avec anneau doré
    - Combo system
    - Détection automatique : mots OU lettres
-   - Pour les lettres : mélange avec mots palier quand 5+ lettres apprises
-   - Bug fix : "Terminé !" en LTR (point d'exclamation à droite)
+   - Mots palier intégrés quand 5+ lettres apprises
+   - PLUS DE TRANSLITTÉRATION — uniquement ar ⇄ fr
    ========================================================= */
 
 const RapidScreen = (function() {
@@ -24,16 +24,16 @@ const RapidScreen = (function() {
 
   // Mots palier (composés UNIQUEMENT de lettres apprises)
   const MILESTONE_WORDS = [
-    { ar: "بحث", translit: "BAḤTH", fr: "Recherche", letters: ["ba","ha","tha"] },
-    { ar: "بحر", translit: "BAḤR",  fr: "Mer",       letters: ["ba","ha","ra"] },
-    { ar: "شمس", translit: "SHAMS", fr: "Soleil",    letters: ["shin","mim","sin"] },
-    { ar: "قلم", translit: "QALAM", fr: "Stylo",     letters: ["qaf","lam","mim"] },
-    { ar: "كتاب", translit: "KITĀB", fr: "Livre",    letters: ["kaf","ta","alif","ba"] },
-    { ar: "باب", translit: "BĀB",   fr: "Porte",     letters: ["ba","alif","ba"] },
-    { ar: "نور", translit: "NŪR",   fr: "Lumière",   letters: ["nun","waw","ra"] },
-    { ar: "ماء", translit: "MĀʾ",   fr: "Eau",       letters: ["mim","alif"] },
-    { ar: "يوم", translit: "YAWM",  fr: "Jour",      letters: ["ya","waw","mim"] },
-    { ar: "ليل", translit: "LAYL",  fr: "Nuit",      letters: ["lam","ya","lam"] }
+    { ar: "بحث", fr: "Recherche", letters: ["ba","ha","tha"] },
+    { ar: "بحر", fr: "Mer",       letters: ["ba","ha","ra"] },
+    { ar: "شمس", fr: "Soleil",    letters: ["shin","mim","sin"] },
+    { ar: "قلم", fr: "Stylo",     letters: ["qaf","lam","mim"] },
+    { ar: "كتاب", fr: "Livre",    letters: ["kaf","ta","alif","ba"] },
+    { ar: "باب", fr: "Porte",     letters: ["ba","alif","ba"] },
+    { ar: "نور", fr: "Lumière",   letters: ["nun","waw","ra"] },
+    { ar: "ماء", fr: "Eau",       letters: ["mim","alif"] },
+    { ar: "يوم", fr: "Jour",      letters: ["ya","waw","mim"] },
+    { ar: "ليل", fr: "Nuit",      letters: ["lam","ya","lam"] }
   ];
 
   /* =========================================================
@@ -78,12 +78,9 @@ const RapidScreen = (function() {
      CONSTRUIRE LE POOL
      ========================================================= */
   async function buildPool(ctx) {
-    // === MODE LETTRES ===
     if (ctx.source === "letters") {
       return await buildLetterPool(ctx);
     }
-
-    // === MODE MOTS ===
     return await buildWordPool(ctx);
   }
 
@@ -99,8 +96,7 @@ const RapidScreen = (function() {
       return {
         type: "letter",
         ar: l.ar,
-        translit: (l.name || "") + (l.sound ? " (" + l.sound + ")" : ""),
-        fr: l.name || "",
+        fr: l.name || (l.sound ? l.sound : "—"),
         id: l.id
       };
     });
@@ -113,7 +109,6 @@ const RapidScreen = (function() {
           items.push({
             type: "word",
             ar: m.ar,
-            translit: m.translit,
             fr: m.fr,
             id: "word:" + m.ar
           });
@@ -121,7 +116,7 @@ const RapidScreen = (function() {
       });
     }
 
-    return items.filter(function(i) { return i.ar && i.translit; });
+    return items.filter(function(i) { return i.ar && i.fr; });
   }
 
   async function buildWordPool(ctx) {
@@ -131,7 +126,7 @@ const RapidScreen = (function() {
       const list = window.State.getList(ctx.listId);
       if (list && list.words.length > 0) {
         words = list.words.map(function(w) {
-          return { type: "word", ar: w.ar, fr: w.fr, translit: w.translit, id: w.id };
+          return { type: "word", ar: w.ar, fr: w.fr, id: w.id };
         });
       }
     }
@@ -142,21 +137,21 @@ const RapidScreen = (function() {
         const levelId = ctx.levelId || "debutant";
         const arr = themeData.levels[levelId] || [];
         words = arr.map(function(w, i) {
-          return { type: "word", ar: w.ar, fr: w.fr, translit: w.translit || "", id: ctx.themeId + ":" + levelId + ":" + i };
+          return { type: "word", ar: w.ar, fr: w.fr, id: ctx.themeId + ":" + levelId + ":" + i };
         });
       }
     }
 
     if (words.length < 4) {
       words = words.concat([
-        { type:"word", ar:"نور",  fr:"Lumière", translit:"NŪR",   id:"def:nur" },
-        { type:"word", ar:"كتاب", fr:"Livre",   translit:"KITĀB", id:"def:kitab" },
-        { type:"word", ar:"ماء",  fr:"Eau",     translit:"MĀʾ",   id:"def:ma" },
-        { type:"word", ar:"شمس",  fr:"Soleil",  translit:"SHAMS", id:"def:shams" },
-        { type:"word", ar:"قمر",  fr:"Lune",    translit:"QAMAR", id:"def:qamar" },
-        { type:"word", ar:"صديق", fr:"Ami",     translit:"ṢADĪQ", id:"def:sadiq" },
-        { type:"word", ar:"بيت",  fr:"Maison",  translit:"BAYT",  id:"def:bayt" },
-        { type:"word", ar:"حب",   fr:"Amour",   translit:"ḤUBB",  id:"def:hubb" }
+        { type:"word", ar:"نور",  fr:"Lumière", id:"def:nur" },
+        { type:"word", ar:"كتاب", fr:"Livre",   id:"def:kitab" },
+        { type:"word", ar:"ماء",  fr:"Eau",     id:"def:ma" },
+        { type:"word", ar:"شمس",  fr:"Soleil",  id:"def:shams" },
+        { type:"word", ar:"قمر",  fr:"Lune",    id:"def:qamar" },
+        { type:"word", ar:"صديق", fr:"Ami",     id:"def:sadiq" },
+        { type:"word", ar:"بيت",  fr:"Maison",  id:"def:bayt" },
+        { type:"word", ar:"حب",   fr:"Amour",   id:"def:hubb" }
       ]);
     }
 
@@ -205,7 +200,7 @@ const RapidScreen = (function() {
   }
 
   /* =========================================================
-     QUESTION SUIVANTE
+     QUESTION SUIVANTE (ar ⇄ fr uniquement)
      ========================================================= */
   function nextQuestion() {
     if (!inSession) return;
@@ -213,33 +208,33 @@ const RapidScreen = (function() {
     const shuffled = shuffleArray(pool);
     const correctItem = shuffled[0];
 
-    // Choisir random : afficher AR / demander translit (50%) ou inverse (50%)
-    const askMode = Math.random() < 0.5 ? "ar-to-translit" : "translit-to-ar";
+    // Choisir random : afficher AR / demander FR (50%) ou inverse (50%)
+    const askMode = Math.random() < 0.5 ? "ar-to-fr" : "fr-to-ar";
 
-    const sameType = shuffled.filter(function(s) { return s.type === correctItem.type && s.id !== correctItem.id; });
+    // 3 mauvaises réponses du même type, sinon complète avec tout
+    let sameType = shuffled.filter(function(s) { return s.type === correctItem.type && s.id !== correctItem.id; });
+    if (sameType.length < 3) {
+      const otherType = shuffled.filter(function(s) {
+        return s.id !== correctItem.id && !sameType.find(function(x) { return x.id === s.id; });
+      });
+      sameType = sameType.concat(otherType);
+    }
     const wrongs = shuffleArray(sameType).slice(0, 3);
-
-    // Pour les mots, on peut utiliser fr aussi (au lieu de translit)
-    const useFr = correctItem.type === "word" && Math.random() < 0.5;
 
     const allChoices = shuffleArray(wrongs.concat([correctItem]));
     const correctIndex = allChoices.findIndex(function(c) { return c.id === correctItem.id; });
 
     let questionText, questionStyle, choices, choicesStyle;
 
-    if (askMode === "ar-to-translit") {
-      questionText = correctItem.ar;
+    if (askMode === "ar-to-fr") {
+      questionText = correctItem.ar || "—";
       questionStyle = "arabic";
-      if (useFr) {
-        choices = allChoices.map(function(c) { return c.fr; });
-      } else {
-        choices = allChoices.map(function(c) { return c.translit; });
-      }
-      choicesStyle = "translit";
+      choices = allChoices.map(function(c) { return c.fr || c.ar || "—"; });
+      choicesStyle = "french";
     } else {
-      questionText = useFr ? correctItem.fr : correctItem.translit;
-      questionStyle = "translit";
-      choices = allChoices.map(function(c) { return c.ar; });
+      questionText = correctItem.fr || correctItem.ar || "—";
+      questionStyle = "french";
+      choices = allChoices.map(function(c) { return c.ar || c.fr || "—"; });
       choicesStyle = "arabic";
     }
 
@@ -254,22 +249,22 @@ const RapidScreen = (function() {
 
     questionsAsked++;
 
-    // Affichage adapté
+    // Affichage question
     const qAr = document.getElementById("rapidQuestion");
     const qFr = document.getElementById("rapidQuestionFr");
 
     if (qAr) {
       qAr.textContent = questionText;
-      if (questionStyle === "translit") {
-        qAr.style.fontFamily = "'Cinzel', serif";
-        qAr.style.fontSize = "30px";
-        qAr.style.letterSpacing = "3px";
+      if (questionStyle === "french") {
+        qAr.style.fontFamily = "'Cormorant Garamond', serif";
+        qAr.style.fontSize = "26px";
+        qAr.style.letterSpacing = "1px";
         qAr.style.direction = "ltr";
       } else {
         qAr.style.fontFamily = "";
         qAr.style.fontSize = "";
         qAr.style.letterSpacing = "";
-        qAr.style.direction = "";
+        qAr.style.direction = "rtl";
       }
     }
     if (qFr) {
@@ -279,6 +274,7 @@ const RapidScreen = (function() {
       qFr.style.direction = "ltr";
     }
 
+    // Affichage réponses
     const ansContainer = document.getElementById("rapidAnswers");
     if (!ansContainer) return;
 
@@ -287,7 +283,7 @@ const RapidScreen = (function() {
       const btn = document.createElement("button");
       btn.className = "answer";
       btn.type = "button";
-      btn.textContent = choice;
+      btn.textContent = (choice && String(choice).trim()) || "—";
 
       if (choicesStyle === "arabic") {
         btn.style.fontFamily = "'Amiri', serif";
@@ -295,6 +291,8 @@ const RapidScreen = (function() {
         btn.style.fontWeight = "700";
         btn.style.direction = "rtl";
       } else {
+        btn.style.fontFamily = "'Cormorant Garamond', serif";
+        btn.style.fontSize = "18px";
         btn.style.direction = "ltr";
       }
 
@@ -390,7 +388,7 @@ const RapidScreen = (function() {
   }
 
   /* =========================================================
-     FIN DE SESSION (avec fix du point d'exclamation)
+     FIN DE SESSION
      ========================================================= */
   function endSession() {
     if (timerHandle) {
@@ -406,7 +404,6 @@ const RapidScreen = (function() {
       if (window.XP) window.XP.checkBadges();
     }
 
-    // Affichage avec direction LTR forcée pour le point d'exclamation à droite
     const qAr = document.getElementById("rapidQuestion");
     const qFr = document.getElementById("rapidQuestionFr");
     if (qAr) {
@@ -465,4 +462,4 @@ const RapidScreen = (function() {
 })();
 
 window.RapidScreen = RapidScreen;
-console.log("✓ RapidScreen v2 chargé (mots + lettres)");
+console.log("✓ RapidScreen v3 chargé (sans translit, ar ⇄ fr)");
