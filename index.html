@@ -1937,16 +1937,21 @@
         window.Baroque.makeGrid(menuItems.slice(7));
       container.innerHTML = html;
 
-      // Masquer Admin si pas admin
+         // Masquer Admin si pas admin (check par email dans ADMIN_EMAILS)
       setTimeout(function() {
-        const isAdmin =
-          (window.state && window.state.user && window.state.user.isAdmin) ||
-          (window.state && window.state.isAdmin) ||
-          localStorage.getItem('isAdmin') === 'true';
+        let isAdmin = false;
+        try {
+          const user = window.Auth && window.Auth.getUser ? window.Auth.getUser() : null;
+          if (user && user.email) {
+            const admins = (window.CONFIG && window.CONFIG.ADMIN_EMAILS) || [];
+            isAdmin = admins.map(function(e){ return (e||"").toLowerCase(); })
+                            .indexOf(user.email.toLowerCase()) !== -1;
+          }
+        } catch (e) {}
         const adminCard = container.querySelector('[data-target="admin"]');
         if (adminCard && !isAdmin) adminCard.style.display = 'none';
       }, 300);
-    }
+
 
     renderMenu();
 
