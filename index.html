@@ -1938,19 +1938,20 @@
       container.innerHTML = html;
 
          // Masquer Admin si pas admin (check par email dans ADMIN_EMAILS)
-      setTimeout(function() {
-        let isAdmin = false;
+            setTimeout(function() {
+        var isAdmin = false;
         try {
-          const user = window.Auth && window.Auth.getUser ? window.Auth.getUser() : null;
+          var user = (window.Auth && window.Auth.getUser) ? window.Auth.getUser() : null;
           if (user && user.email) {
-            const admins = (window.CONFIG && window.CONFIG.ADMIN_EMAILS) || [];
+            var admins = (window.CONFIG && window.CONFIG.ADMIN_EMAILS) || [];
             isAdmin = admins.map(function(e){ return (e||"").toLowerCase(); })
                             .indexOf(user.email.toLowerCase()) !== -1;
           }
         } catch (e) {}
-        const adminCard = container.querySelector('[data-target="admin"]');
-       // if (adminCard && !isAdmin) adminCard.style.display = 'none';
+        var adminCard = container.querySelector('[data-target="admin"]');
+        if (adminCard) adminCard.style.display = isAdmin ? '' : 'none';
       }, 300);
+
     }
     renderMenu();
 
