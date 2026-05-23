@@ -1953,7 +1953,14 @@
       }, 300);
 
     }
+  
+        document.addEventListener('click', function(e) {
+      var t = e.target.closest('[data-target="menu"]');
+      if (t) setTimeout(renderMenu, 400);
+    });
+
     renderMenu();
+
 
     /* ===== INJECTION DU HOME BAROQUE ===== */
     const homeItems = [
