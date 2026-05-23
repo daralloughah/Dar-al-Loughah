@@ -681,18 +681,24 @@ const State = (function() {
       // Affiche le loader pendant le pull
       if (window.Main && window.Main.showLoader) window.Main.showLoader();
 
-      if (wasGuestWithData) {
-        // Promote: garder les données invité, les pousser au cloud
+            // TOUJOURS pull le profil cloud d'abord
+      state.uid = user.uid;
+      state.email = user.email;
+      state.loggedIn = true;
+
+      const hadCloudProfile = await pullFromCloud();
+
+      // On ne "promeut" l'invité QUE s'il n'existait PAS de profil cloud
+      // (vrai nouveau compte) ET qu'on avait vraiment des données invité
+      if (!hadCloudProfile && wasGuestWithData) {
         state.uid = user.uid;
         state.email = user.email;
         state.loggedIn = true;
         await pushToCloud();
-        await loadUserLists();
-      } else {
-        // Pull normal
-        await pullFromCloud();
-        await loadUserLists();
       }
+
+      await loadUserLists();
+
 
       subscribeRealtime();
       updateStreak();
