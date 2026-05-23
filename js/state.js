@@ -235,7 +235,20 @@ const State = (function() {
     isPushingNow = true;
     pendingPush = false;
     try {
+            // PROTECTION : ne jamais écraser un XP cloud plus élevé par un XP local plus bas
+      try {
+        const { data: cloudCheck } = await client
+          .from("profiles").select("xp").eq("id", user.uid).maybeSingle();
+        if (cloudCheck && Number(cloudCheck.xp) > Number(state.xp) + 50) {
+          console.warn("Push bloqué : XP cloud (" + cloudCheck.xp + ") > local (" + state.xp + ")");
+          isPushingNow = false;
+          await pullFromCloud();
+          return;
+        }
+      } catch (e) {}
+
       const payload = stateToDbPayload();
+
       const { error } = await client
         .from("profiles")
         .update(payload)
