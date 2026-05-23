@@ -2253,3 +2253,46 @@
 #rapidAnswers .answer:disabled {
   cursor: default !important;
 }
+/* ============================================================
+   RETIRER LES CADRES BAROQUES — Login + Profil
+   ============================================================ */
+
+/* ===== LOGIN : virer les cadres SVG ===== */
+#screen-login .login-hero-frame,
+#screen-login .lff-frame {
+  display: none !important;
+}
+
+#screen-login .login-hero,
+#screen-login .login-form-frame {
+  min-height: auto !important;
+}
+
+#screen-login .login-hero-inner {
+  padding: 20px 16px !important;
+  min-height: auto !important;
+}
+
+#screen-login .lff-inner {
+  padding: 8px 4px !important;
+  background: none !important;
+  border: none !important;
+}
+
+/* ===== PROFIL : virer les cadres SVG ===== */
+#screen-profile .bcf-frame {
+  display: none !important;
+}
+
+#screen-profile .baroque-card-frame {
+  background: linear-gradient(135deg, rgba(22, 36, 85, .55), rgba(12, 23, 56, .65)) !important;
+  border: 1px solid rgba(212, 175, 55, .3) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,.35) !important;
+  min-height: auto !important;
+  margin: 12px 0 !important;
+}
+
+#screen-profile .bcf-inner {
+  padding: 18px 16px !important;
+}
