@@ -2296,3 +2296,88 @@
 #screen-profile .bcf-inner {
   padding: 18px 16px !important;
 }
+/* ============================================================
+   ADMIN CMS v4 — Styles
+   ============================================================ */
+.admin-role-banner {
+  text-align: center; padding: 12px; margin: 12px 0;
+  border-radius: 12px; font-family: 'Cinzel', serif;
+  font-weight: 700; letter-spacing: 1px; font-size: .9rem;
+}
+.admin-role-banner.super {
+  background: linear-gradient(135deg, rgba(247,220,136,.18), rgba(212,175,55,.06));
+  border: 1.5px solid #c89a3a; color: #f7dc88;
+}
+.admin-role-banner.teacher {
+  background: linear-gradient(135deg, rgba(94,224,165,.15), rgba(15,90,58,.05));
+  border: 1.5px solid #5EE0A5; color: #5EE0A5;
+}
+
+.admin-tabs-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0; }
+.admin-tabs { display: flex; gap: 8px; padding: 4px; min-width: max-content; }
+
+.admin-cat-filter { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; margin: 8px 0; -webkit-overflow-scrolling: touch; }
+.admin-cat-filter .filter-chip { white-space: nowrap; flex-shrink: 0; }
+
+.admin-count { font-size: .75rem; color: #8a7a4a; margin: 6px 0; font-style: italic; }
+.admin-loading, .admin-empty { text-align: center; padding: 20px; color: #c9b682; font-style: italic; }
+.admin-error { padding: 14px; background: rgba(196,58,58,.15); border-radius: 8px; color: #f5c8c8; font-size: .85rem; }
+.admin-meta-tiny { font-size: .7rem; color: #8a7a4a; margin-top: 2px; }
+
+/* Niveaux flexibles */
+.admin-levels-list { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.admin-level-row {
+  display: flex; align-items: center; gap: 8px; padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(22,36,85,.7), rgba(12,23,56,.8));
+  border: 1.5px solid rgba(212,175,55,.4); border-radius: 12px;
+  transition: all .2s ease;
+}
+.admin-level-row.admin-level-active {
+  border-color: #f7dc88;
+  box-shadow: 0 0 14px rgba(247,220,136,.4), inset 0 0 0 1px #f7dc88;
+}
+.admin-level-body { flex: 1; cursor: pointer; min-width: 0; }
+.admin-level-name { font-family: 'Cinzel', serif; font-weight: 600; color: #f7dc88; font-size: .95rem; }
+.admin-level-meta { font-size: .72rem; color: #c9b682; margin-top: 2px; }
+.admin-level-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+.admin-level-editor {
+  border: 2px solid #c89a3a !important;
+  box-shadow: 0 0 16px rgba(212,175,55,.25) !important;
+}
+
+/* Boutons mini */
+.btn-mini {
+  padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(212,175,55,.4);
+  background: rgba(212,175,55,.08); color: #f0e2b8; font-size: .8rem;
+  cursor: pointer; font-weight: 600;
+}
+.btn-mini-edit { border-color: rgba(94,224,165,.5); color: #5EE0A5; }
+.btn-mini-del { border-color: rgba(196,58,58,.5); color: #f5a5a5; }
+
+/* Online */
+.admin-online-num { color: #5EE0A5 !important; }
+
+/* Migration */
+.admin-migrate { border: 1.5px dashed rgba(247,220,136,.5) !important; }
+
+/* Labels formulaire */
+.admin-label { display: flex; flex-direction: column; gap: 4px; font-size: .78rem; color: #c9b682; font-family: 'Cinzel', serif; }
+.admin-label .input { margin-top: 2px; }
+
+/* AI status */
+.admin-ai-status { text-align: center; padding: 10px; border-radius: 10px; font-family: 'Cinzel', serif; }
+.admin-ai-status.ok { background: rgba(94,224,165,.15); color: #5EE0A5; }
+.admin-ai-status.off { background: rgba(196,58,58,.15); color: #f5a5a5; }
+.admin-ai-bar-track { height: 10px; background: rgba(0,0,0,.4); border-radius: 999px; overflow: hidden; margin: 6px 0; }
+.admin-ai-bar-fill { height: 100%; border-radius: 999px; transition: width .4s ease; }
+.admin-ai-bar-fill.ok { background: #5EE0A5; }
+.admin-ai-bar-fill.warning { background: #f0c860; }
+.admin-ai-bar-fill.danger { background: #c43a3a; }
+.admin-ai-bar-label { font-size: .75rem; color: #c9b682; }
+
+.sub-panel { background: rgba(0,0,0,.2) !important; }
+.sub-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; -webkit-overflow-scrolling: touch; }
+.sub-tabs .filter-chip { white-space: nowrap; flex-shrink: 0; }
+.form-hint { font-size: .78rem; color: #c9b682; margin: 6px 0; line-height: 1.4; }
+.toggle-row { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: #c9b682; margin: 8px 0; }
