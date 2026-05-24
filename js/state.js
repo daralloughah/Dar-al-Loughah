@@ -690,36 +690,35 @@ const State = (function() {
   // ===== ÉCOUTE AUTH SUPABASE =====
   // Quand un user se connecte → pull son profil + listes + abonnement realtime
   // Quand il se déconnecte → reset state
-  document.addEventListener("firebase-user-changed", async function(e) {
+    document.addEventListener("firebase-user-changed", async function(e) {
     const detail = e.detail || {};
     const user = detail.user;
 
     if (user) {
-      // Si on était en invité avec des données, on les promeut
-      const wasGuestWithData = state.authMethod === "guest" && (state.xp > 0 || state.lists.length > 0);
+      // VERROU : aucun push pendant toute la connexion
+      isPullingNow = true;
 
-      // Affiche le loader pendant le pull
+      const wasGuestWithData = state.authMethod === "guest" &&
+        (state.xp > 0 || state.lists.length > 0);
+
       if (window.Main && window.Main.showLoader) window.Main.showLoader();
 
-            // TOUJOURS pull le profil cloud d'abord
       state.uid = user.uid;
       state.email = user.email;
       state.loggedIn = true;
 
+      // TOUJOURS charger le profil cloud en premier
       const hadCloudProfile = await pullFromCloud();
 
-      // On ne "promeut" l'invité QUE s'il n'existait PAS de profil cloud
-      // (vrai nouveau compte) ET qu'on avait vraiment des données invité
+      // Promotion invité UNIQUEMENT si aucun profil cloud n'existait
       if (!hadCloudProfile && wasGuestWithData) {
-        state.uid = user.uid;
-        state.email = user.email;
-        state.loggedIn = true;
+        isPullingNow = false;
         await pushToCloud();
+      } else {
+        isPullingNow = false;
       }
 
       await loadUserLists();
-
-
       subscribeRealtime();
       updateStreak();
       await checkChatQuota();
@@ -733,6 +732,7 @@ const State = (function() {
       refreshBindings();
     }
   });
+
 
   // ===== FLUSH AVANT FERMETURE =====
   window.addEventListener("beforeunload", function() {
