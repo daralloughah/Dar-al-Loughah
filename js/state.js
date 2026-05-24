@@ -62,11 +62,13 @@ const State = (function() {
   let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 
   // ===== ÉTAT INTERNE =====
-  let pushTimer = null;
+    let pushTimer = null;
   const PUSH_DEBOUNCE_MS = 1000;
   let pendingPush = false;
   let isPushingNow = false;
+  let isPullingNow = false;   // VERROU : bloque les push pendant le pull initial
   let realtimeSub = null;
+
 
   // ===== HELPERS BASIQUES =====
   function deepMerge(target, source) {
