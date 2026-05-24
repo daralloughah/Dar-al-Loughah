@@ -11,7 +11,9 @@ const AdminScreen = (function() {
 
   let currentTab = "themes";
   let currentTheme = null;
-  let currentCustomLevelId = null;   // FIX: niveau actif fiable (plus de sélecteur ~)
+    let currentSubThemeId = null;      // sous-thème actif
+  let currentCustomLevelId = null;   // niveau actif fiable
+
   let searchQueries = {};
   let myRole = "none";               // "super" | "teacher" | "none"
 
@@ -136,14 +138,19 @@ const AdminScreen = (function() {
   }
 
   // ===== HELPER : normalise un thème (auto-création des champs manquants) =====
-  function normalizeTheme(theme) {
+    function normalizeTheme(theme) {
     if (!theme) return theme;
-    // Catégorie par défaut
     if (!theme.category) theme.category = "quotidien";
-    // customLevels : si absent, on initialise vide
     if (!Array.isArray(theme.customLevels)) theme.customLevels = [];
+    // NOUVEAU : sous-thèmes
+    if (!Array.isArray(theme.subThemes)) theme.subThemes = [];
+    // Chaque sous-thème a ses propres niveaux
+    theme.subThemes.forEach(function(st) {
+      if (!Array.isArray(st.customLevels)) st.customLevels = [];
+    });
     return theme;
   }
+
   // ============================================================
   // ONGLET THÈMES — Catégories + Niveaux flexibles
   // ============================================================
@@ -306,34 +313,40 @@ const AdminScreen = (function() {
   }
 
   // ===== GESTIONNAIRE DE NIVEAUX FLEXIBLES =====
-  function renderLevelsManager(theme) {
-    const levels = (theme.customLevels || []).slice().sort(function(a,b){return(a.order||0)-(b.order||0);});
+    // ===== HELPERS sous-thème / niveau actifs =====
+  function getCurrentSub(theme) {
+    if (!currentSubThemeId) return null;
+    return (theme.subThemes || []).find(function(s){ return s.id === currentSubThemeId; });
+  }
+  function getCurrentLevel(theme) {
+    const sub = getCurrentSub(theme);
+    if (!sub || !currentCustomLevelId) return null;
+    return (sub.customLevels || []).find(function(l){ return l.id === currentCustomLevelId; });
+  }
 
-    let levelsHtml = levels.map(function(lvl, i) {
-      const accInfo = ACCESS_TYPES.find(function(a){ return a.id === lvl.access; }) || ACCESS_TYPES[0];
-      const accLabel = lvl.access === "xp" ? ("Palier " + (lvl.accessValue||0) + " XP") : accInfo.label;
-      const adTag = lvl.adWall ? ' · 📺 pub' : '';
-      const wc = (lvl.words || []).length;
-      const active = (lvl.id === currentCustomLevelId) ? " admin-level-active" : "";
-      return '<div class="admin-level-row' + active + '" data-lvl="' + lvl.id + '">' +
-        '<div class="admin-level-body" data-pick-level="' + lvl.id + '">' +
-          '<div class="admin-level-name">' + escapeHTML(lvl.emoji || "📚") + ' ' + escapeHTML(lvl.name) + '</div>' +
-          '<div class="admin-level-meta">' + wc + ' mots · ' + escapeHTML(accLabel) + adTag + '</div>' +
+  // ===== GESTIONNAIRE SOUS-THÈMES =====
+  function renderLevelsManager(theme) {
+    const subs = (theme.subThemes || []).slice().sort(function(a,b){return(a.order||0)-(b.order||0);});
+
+    let subsHtml = subs.map(function(st) {
+      const lvlCount = (st.customLevels || []).length;
+      const active = (st.id === currentSubThemeId) ? " admin-level-active" : "";
+      return '<div class="admin-level-row' + active + '">' +
+        '<div class="admin-level-body" data-pick-sub="' + st.id + '">' +
+          '<div class="admin-level-name">' + escapeHTML(st.emoji || "📑") + ' ' + escapeHTML(st.name) + '</div>' +
+          '<div class="admin-level-meta">' + lvlCount + ' niveau(x)</div>' +
         '</div>' +
         '<div class="admin-level-actions">' +
-          '<button class="btn-mini" data-lvl-up="' + lvl.id + '" type="button">↑</button>' +
-          '<button class="btn-mini" data-lvl-down="' + lvl.id + '" type="button">↓</button>' +
-          '<button class="btn-mini btn-mini-edit" data-lvl-edit="' + lvl.id + '" type="button">✎</button>' +
-          '<button class="btn-mini btn-mini-del" data-lvl-del="' + lvl.id + '" type="button">X</button>' +
+          '<button class="btn-mini" data-sub-up="' + st.id + '" type="button">↑</button>' +
+          '<button class="btn-mini" data-sub-down="' + st.id + '" type="button">↓</button>' +
+          '<button class="btn-mini btn-mini-edit" data-sub-edit="' + st.id + '" type="button">✎</button>' +
+          '<button class="btn-mini btn-mini-del" data-sub-del="' + st.id + '" type="button">X</button>' +
         '</div>' +
       '</div>';
     }).join("");
+    if (subs.length === 0) subsHtml = '<div class="admin-empty">Aucun sous-thème. Ajoute le premier ci-dessous.</div>';
 
-    if (levels.length === 0) {
-      levelsHtml = '<div class="admin-empty">Aucun niveau. Ajoute le premier ci-dessous.</div>';
-    }
-
-    // Section migration (si ancien contenu présent)
+    // Migration ancien contenu
     let migrateHtml = "";
     const hasOld = theme.levels && ["debutant","intermediaire","avance","expert","mouallim"].some(function(l){
       return Array.isArray(theme.levels[l]) && theme.levels[l].length > 0;
@@ -342,48 +355,109 @@ const AdminScreen = (function() {
       migrateHtml =
         '<div class="panel sub-panel mt-12 admin-migrate">' +
           '<div class="panel-title">⚠️ Ancien contenu détecté</div>' +
-          '<p class="form-hint">Ce thème a des mots dans l\'ancien format (débutant, intermédiaire...). ' +
-          'Tu peux les convertir en niveaux flexibles d\'un clic.</p>' +
-          '<button class="btn btn-outline mt-8" id="migrateBtn">Convertir en niveaux flexibles</button>' +
+          '<p class="form-hint">Convertir l\'ancien format en un sous-thème « Général » avec ses niveaux.</p>' +
+          '<button class="btn btn-outline mt-8" id="migrateBtn">Convertir</button>' +
         '</div>';
     }
 
-    return '<div class="panel mt-12">' +
-        '<div class="panel-title">NIVEAUX DU THÈME</div>' +
-        '<p class="form-hint">Crée autant de niveaux que tu veux. Glisse avec ↑↓ pour réordonner. Clique un niveau pour éditer ses mots.</p>' +
-        '<div id="levelsList" class="admin-levels-list">' + levelsHtml + '</div>' +
-        '<div class="panel sub-panel mt-12">' +
-          '<div class="panel-title">+ AJOUTER UN NIVEAU</div>' +
-          '<div class="form-grid">' +
-            '<input class="input" id="newLvlName" placeholder="Nom du niveau (ex: Salutations)"/>' +
-            '<input class="input" id="newLvlEmoji" placeholder="Emoji (optionnel, ex: 👋)" maxlength="4"/>' +
-            '<label class="admin-label">Accès<select class="input" id="newLvlAccess">' +
-              ACCESS_TYPES.map(function(a){ return '<option value="' + a.id + '">' + a.label + '</option>'; }).join("") +
-            '</select></label>' +
-            '<input class="input" id="newLvlXp" type="number" placeholder="XP requis (si palier XP)"/>' +
-            '<label class="toggle-row"><input type="checkbox" id="newLvlAd"/><span>📺 Pub au déblocage de ce niveau</span></label>' +
+    // Bloc niveaux du sous-thème actif
+    let levelsBlock = "";
+    const sub = getCurrentSub(theme);
+    if (sub) {
+      const levels = (sub.customLevels || []).slice().sort(function(a,b){return(a.order||0)-(b.order||0);});
+      let levelsHtml = levels.map(function(lvl) {
+        const accInfo = ACCESS_TYPES.find(function(a){ return a.id === lvl.access; }) || ACCESS_TYPES[0];
+        const accLabel = lvl.access === "xp" ? ("Palier " + (lvl.accessValue||0) + " XP") : accInfo.label;
+        const adTag = lvl.adWall ? ' · 📺 pub' : '';
+        const wc = (lvl.words || []).length;
+        const active = (lvl.id === currentCustomLevelId) ? " admin-level-active" : "";
+        return '<div class="admin-level-row' + active + '">' +
+          '<div class="admin-level-body" data-pick-level="' + lvl.id + '">' +
+            '<div class="admin-level-name">' + escapeHTML(lvl.emoji || "🎯") + ' ' + escapeHTML(lvl.name) + '</div>' +
+            '<div class="admin-level-meta">' + wc + ' mots · ' + escapeHTML(accLabel) + adTag + '</div>' +
           '</div>' +
-          '<button class="btn btn-gold mt-8" id="addLvlBtn">+ Créer ce niveau</button>' +
+          '<div class="admin-level-actions">' +
+            '<button class="btn-mini" data-lvl-up="' + lvl.id + '" type="button">↑</button>' +
+            '<button class="btn-mini" data-lvl-down="' + lvl.id + '" type="button">↓</button>' +
+            '<button class="btn-mini btn-mini-edit" data-lvl-edit="' + lvl.id + '" type="button">✎</button>' +
+            '<button class="btn-mini btn-mini-del" data-lvl-del="' + lvl.id + '" type="button">X</button>' +
+          '</div>' +
+        '</div>';
+      }).join("");
+      if (levels.length === 0) levelsHtml = '<div class="admin-empty">Aucun niveau dans ce sous-thème</div>';
+
+      levelsBlock =
+        '<div class="panel mt-12 admin-level-editor">' +
+          '<div class="panel-title">🎯 NIVEAUX DE : ' + escapeHTML(sub.emoji||"") + ' ' + escapeHTML(sub.name) + '</div>' +
+          '<div class="admin-levels-list">' + levelsHtml + '</div>' +
+          '<div class="panel sub-panel mt-12">' +
+            '<div class="panel-title">+ AJOUTER UN NIVEAU</div>' +
+            '<div class="form-grid">' +
+              '<input class="input" id="newLvlName" placeholder="Nom (ex: Niveau 1)"/>' +
+              '<input class="input" id="newLvlEmoji" placeholder="Emoji (optionnel)" maxlength="4"/>' +
+              '<label class="admin-label">Accès<select class="input" id="newLvlAccess">' +
+                ACCESS_TYPES.map(function(a){ return '<option value="' + a.id + '">' + a.label + '</option>'; }).join("") +
+              '</select></label>' +
+              '<input class="input" id="newLvlXp" type="number" placeholder="XP requis (si palier)"/>' +
+              '<label class="toggle-row"><input type="checkbox" id="newLvlAd"/><span>📺 Pub au déblocage</span></label>' +
+            '</div>' +
+            '<button class="btn btn-gold mt-8" id="addLvlBtn">+ Créer ce niveau</button>' +
+          '</div>' +
+        '</div>' +
+        '<div id="levelWordsEditor"></div>';
+    }
+
+    return '<div class="panel mt-12">' +
+        '<div class="panel-title">SOUS-THÈMES</div>' +
+        '<p class="form-hint">Ex : Aqida, Fiqh Shafi\'i, Fiqh Hanafi... Clique un sous-thème pour gérer ses niveaux.</p>' +
+        '<div class="admin-levels-list">' + subsHtml + '</div>' +
+        '<div class="panel sub-panel mt-12">' +
+          '<div class="panel-title">+ AJOUTER UN SOUS-THÈME</div>' +
+          '<div class="form-grid">' +
+            '<input class="input" id="newSubName" placeholder="Nom (ex: Fiqh Shafi\'i)"/>' +
+            '<input class="input" id="newSubEmoji" placeholder="Emoji (optionnel)" maxlength="4"/>' +
+          '</div>' +
+          '<button class="btn btn-gold mt-8" id="addSubBtn">+ Créer ce sous-thème</button>' +
         '</div>' +
         migrateHtml +
       '</div>' +
-      '<div id="levelWordsEditor"></div>';
+      levelsBlock;
   }
 
   function bindLevelsManager(theme) {
-    // Ajouter un niveau
-    const addBtn = document.getElementById("addLvlBtn");
-    if (addBtn) addBtn.onclick = function() { addCustomLevel(theme); };
-
-    // Migration
+    // --- Sous-thèmes ---
+    const addSubBtn = document.getElementById("addSubBtn");
+    if (addSubBtn) addSubBtn.onclick = function() { addSubTheme(theme); };
     const migBtn = document.getElementById("migrateBtn");
     if (migBtn) migBtn.onclick = function() { migrateOldLevels(theme); };
 
-    // Actions sur chaque niveau
+    document.querySelectorAll("[data-pick-sub]").forEach(function(el) {
+      el.onclick = function() {
+        currentSubThemeId = el.getAttribute("data-pick-sub");
+        currentCustomLevelId = null;
+        showThemeForm(theme);
+      };
+    });
+    document.querySelectorAll("[data-sub-edit]").forEach(function(b) {
+      b.onclick = function() { editSubTheme(theme, b.getAttribute("data-sub-edit")); };
+    });
+    document.querySelectorAll("[data-sub-del]").forEach(function(b) {
+      b.onclick = function() { deleteSubTheme(theme, b.getAttribute("data-sub-del")); };
+    });
+    document.querySelectorAll("[data-sub-up]").forEach(function(b) {
+      b.onclick = function() { moveSubTheme(theme, b.getAttribute("data-sub-up"), -1); };
+    });
+    document.querySelectorAll("[data-sub-down]").forEach(function(b) {
+      b.onclick = function() { moveSubTheme(theme, b.getAttribute("data-sub-down"), 1); };
+    });
+
+    // --- Niveaux (du sous-thème actif) ---
+    const addLvlBtn = document.getElementById("addLvlBtn");
+    if (addLvlBtn) addLvlBtn.onclick = function() { addCustomLevel(theme); };
     document.querySelectorAll("[data-pick-level]").forEach(function(el) {
       el.onclick = function() {
         currentCustomLevelId = el.getAttribute("data-pick-level");
-        showThemeForm(theme); // re-render pour marquer actif
+        showThemeForm(theme);
         renderLevelWordsEditor(theme);
         const ed = document.getElementById("levelWordsEditor");
         if (ed) ed.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -402,121 +476,63 @@ const AdminScreen = (function() {
       b.onclick = function() { moveCustomLevel(theme, b.getAttribute("data-lvl-down"), 1); };
     });
 
-    // Si un niveau était actif, on ré-affiche son éditeur de mots
     if (currentCustomLevelId) renderLevelWordsEditor(theme);
   }
 
-  async function addCustomLevel(theme) {
-    const name = getVal("newLvlName");
-    if (!name) { toast("Nom du niveau requis"); return; }
-    const emoji = getVal("newLvlEmoji");
-    const access = document.getElementById("newLvlAccess").value;
-    const xp = parseInt(getVal("newLvlXp"), 10) || 0;
-    const adWall = document.getElementById("newLvlAd").checked;
-
-    if (!Array.isArray(theme.customLevels)) theme.customLevels = [];
-    const newId = "lvl_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
-    theme.customLevels.push({
-      id: newId, name: name, emoji: emoji, access: access,
-      accessValue: xp, adWall: adWall, words: [], chunks: [],
-      order: theme.customLevels.length + 1
+  // ===== ACTIONS SOUS-THÈMES =====
+  async function addSubTheme(theme) {
+    const name = getVal("newSubName");
+    if (!name) { toast("Nom du sous-thème requis"); return; }
+    if (!Array.isArray(theme.subThemes)) theme.subThemes = [];
+    const newId = "sub_" + Date.now() + "_" + Math.random().toString(36).slice(2,6);
+    theme.subThemes.push({
+      id: newId, name: name, emoji: getVal("newSubEmoji"),
+      customLevels: [], order: theme.subThemes.length + 1
     });
-
     try {
       await window.FB.setDocument("themes", theme._id, theme);
-      toast("Niveau « " + name + " » créé");
-      currentCustomLevelId = newId;
+      toast("Sous-thème « " + name + " » créé");
+      currentSubThemeId = newId;
+      currentCustomLevelId = null;
       showThemeForm(theme);
     } catch (e) { toast("Erreur: " + e.message); }
   }
 
-  function editCustomLevel(theme, lvlId) {
-    const lvl = (theme.customLevels || []).find(function(l){ return l.id === lvlId; });
-    if (!lvl) return;
-    const newName = prompt("Nom du niveau :", lvl.name);
-    if (newName === null) return;
-    const newEmoji = prompt("Emoji (laisse vide pour aucun) :", lvl.emoji || "");
-    if (newEmoji === null) return;
-    lvl.name = newName.trim() || lvl.name;
-    lvl.emoji = newEmoji.trim();
-    window.FB.setDocument("themes", theme._id, theme).then(function() {
-      toast("Niveau modifié");
-      showThemeForm(theme);
+  function editSubTheme(theme, subId) {
+    const st = (theme.subThemes||[]).find(function(s){ return s.id === subId; });
+    if (!st) return;
+    const n = prompt("Nom du sous-thème :", st.name);
+    if (n === null) return;
+    const em = prompt("Emoji (vide = aucun) :", st.emoji || "");
+    if (em === null) return;
+    st.name = n.trim() || st.name;
+    st.emoji = em.trim();
+    window.FB.setDocument("themes", theme._id, theme).then(function(){
+      toast("Sous-thème modifié"); showThemeForm(theme);
     }).catch(function(e){ toast("Erreur: " + e.message); });
   }
 
-  async function deleteCustomLevel(theme, lvlId) {
-    if (!await confirmAction("Supprimer ce niveau et tous ses mots ?")) return;
-    theme.customLevels = (theme.customLevels || []).filter(function(l){ return l.id !== lvlId; });
-    if (currentCustomLevelId === lvlId) currentCustomLevelId = null;
+  async function deleteSubTheme(theme, subId) {
+    if (!await confirmAction("Supprimer ce sous-thème et tous ses niveaux ?")) return;
+    theme.subThemes = (theme.subThemes||[]).filter(function(s){ return s.id !== subId; });
+    if (currentSubThemeId === subId) { currentSubThemeId = null; currentCustomLevelId = null; }
     try {
       await window.FB.setDocument("themes", theme._id, theme);
-      toast("Niveau supprimé");
-      showThemeForm(theme);
+      toast("Sous-thème supprimé"); showThemeForm(theme);
     } catch (e) { toast("Erreur: " + e.message); }
   }
 
-  async function moveCustomLevel(theme, lvlId, dir) {
-    const levels = (theme.customLevels || []).slice().sort(function(a,b){return(a.order||0)-(b.order||0);});
-    const idx = levels.findIndex(function(l){ return l.id === lvlId; });
+  async function moveSubTheme(theme, subId, dir) {
+    const subs = (theme.subThemes||[]).slice().sort(function(a,b){return(a.order||0)-(b.order||0);});
+    const idx = subs.findIndex(function(s){ return s.id === subId; });
     if (idx === -1) return;
-    const swap = idx + dir;
-    if (swap < 0 || swap >= levels.length) return;
-    const tmp = levels[idx].order;
-    levels[idx].order = levels[swap].order;
-    levels[swap].order = tmp;
-    try {
-      await window.FB.setDocument("themes", theme._id, theme);
-      showThemeForm(theme);
-    } catch (e) { toast("Erreur: " + e.message); }
+    const sw = idx + dir;
+    if (sw < 0 || sw >= subs.length) return;
+    const t = subs[idx].order; subs[idx].order = subs[sw].order; subs[sw].order = t;
+    try { await window.FB.setDocument("themes", theme._id, theme); showThemeForm(theme); }
+    catch (e) { toast("Erreur: " + e.message); }
   }
 
-  async function migrateOldLevels(theme) {
-    if (!await confirmAction("Convertir l'ancien contenu en niveaux flexibles ? (l'ancien reste intact en secours)")) return;
-    if (!Array.isArray(theme.customLevels)) theme.customLevels = [];
-    const map = [
-      { key: "debutant",      name: "Débutant",      emoji: "🌱" },
-      { key: "intermediaire", name: "Intermédiaire", emoji: "🌿" },
-      { key: "avance",        name: "Avancé",        emoji: "🌳" },
-      { key: "expert",        name: "Expert",        emoji: "⭐" },
-      { key: "mouallim",      name: "Mouallim",      emoji: "👑" }
-    ];
-    let order = theme.customLevels.length;
-    map.forEach(function(m) {
-      const arr = (theme.levels && theme.levels[m.key]) || [];
-      if (arr.length > 0) {
-        order++;
-        theme.customLevels.push({
-          id: "lvl_mig_" + m.key + "_" + Date.now(),
-          name: m.name, emoji: m.emoji,
-          access: m.key === "mouallim" ? "premium" : "free",
-          accessValue: 0, adWall: false,
-          words: arr.slice(), chunks: [],
-          order: order
-        });
-      }
-    });
-    try {
-      await window.FB.setDocument("themes", theme._id, theme);
-      toast("Migration réussie !");
-      showThemeForm(theme);
-    } catch (e) { toast("Erreur: " + e.message); }
-  }
-
-  function openThemeCreator() { showThemeForm({}); }
-
-  async function openThemeEditor(themeId) {
-    try {
-      const theme = await window.FB.getDocument("themes", themeId);
-      if (!theme) { toast("Thème introuvable"); return; }
-      normalizeTheme(theme);
-      currentTheme = theme;
-      currentCustomLevelId = null;
-      showThemeForm(theme);
-      const ed = document.getElementById("themeEditor");
-      if (ed) ed.scrollIntoView({ behavior: "smooth", block: "start" });
-    } catch (e) { toast("Erreur: " + e.message); }
-  }
   // ============================================================
   // ÉDITEUR DE MOTS D'UN NIVEAU (fix: currentCustomLevelId fiable)
   // ============================================================
