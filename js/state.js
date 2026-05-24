@@ -182,14 +182,16 @@ const State = (function() {
   }
 
   // ===== SYNC CLOUD : PULL =====
-  async function pullFromCloud() {
+   async function pullFromCloud() {
     if (!window.FB || !window.FB.isReady) return false;
     const client = window.FB.getClient && window.FB.getClient();
     if (!client) return false;
     const user = window.FB.getCurrentUser();
     if (!user) return false;
 
+    isPullingNow = true;   // VERROU ON
     try {
+
       const { data, error } = await client
         .from("profiles")
         .select("*")
@@ -209,11 +211,14 @@ const State = (function() {
         return true;
       }
       return false;
-    } catch (e) {
+        } catch (e) {
       console.warn("pullFromCloud exception:", e);
       return false;
+    } finally {
+      isPullingNow = false;   // VERROU OFF (toujours, même en cas d'erreur)
     }
   }
+
 
   // ===== SYNC CLOUD : PUSH (debounced) =====
    function schedulePush() {
