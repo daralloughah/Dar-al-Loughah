@@ -536,11 +536,7 @@ const AdminScreen = (function() {
   // ============================================================
   // ÉDITEUR DE MOTS D'UN NIVEAU (fix: currentCustomLevelId fiable)
   // ============================================================
-  function getCurrentLevel(theme) {
-    if (!currentCustomLevelId) return null;
-    return (theme.customLevels || []).find(function(l){ return l.id === currentCustomLevelId; });
-  }
-
+  
   function renderLevelWordsEditor(theme) {
     const container = document.getElementById("levelWordsEditor");
     if (!container) return;
