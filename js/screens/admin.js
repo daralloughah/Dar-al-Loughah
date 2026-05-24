@@ -1551,3 +1551,108 @@ const AdminScreen = (function() {
       } catch (e) { toast("Erreur: " + e.message); }
     };
   }
+  // ============================================================
+  // ONGLET OUTILS — Exports + actions
+  // ============================================================
+  function renderToolsTab(container) {
+    container.innerHTML =
+      '<div class="panel">' +
+        '<div class="panel-title">EXPORTS / SAUVEGARDE</div>' +
+        '<button class="btn btn-outline mt-8" id="exportAllBtn">Exporter toute la base (JSON)</button>' +
+        '<button class="btn btn-outline mt-8" id="exportThemesBtn">Exporter les thèmes</button>' +
+        '<button class="btn btn-outline mt-8" id="exportDefsBtn">Exporter les définitions</button>' +
+      '</div>' +
+      '<div class="panel mt-12">' +
+        '<div class="panel-title">ACTIONS</div>' +
+        '<button class="btn btn-outline mt-8" id="reloadBtn">Recharger l\'application</button>' +
+        '<button class="btn btn-outline mt-8" id="announceBtn">Envoyer une annonce</button>' +
+      '</div>';
+
+    document.getElementById("exportAllBtn").onclick = exportAll;
+    document.getElementById("exportThemesBtn").onclick = function(){ exportCollection("themes"); };
+    document.getElementById("exportDefsBtn").onclick = function(){ exportCollection("definitions"); };
+    document.getElementById("reloadBtn").onclick = function(){ location.reload(); };
+    document.getElementById("announceBtn").onclick = async function() {
+      const msg = prompt("Message à envoyer à tous les utilisateurs :");
+      if (!msg) return;
+      try {
+        await window.FB.addDocument("announcements", { message: msg, createdAt: Date.now() });
+        toast("Annonce envoyée");
+      } catch (e) { toast("Erreur: " + e.message); }
+    };
+  }
+
+  async function exportAll() {
+    toast("Export en cours...");
+    try {
+      const data = {
+        themes:        await window.FB.getCollection("themes") || [],
+        letters:       await window.FB.getCollection("letters") || [],
+        definitions:   await window.FB.getCollection("definitions") || [],
+        notions:       await window.FB.getCollection("notions") || [],
+        unlocks:       await window.FB.getCollection("unlocks") || [],
+        wotd:          await window.FB.getCollection("wotd") || [],
+        officialLists: await window.FB.getCollection("officialLists") || [],
+        config:        await window.FB.getDocument("config", "global") || {},
+        exportedAt: Date.now()
+      };
+      downloadJSON(data, "dar-al-loughah-backup-" + new Date().toISOString().slice(0,10) + ".json");
+      toast("Sauvegarde téléchargée");
+    } catch (e) { toast("Erreur: " + e.message); }
+  }
+
+  async function exportCollection(name) {
+    try {
+      const items = await window.FB.getCollection(name) || [];
+      downloadJSON(items, name + "-" + new Date().toISOString().slice(0,10) + ".json");
+      toast(items.length + " items exportés");
+    } catch (e) { toast("Erreur: " + e.message); }
+  }
+
+  function downloadJSON(data, filename) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ============================================================
+  // UTILITAIRES
+  // ============================================================
+  function escapeHTML(s) {
+    return (s + "").replace(/[&<>"']/g, function(c) {
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+    });
+  }
+
+  function getVal(id) { const el = document.getElementById(id); return el ? el.value.trim() : ""; }
+  function clearVal(id) { const el = document.getElementById(id); if (el) el.value = ""; }
+
+  function toast(msg) {
+    if (window.Main && window.Main.toast) window.Main.toast(msg);
+    else console.log(msg);
+  }
+
+  function confirmAction(msg) {
+    return new Promise(function(resolve) {
+      if (window.Main && window.Main.confirm) {
+        window.Main.confirm("Confirmation", msg, function(){ resolve(true); });
+        setTimeout(function(){ resolve(false); }, 30000);
+      } else {
+        resolve(confirm(msg));
+      }
+    });
+  }
+
+  // ============================================================
+  // API PUBLIQUE
+  // ============================================================
+  return {
+    show: show
+  };
+
+})();
+
+window.AdminScreen = AdminScreen;
+console.log("✓ AdminScreen v4 chargé (CMS pro — catégories, niveaux flexibles, stats avancées)");
