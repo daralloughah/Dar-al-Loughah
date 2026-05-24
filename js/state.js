@@ -216,9 +216,9 @@ const State = (function() {
   }
 
   // ===== SYNC CLOUD : PUSH (debounced) =====
-  function schedulePush() {
-    // Mode invité = pas de push cloud, on garde tout en RAM
+   function schedulePush() {
     if (!state.loggedIn || state.authMethod === "guest") return;
+    if (isPullingNow) return;   // VERROU : on ne pousse jamais pendant le pull initial
     if (pushTimer) clearTimeout(pushTimer);
     pendingPush = true;
     pushTimer = setTimeout(function() {
