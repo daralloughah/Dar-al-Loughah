@@ -3,1299 +3,968 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0a1535" />
+  <meta name="theme-color" content="#060914" />
   <meta name="description" content="Dar Al Loughah – Apprenez l'arabe avec élégance" />
   <title>دار اللغة – Dar Al Loughah</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Reem+Kufi:wght@500;700&family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Reem+Kufi:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- ⬇ NOUVEAUX MODULES CSS (à charger AVANT styles.css) -->
-  <link rel="stylesheet" href="css/modules/01-tokens.css" />
-  <link rel="stylesheet" href="css/modules/02-typography.css" />
-  <link rel="stylesheet" href="css/modules/03-frames.css" />
-  <link rel="stylesheet" href="css/modules/04-modules.css" />
-  <link rel="stylesheet" href="css/modules/05-buttons.css" />
-  <link rel="stylesheet" href="css/modules/06-screens.css" />
-  <link rel="stylesheet" href="css/modules/07-baroque.css" />
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            night: {
+              950: '#060914',
+              900: '#0a0f1f',
+              800: '#0d1326',
+              700: '#131a35',
+              600: '#1a2247',
+              500: '#222b58',
+            },
+            gold: {
+              50:  '#fbf3d8',
+              100: '#f7e7b4',
+              200: '#f0d77a',
+              300: '#e8c878',
+              400: '#d4af37',
+              500: '#c89a3a',
+              600: '#a07a1c',
+              700: '#7a5d14',
+              800: '#4d3a0c',
+            },
+            ink: {
+              DEFAULT: '#f5ecd1',
+              soft: '#d8cca8',
+              muted: '#8a8068',
+              dim:   '#5c5340',
+            }
+          },
+          fontFamily: {
+            display: ['"Cormorant Garamond"', 'serif'],
+            arabic:  ['"Amiri"', '"Reem Kufi"', 'serif'],
+            kufi:    ['"Reem Kufi"', 'sans-serif'],
+            sans:    ['"Manrope"', '"DM Sans"', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'gold-sm':  '0 2px 12px -2px rgba(212,175,55,0.18)',
+            'gold':     '0 8px 32px -8px rgba(212,175,55,0.35)',
+            'gold-lg':  '0 16px 48px -12px rgba(212,175,55,0.45)',
+            'glow':     '0 0 24px rgba(232,200,120,0.35)',
+            'glow-lg':  '0 0 48px rgba(232,200,120,0.5)',
+            'inner-gold': 'inset 0 1px 0 rgba(247,231,180,0.15)',
+          },
+          backdropBlur: { xs: '2px' },
+          animation: {
+            'fade-up':    'fadeUp 600ms cubic-bezier(0.16,1,0.3,1) backwards',
+            'fade-in':    'fadeIn 800ms ease-out backwards',
+            'shimmer':    'shimmer 3s linear infinite',
+            'twinkle':    'twinkle 3s ease-in-out infinite',
+            'float':      'float 6s ease-in-out infinite',
+            'glow-pulse': 'glowPulse 4s ease-in-out infinite',
+            'slide-up':   'slideUp 400ms cubic-bezier(0.16,1,0.3,1)',
+            'rotate-slow':'rotateSlow 30s linear infinite',
+          }
+        }
+      }
+    }
+  </script>
 
-  <!-- ⬇ Ancien CSS — GARDÉ EN SECOURS (à supprimer quand tu auras tout validé) -->
+  <!-- Custom CSS premium (effets impossibles en Tailwind seul) -->
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 
-<body>
-  <!-- ===== Bibliothèque SVG baroque (chargée une seule fois) ===== -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <linearGradient id="goldRimV" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#fdeec3"/>
-      <stop offset="14%" stop-color="#f7dc88"/>
-      <stop offset="38%" stop-color="#c89a3a"/>
-      <stop offset="55%" stop-color="#9c7019"/>
-      <stop offset="78%" stop-color="#c89a3a"/>
-      <stop offset="100%" stop-color="#6b4a0e"/>
-    </linearGradient>
-    <linearGradient id="goldRimH" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#6b4a0e"/>
-      <stop offset="20%" stop-color="#c89a3a"/>
-      <stop offset="50%" stop-color="#f7dc88"/>
-      <stop offset="80%" stop-color="#c89a3a"/>
-      <stop offset="100%" stop-color="#6b4a0e"/>
-    </linearGradient>
-    <radialGradient id="goldDome" cx="50%" cy="35%" r="65%">
-      <stop offset="0%" stop-color="#fdeec3"/>
-      <stop offset="35%" stop-color="#f0c860"/>
-      <stop offset="70%" stop-color="#9c7019"/>
-      <stop offset="100%" stop-color="#3d2806"/>
-    </radialGradient>
-    <linearGradient id="navyPanel" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#162455"/>
-      <stop offset="50%" stop-color="#0c1738"/>
-      <stop offset="100%" stop-color="#070e24"/>
-    </linearGradient>
-    <radialGradient id="gemBlue" cx="35%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="#9ecdff"/>
-      <stop offset="40%" stop-color="#3a6fc4"/>
-      <stop offset="100%" stop-color="#0a2160"/>
-    </radialGradient>
-    <radialGradient id="gemRed" cx="35%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="#ffc4c4"/>
-      <stop offset="45%" stop-color="#c43a3a"/>
-      <stop offset="100%" stop-color="#5a0a0a"/>
-    </radialGradient>
-    <linearGradient id="goldBright" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#fdeec3"/>
-      <stop offset="50%" stop-color="#f0c860"/>
-      <stop offset="100%" stop-color="#9c7019"/>
-    </linearGradient>
+<body class="font-sans bg-night-950 text-ink antialiased overflow-x-hidden min-h-screen">
 
-    <symbol id="ornateFrame" viewBox="0 0 340 200" preserveAspectRatio="none">
-      <rect x="6" y="6" width="328" height="188" rx="14" fill="#000" opacity=".45"/>
-      <rect x="6" y="6" width="328" height="188" rx="12" fill="url(#goldRimV)"/>
-      <rect x="8" y="8" width="324" height="28" rx="10" fill="url(#goldBright)" opacity=".55"/>
-      <rect x="26" y="26" width="288" height="148" rx="6" fill="url(#navyPanel)"/>
-      <rect x="26" y="26" width="288" height="148" rx="6" fill="none" stroke="#6b4a0e" stroke-width="1.2"/>
-      <rect x="29" y="29" width="282" height="142" rx="4" fill="none" stroke="#9c7019" stroke-width=".6" opacity=".7"/>
-      <rect x="29" y="29" width="282" height="40" rx="4" fill="url(#goldBright)" opacity=".06"/>
-    </symbol>
+  <!-- ===== Bibliothèque SVG (préservée pour baroque-renderer.js) ===== -->
+  <svg width="0" height="0" class="absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#f7e7b4"/>
+        <stop offset="50%" stop-color="#d4af37"/>
+        <stop offset="100%" stop-color="#a07a1c"/>
+      </linearGradient>
+      <linearGradient id="goldGradV" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#f0d77a"/>
+        <stop offset="100%" stop-color="#a07a1c"/>
+      </linearGradient>
+      <linearGradient id="goldRimV" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#fdeec3"/><stop offset="50%" stop-color="#c89a3a"/><stop offset="100%" stop-color="#6b4a0e"/>
+      </linearGradient>
+      <linearGradient id="goldRimH" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#6b4a0e"/><stop offset="50%" stop-color="#f7dc88"/><stop offset="100%" stop-color="#6b4a0e"/>
+      </linearGradient>
+      <radialGradient id="goldDome" cx="50%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#fdeec3"/><stop offset="50%" stop-color="#f0c860"/><stop offset="100%" stop-color="#3d2806"/>
+      </radialGradient>
+      <linearGradient id="goldBright" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#fdeec3"/><stop offset="50%" stop-color="#f0c860"/><stop offset="100%" stop-color="#9c7019"/>
+      </linearGradient>
+      <linearGradient id="navyPanel" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#162455"/><stop offset="100%" stop-color="#070e24"/>
+      </linearGradient>
+      <radialGradient id="gemBlue" cx="35%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#9ecdff"/><stop offset="100%" stop-color="#0a2160"/>
+      </radialGradient>
+      <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#f0d77a" stop-opacity="0.4"/>
+        <stop offset="100%" stop-color="#f0d77a" stop-opacity="0"/>
+      </radialGradient>
 
-    <symbol id="cornerFlourish" viewBox="0 0 60 60" overflow="visible">
-      <path d="M 4 26 C 4 12, 12 4, 26 4 L 38 4 C 30 6, 22 12, 16 20 C 12 24, 8 25, 4 26 Z" fill="url(#goldDome)"/>
-      <path d="M 6 22 C 8 14, 14 8, 22 6 C 18 10, 14 14, 10 20 Z" fill="#fdeec3" opacity=".55"/>
-      <path d="M 12 22 C 16 18, 22 14, 28 12 C 22 16, 18 20, 14 26 C 13 25, 12 24, 12 22 Z" fill="#3d2806" opacity=".6"/>
-      <circle cx="14" cy="14" r="2.4" fill="url(#gemBlue)"/>
-      <circle cx="13.4" cy="13.4" r=".9" fill="#fff" opacity=".7"/>
-      <path d="M 28 8 C 34 10, 38 14, 40 20 C 36 16, 32 12, 28 10 Z" fill="url(#goldBright)"/>
-    </symbol>
+      <!-- Symbols préservés pour baroque-renderer.js -->
+      <symbol id="ornateFrame" viewBox="0 0 340 200" preserveAspectRatio="none">
+        <rect x="2" y="2" width="336" height="196" rx="14" fill="url(#navyPanel)" stroke="url(#goldGrad)" stroke-width="1.5"/>
+        <rect x="8" y="8" width="324" height="184" rx="10" fill="none" stroke="url(#goldGrad)" stroke-width="0.5" opacity="0.4"/>
+      </symbol>
+      <symbol id="cornerFlourish" viewBox="0 0 60 60" overflow="visible">
+        <path d="M 8 30 L 8 14 Q 8 8 14 8 L 30 8" fill="none" stroke="url(#goldGrad)" stroke-width="1.2" stroke-linecap="round"/>
+        <circle cx="14" cy="14" r="1.8" fill="url(#goldBright)"/>
+      </symbol>
+      <symbol id="rosette" viewBox="0 0 22 22" overflow="visible">
+        <path d="M 11 2 L 13 10 L 20 11 L 13 12 L 11 20 L 9 12 L 2 11 L 9 10 Z" fill="url(#goldBright)"/>
+        <circle cx="11" cy="11" r="1.2" fill="#fdeec3"/>
+      </symbol>
+      <symbol id="sideCart" viewBox="0 0 24 50" overflow="visible">
+        <path d="M 12 2 L 18 25 L 12 48 L 6 25 Z" fill="url(#goldDome)" opacity="0.7"/>
+      </symbol>
+      <symbol id="midCart" viewBox="0 0 40 16" overflow="visible">
+        <path d="M 2 8 L 20 2 L 38 8 L 20 14 Z" fill="url(#goldDome)" opacity="0.7"/>
+      </symbol>
 
-    <symbol id="sideCart" viewBox="0 0 24 50" overflow="visible">
-      <path d="M 4 25 L 12 8 L 20 25 L 12 42 Z" fill="url(#goldDome)" stroke="#6b4a0e" stroke-width=".6"/>
-      <path d="M 6 25 L 12 11 L 18 25 L 12 21 Z" fill="#fdeec3" opacity=".4"/>
-      <circle cx="12" cy="25" r="2.5" fill="url(#gemRed)"/>
-      <circle cx="11.3" cy="24.3" r=".9" fill="#fff" opacity=".8"/>
-    </symbol>
+      <!-- Icons (préservés pour baroque-renderer + boutons) -->
+      <symbol id="iconBook" viewBox="0 0 60 60">
+        <path d="M 8 16 C 18 12, 26 12, 30 16 L 30 50 C 26 46, 18 46, 8 50 Z M 52 16 C 42 12, 34 12, 30 16 L 30 50 C 34 46, 42 46, 52 50 Z" fill="url(#goldGrad)"/>
+      </symbol>
+      <symbol id="iconAlphabet" viewBox="0 0 60 60">
+        <rect x="10" y="10" width="40" height="44" rx="3" fill="url(#goldGrad)"/>
+        <rect x="12" y="12" width="36" height="40" rx="2" fill="#0c1738"/>
+        <g font-family="Cormorant Garamond, serif" font-weight="600" fill="url(#goldBright)" font-size="11" text-anchor="middle">
+          <text x="22" y="26">A</text><text x="38" y="26">ب</text>
+          <text x="22" y="42">ج</text><text x="38" y="42">C</text>
+        </g>
+      </symbol>
+      <symbol id="iconGroups" viewBox="0 0 60 60">
+        <circle cx="20" cy="22" r="6" fill="url(#goldGrad)"/>
+        <circle cx="40" cy="22" r="6" fill="url(#goldGrad)"/>
+        <path d="M 8 48 Q 8 36 20 36 Q 32 36 32 48 Z M 28 48 Q 28 36 40 36 Q 52 36 52 48 Z" fill="url(#goldGrad)"/>
+      </symbol>
+      <symbol id="iconStar" viewBox="0 0 60 60">
+        <path d="M 30 6 L 36 22 L 54 24 L 40 36 L 44 54 L 30 44 L 16 54 L 20 36 L 6 24 L 24 22 Z" fill="url(#goldGrad)" stroke="#9c7019" stroke-width="0.8"/>
+      </symbol>
+      <symbol id="iconLists" viewBox="0 0 60 60">
+        <rect x="10" y="14" width="40" height="4" rx="2" fill="url(#goldGrad)"/>
+        <rect x="10" y="28" width="40" height="4" rx="2" fill="url(#goldGrad)"/>
+        <rect x="10" y="42" width="32" height="4" rx="2" fill="url(#goldGrad)"/>
+      </symbol>
+      <symbol id="iconBadge" viewBox="0 0 60 60">
+        <path d="M 30 4 L 52 17 L 52 43 L 30 56 L 8 43 L 8 17 Z" fill="url(#goldGrad)"/>
+        <path d="M 30 18 L 33 27 L 42 30 L 33 33 L 30 42 L 27 33 L 18 30 L 27 27 Z" fill="#0c1738"/>
+      </symbol>
+      <symbol id="iconTrophy" viewBox="0 0 60 60">
+        <rect x="18" y="50" width="24" height="4" fill="url(#goldGrad)"/>
+        <path d="M 16 12 L 44 12 L 42 36 Q 42 44 30 44 Q 18 44 18 36 Z" fill="url(#goldGrad)"/>
+      </symbol>
+      <symbol id="iconScroll" viewBox="0 0 60 60">
+        <ellipse cx="14" cy="30" rx="6" ry="20" fill="url(#goldGrad)"/>
+        <path d="M 14 12 L 46 12 L 46 48 L 14 48 Z" fill="#fdeec3" opacity="0.8"/>
+        <ellipse cx="46" cy="30" rx="6" ry="20" fill="url(#goldGrad)"/>
+      </symbol>
+      <symbol id="iconQuill" viewBox="0 0 60 60">
+        <path d="M 14 46 L 44 16 L 50 22 L 20 52 Z" fill="url(#goldGrad)"/>
+        <circle cx="14" cy="46" r="3" fill="#0c1738"/>
+      </symbol>
+      <symbol id="iconKey" viewBox="0 0 60 60">
+        <circle cx="20" cy="22" r="10" fill="none" stroke="url(#goldGrad)" stroke-width="3"/>
+        <path d="M 30 22 L 52 22 L 52 30 L 46 30 L 46 26 L 42 26 L 42 30 L 38 30 L 38 22" fill="url(#goldGrad)"/>
+      </symbol>
+      <symbol id="iconCompass" viewBox="0 0 60 60">
+        <circle cx="30" cy="30" r="22" fill="none" stroke="url(#goldGrad)" stroke-width="2"/>
+        <path d="M 30 14 L 34 30 L 30 46 L 26 30 Z" fill="url(#goldGrad)"/>
+      </symbol>
+      <symbol id="iconGear" viewBox="0 0 60 60">
+        <path d="M 30 6 L 34 14 L 42 12 L 44 20 L 52 22 L 50 30 L 52 38 L 44 40 L 42 48 L 34 46 L 30 54 L 26 46 L 18 48 L 16 40 L 8 38 L 10 30 L 8 22 L 16 20 L 18 12 L 26 14 Z" fill="url(#goldGrad)"/>
+        <circle cx="30" cy="30" r="8" fill="#0c1738"/>
+      </symbol>
+      <symbol id="iconProfile" viewBox="0 0 60 60">
+        <circle cx="30" cy="22" r="10" fill="url(#goldGrad)"/>
+        <path d="M 10 54 Q 10 40 30 40 Q 50 40 50 54 Z" fill="url(#goldGrad)"/>
+      </symbol>
+      <symbol id="iconMail" viewBox="0 0 60 60">
+        <rect x="6" y="14" width="48" height="32" rx="2" fill="url(#goldGrad)"/>
+        <path d="M 6 14 L 30 34 L 54 14" fill="none" stroke="#0c1738" stroke-width="2"/>
+      </symbol>
+    </defs>
+  </svg>
 
-    <symbol id="midCart" viewBox="0 0 40 16" overflow="visible">
-      <path d="M 4 8 L 12 2 L 28 2 L 36 8 L 28 14 L 12 14 Z" fill="url(#goldDome)" stroke="#6b4a0e" stroke-width=".6"/>
-      <path d="M 12 4 L 28 4 L 32 8 L 28 6 L 12 6 L 8 8 Z" fill="#fdeec3" opacity=".5"/>
-      <circle cx="20" cy="8" r="2" fill="url(#gemBlue)"/>
-    </symbol>
-
-    <symbol id="rosette" viewBox="0 0 22 22" overflow="visible">
-      <path d="M 11 1 L 13 6 L 18 4 L 16 9 L 21 11 L 16 13 L 18 18 L 13 16 L 11 21 L 9 16 L 4 18 L 6 13 L 1 11 L 6 9 L 4 4 L 9 6 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".4"/>
-      <path d="M 11 5 L 12 9 L 15 8 L 14 11 L 15 14 L 12 13 L 11 17 L 10 13 L 7 14 L 8 11 L 7 8 L 10 9 Z" fill="url(#goldBright)" opacity=".75"/>
-      <circle cx="11" cy="11" r="2.6" fill="url(#gemBlue)"/>
-      <circle cx="10.3" cy="10.3" r=".9" fill="#fff" opacity=".8"/>
-    </symbol>
-
-    <symbol id="iconBook" viewBox="0 0 60 60">
-      <path d="M 8 16 C 18 12, 26 12, 30 16 L 30 50 C 26 46, 18 46, 8 50 Z" fill="#3d2806"/>
-      <path d="M 52 16 C 42 12, 34 12, 30 16 L 30 50 C 34 46, 42 46, 52 50 Z" fill="#3d2806"/>
-      <path d="M 10 18 C 18 14, 26 14, 30 18 L 30 48 C 26 44, 18 44, 10 48 Z" fill="url(#goldBright)"/>
-      <path d="M 50 18 C 42 14, 34 14, 30 18 L 30 48 C 34 44, 42 44, 50 48 Z" fill="url(#goldBright)"/>
-      <path d="M 14 24 H 26 M 14 28 H 24 M 14 32 H 26 M 14 36 H 22" stroke="#6b4a0e" stroke-width="1" stroke-linecap="round" opacity=".7"/>
-      <path d="M 34 24 H 46 M 36 28 H 46 M 34 32 H 46 M 38 36 H 46" stroke="#6b4a0e" stroke-width="1" stroke-linecap="round" opacity=".7"/>
-      <path d="M 30 16 L 30 48" stroke="#3d2806" stroke-width="1.4"/>
-    </symbol>
-
-    <symbol id="iconAlphabet" viewBox="0 0 60 60">
-      <rect x="10" y="10" width="40" height="44" rx="3" fill="url(#goldBright)" stroke="#3d2806" stroke-width="1"/>
-      <rect x="12" y="12" width="36" height="40" rx="2" fill="#0c1738"/>
-      <rect x="10" y="10" width="4" height="44" fill="#3d2806"/>
-      <g font-family="Cinzel, serif" font-weight="700" fill="url(#goldBright)" font-size="9" text-anchor="middle">
-        <text x="22" y="24">A</text><text x="30" y="24">B</text><text x="38" y="24">C</text>
-        <text x="22" y="34">E</text><text x="30" y="34">F</text><text x="38" y="34">G</text>
-        <text x="22" y="44">X</text><text x="30" y="44">Y</text><text x="38" y="44">Z</text>
-      </g>
-    </symbol>
-
-    <symbol id="iconGroups" viewBox="0 0 60 60">
-      <circle cx="44" cy="22" r="6" fill="url(#goldBright)" stroke="#3d2806" stroke-width="1"/>
-      <path d="M 32 44 C 32 34, 38 30, 44 30 C 50 30, 56 34, 56 44 Z" fill="url(#goldBright)" stroke="#3d2806" stroke-width="1"/>
-      <circle cx="16" cy="22" r="6" fill="url(#goldBright)" stroke="#3d2806" stroke-width="1"/>
-      <path d="M 4 44 C 4 34, 10 30, 16 30 C 22 30, 28 34, 28 44 Z" fill="url(#goldBright)" stroke="#3d2806" stroke-width="1"/>
-      <circle cx="30" cy="26" r="7" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
-      <path d="M 16 52 C 16 40, 22 34, 30 34 C 38 34, 44 40, 44 52 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
-    </symbol>
-
-    <symbol id="iconStar" viewBox="0 0 60 60">
-      <path d="M 30 6 L 36 22 L 54 24 L 40 36 L 44 54 L 30 44 L 16 54 L 20 36 L 6 24 L 24 22 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2" stroke-linejoin="round"/>
-      <path d="M 30 14 L 34 24 L 44 25 L 36 32 L 39 42 L 30 36 L 21 42 L 24 32 L 16 25 L 26 24 Z" fill="url(#goldBright)" opacity=".7"/>
-      <circle cx="30" cy="30" r="3.5" fill="url(#gemBlue)"/>
-      <circle cx="28.5" cy="28.5" r="1.2" fill="#fff" opacity=".8"/>
-    </symbol>
-
-    <symbol id="iconLists" viewBox="0 0 60 60">
-      <g fill="url(#goldDome)" stroke="#3d2806" stroke-width=".6">
-        <path d="M 12 14 L 14 18 L 18 19 L 15 22 L 16 26 L 12 24 L 8 26 L 9 22 L 6 19 L 10 18 Z"/>
-        <path d="M 12 30 L 14 34 L 18 35 L 15 38 L 16 42 L 12 40 L 8 42 L 9 38 L 6 35 L 10 34 Z"/>
-        <path d="M 12 46 L 14 50 L 18 51 L 15 54 L 16 58 L 12 56 L 8 58 L 9 54 L 6 51 L 10 50 Z"/>
-      </g>
-      <rect x="24" y="17" width="32" height="4" rx="2" fill="url(#goldBright)"/>
-      <rect x="24" y="33" width="32" height="4" rx="2" fill="url(#goldBright)"/>
-      <rect x="24" y="49" width="28" height="4" rx="2" fill="url(#goldBright)"/>
-    </symbol>
-
-    <symbol id="iconBadge" viewBox="0 0 60 60">
-      <path d="M 30 4 L 52 17 L 52 43 L 30 56 L 8 43 L 8 17 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
-      <path d="M 30 12 L 46 21 L 46 39 L 30 48 L 14 39 L 14 21 Z" fill="#0c1738" stroke="url(#goldBright)" stroke-width="1"/>
-      <path d="M 30 18 L 33 27 L 42 30 L 33 33 L 30 42 L 27 33 L 18 30 L 27 27 Z" fill="url(#goldBright)"/>
-      <circle cx="30" cy="30" r="3.5" fill="url(#gemBlue)"/>
-      <circle cx="28.7" cy="28.7" r="1.2" fill="#fff" opacity=".8"/>
-    </symbol>
-
-    <symbol id="iconTrophy" viewBox="0 0 60 60">
-      <rect x="18" y="50" width="24" height="4" rx="1" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
-      <rect x="22" y="46" width="16" height="5" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
-      <path d="M 26 42 L 24 46 L 36 46 L 34 42 Z" fill="url(#goldBright)" stroke="#3d2806" stroke-width=".6"/>
-      <path d="M 18 18 C 10 18, 6 24, 8 32 C 10 36, 14 36, 18 34 L 18 30 C 14 30, 12 28, 14 24 C 16 22, 18 22, 20 22 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
-      <path d="M 42 18 C 50 18, 54 24, 52 32 C 50 36, 46 36, 42 34 L 42 30 C 46 30, 48 28, 46 24 C 44 22, 42 22, 40 22 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
-      <path d="M 16 12 L 44 12 L 42 36 C 42 40, 38 44, 30 44 C 22 44, 18 40, 18 36 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
-      <path d="M 20 14 L 28 14 L 26 28 C 26 32, 24 34, 22 34 L 20 28 Z" fill="#fdeec3" opacity=".5"/>
-      <rect x="14" y="11" width="32" height="3.5" rx="1" fill="url(#goldRimH)" stroke="#3d2806" stroke-width=".6"/>
-      <circle cx="30" cy="24" r="3" fill="url(#gemBlue)"/>
-      <circle cx="29" cy="23" r="1" fill="#fff" opacity=".8"/>
-    </symbol>
-
-    <symbol id="iconScroll" viewBox="0 0 60 60">
-      <ellipse cx="14" cy="30" rx="6" ry="20" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
-      <ellipse cx="14" cy="30" rx="3" ry="18" fill="#3d2806" opacity=".4"/>
-      <path d="M 14 12 L 46 12 L 46 48 L 14 48 Z" fill="#fdeec3" stroke="#6b4a0e" stroke-width=".8"/>
-      <ellipse cx="46" cy="30" rx="6" ry="20" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
-      <ellipse cx="46" cy="30" rx="3" ry="18" fill="#3d2806" opacity=".4"/>
-      <g stroke="#6b4a0e" stroke-width=".9" stroke-linecap="round" opacity=".75">
-        <line x1="20" y1="20" x2="40" y2="20"/>
-        <line x1="20" y1="25" x2="42" y2="25"/>
-        <line x1="20" y1="30" x2="38" y2="30"/>
-        <line x1="20" y1="35" x2="42" y2="35"/>
-        <line x1="20" y1="40" x2="40" y2="40"/>
-      </g>
-    </symbol>
-
-    <symbol id="iconQuill" viewBox="0 0 60 60">
-      <rect x="9" y="13" width="42" height="42" rx="2.5" fill="#000" opacity=".4"/>
-      <rect x="8" y="10" width="42" height="42" rx="2.5" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.4"/>
-      <rect x="8" y="10" width="42" height="5" rx="2.5" fill="#fdeec3" opacity=".45"/>
-      <rect x="12" y="14" width="34" height="34" rx="1.2" fill="#0c1738" stroke="#3d2806" stroke-width=".8"/>
-      <rect x="13.5" y="15.5" width="31" height="31" rx=".6" fill="none" stroke="url(#goldBright)" stroke-width=".5"/>
-      <path d="M 13.5 15.5 L 19 15.5 L 13.5 21 Z" fill="url(#goldBright)" opacity=".85"/>
-      <path d="M 44.5 15.5 L 39 15.5 L 44.5 21 Z" fill="url(#goldBright)" opacity=".85"/>
-      <path d="M 13.5 46.5 L 19 46.5 L 13.5 41 Z" fill="url(#goldBright)" opacity=".85"/>
-      <path d="M 44.5 46.5 L 39 46.5 L 44.5 41 Z" fill="url(#goldBright)" opacity=".85"/>
-      <g transform="translate(29, 31)">
-        <path d="M 0 -9 L 2.5 -2.5 L 9 0 L 2.5 2.5 L 0 9 L -2.5 2.5 L -9 0 L -2.5 -2.5 Z" fill="url(#goldBright)" stroke="#3d2806" stroke-width=".4"/>
-        <circle r="4" fill="#0c1738" stroke="#3d2806" stroke-width=".4"/>
-        <circle r="1" cx="0" cy="0" fill="url(#gemBlue)"/>
-      </g>
-      <g transform="translate(52, 2) rotate(40)">
-        <path d="M 0 0 Q 5 5, 6 14 Q 4 16, 1 17 L 0 20 L -1 17 Q -3 14, -1 6 Z" fill="url(#goldBright)" stroke="#3d2806" stroke-width=".5"/>
-        <line x1="0" y1="20" x2="0" y2="34" stroke="url(#goldBright)" stroke-width="1.4" stroke-linecap="round"/>
-        <path d="M -1.6 32 L 1.6 32 L 0 37 Z" fill="#3d2806"/>
-      </g>
-    </symbol>
-
-    <symbol id="iconKey" viewBox="0 0 60 60">
-      <circle cx="18" cy="22" r="11" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
-      <circle cx="18" cy="22" r="5" fill="#0c1738"/>
-      <rect x="28" y="19" width="22" height="6" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
-      <rect x="38" y="25" width="3" height="6" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
-      <rect x="44" y="25" width="3" height="8" fill="url(#goldDome)" stroke="#3d2806" stroke-width=".8"/>
-      <rect x="22" y="38" width="20" height="18" rx="2" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1"/>
-      <path d="M 26 38 L 26 32 C 26 28, 30 26, 32 26 C 34 26, 38 28, 38 32 L 38 38" fill="none" stroke="url(#goldBright)" stroke-width="2.2"/>
-      <circle cx="32" cy="46" r="2" fill="#3d2806"/>
-      <rect x="31" y="46" width="2" height="5" fill="#3d2806"/>
-    </symbol>
-
-    <symbol id="iconCompass" viewBox="0 0 60 60">
-      <circle cx="30" cy="30" r="24" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.4"/>
-      <circle cx="30" cy="30" r="20" fill="#0c1738" stroke="url(#goldBright)" stroke-width=".8"/>
-      <g fill="url(#goldBright)" font-family="Cinzel, serif" font-size="6" font-weight="700" text-anchor="middle">
-        <text x="30" y="16">N</text><text x="46" y="32">E</text><text x="30" y="48">S</text><text x="14" y="32">W</text>
-      </g>
-      <path d="M 30 14 L 33 30 L 30 46 L 27 30 Z" fill="url(#gemRed)" stroke="#3d2806" stroke-width=".6"/>
-      <path d="M 30 14 L 33 30 L 27 30 Z" fill="#c43a3a"/>
-      <circle cx="30" cy="30" r="2.5" fill="url(#goldBright)" stroke="#3d2806" stroke-width=".4"/>
-    </symbol>
-
-    <symbol id="iconGear" viewBox="0 0 60 60">
-      <path d="M 30 6 L 33 14 L 41 11 L 43 19 L 51 21 L 48 29 L 54 35 L 47 39 L 49 47 L 41 47 L 37 54 L 30 50 L 23 54 L 19 47 L 11 47 L 13 39 L 6 35 L 12 29 L 9 21 L 17 19 L 19 11 L 27 14 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
-      <circle cx="30" cy="30" r="10" fill="#0c1738" stroke="url(#goldBright)" stroke-width="1.2"/>
-      <circle cx="30" cy="30" r="4" fill="url(#gemBlue)"/>
-    </symbol>
-
-    <symbol id="iconProfile" viewBox="0 0 60 60">
-      <circle cx="30" cy="22" r="10" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
-      <path d="M 10 54 C 10 42, 18 36, 30 36 C 42 36, 50 42, 50 54 Z" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
-    </symbol>
-
-    <symbol id="iconMail" viewBox="0 0 60 60">
-      <rect x="6" y="14" width="48" height="32" rx="2" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
-      <path d="M 6 14 L 30 34 L 54 14" fill="none" stroke="#3d2806" stroke-width="1.4"/>
-      <circle cx="30" cy="34" r="4" fill="url(#gemRed)" stroke="#3d2806" stroke-width=".6"/>
-    </symbol>
-  </defs>
-</svg>
-<!-- ===== Fin bibliothèque SVG baroque ===== -->
-
-  <!-- LOADING SCREEN -->
-  <div class="loading-screen" id="loadingScreen" aria-hidden="true">
-    <div class="loading-bg-stars" aria-hidden="true"></div>
-
-    <div class="loading-frame">
-      <span class="loading-corner tl" aria-hidden="true"></span>
-      <span class="loading-corner tr" aria-hidden="true"></span>
-      <span class="loading-corner bl" aria-hidden="true"></span>
-      <span class="loading-corner br" aria-hidden="true"></span>
-
-      <div class="loading-crescent" aria-hidden="true">
-        <svg viewBox="0 0 100 100">
+  <!-- ===== Loading Screen ===== -->
+  <div class="loading-screen fixed inset-0 z-[9999] flex items-center justify-center bg-night-950 transition-opacity duration-700" id="loadingScreen" aria-hidden="true">
+    <div class="absolute inset-0 stars-bg opacity-60"></div>
+    <div class="absolute inset-0 nebula-bg opacity-40"></div>
+    
+    <div class="relative flex flex-col items-center gap-12 animate-fade-in">
+      <!-- Crescent décoratif minimaliste -->
+      <div class="relative w-24 h-24">
+        <div class="absolute inset-0 rounded-full bg-gold-300/20 blur-2xl"></div>
+        <svg viewBox="0 0 100 100" class="relative w-full h-full animate-rotate-slow">
           <path d="M 70 20 A 35 35 0 1 0 70 80 A 28 28 0 1 1 70 20 Z" fill="url(#goldGradV)"/>
-          <circle cx="25" cy="25" r="1.5" fill="#F4D77A" opacity=".8"/>
-          <circle cx="80" cy="85" r="1" fill="#F4D77A" opacity=".6"/>
         </svg>
       </div>
 
-      <h1 class="loading-title">دار اللغة</h1>
+      <!-- Titre arabe massif -->
+      <h1 class="font-arabic text-7xl font-bold tracking-wide gold-text-gradient drop-shadow-[0_0_40px_rgba(232,200,120,0.4)]" dir="rtl">
+        دار اللغة
+      </h1>
 
-      <div class="loading-hourglass-wrap" aria-hidden="true">
-        <div class="loading-mandala">
-          <svg viewBox="0 0 200 200">
-            <g fill="none" stroke="url(#goldGrad)" stroke-width="1.2" stroke-linecap="round">
-              <circle cx="100" cy="100" r="80" opacity=".4"/>
-              <circle cx="100" cy="100" r="60" opacity=".5"/>
-              <path d="M100 30 L106 50 L100 45 L94 50 Z" fill="url(#goldGrad)" opacity=".7"/>
-              <path d="M100 170 L106 150 L100 155 L94 150 Z" fill="url(#goldGrad)" opacity=".7"/>
-              <path d="M30 100 L50 106 L45 100 L50 94 Z" fill="url(#goldGrad)" opacity=".7"/>
-              <path d="M170 100 L150 106 L155 100 L150 94 Z" fill="url(#goldGrad)" opacity=".7"/>
-              <path d="M50 50 L62 62 M150 50 L138 62 M50 150 L62 138 M150 150 L138 138" opacity=".5"/>
-              <circle cx="100" cy="100" r="40" opacity=".3" stroke-dasharray="3 3"/>
-            </g>
-          </svg>
+      <!-- Indicator minimaliste -->
+      <div class="flex items-center gap-3">
+        <div class="h-px w-12 bg-gradient-to-r from-transparent to-gold-400"></div>
+        <div class="flex gap-1.5">
+          <span class="loading-dot w-1.5 h-1.5 rounded-full bg-gold-300"></span>
+          <span class="loading-dot w-1.5 h-1.5 rounded-full bg-gold-300"></span>
+          <span class="loading-dot w-1.5 h-1.5 rounded-full bg-gold-300"></span>
         </div>
-
-        <div class="loading-hourglass">
-          <div class="hg-top">
-            <div class="hg-sand-top"></div>
-          </div>
-          <div class="hg-middle"></div>
-          <div class="hg-bottom">
-            <div class="hg-sand-bottom"></div>
-          </div>
-          <div class="hg-stream"></div>
-        </div>
-      </div>
-
-      <div class="loading-text-wrap">
-        <p class="loading-text">Chargement</p>
-        <div class="loading-dots" aria-hidden="true">
-          <span></span><span></span><span></span>
-        </div>
+        <div class="h-px w-12 bg-gradient-to-l from-transparent to-gold-400"></div>
       </div>
     </div>
   </div>
 
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <defs>
-      <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#FCE89A"/>
-        <stop offset="50%" stop-color="#D4AF37"/>
-        <stop offset="100%" stop-color="#A07A1C"/>
-      </linearGradient>
-      <linearGradient id="goldGradV" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#F4D77A"/>
-        <stop offset="100%" stop-color="#A07A1C"/>
-      </linearGradient>
-      <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#F4D77A" stop-opacity="0.4"/>
-        <stop offset="100%" stop-color="#F4D77A" stop-opacity="0"/>
-      </radialGradient>
-      <linearGradient id="bronzeGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#E8B07A"/>
-        <stop offset="100%" stop-color="#7A4A1E"/>
-      </linearGradient>
-      <linearGradient id="silverGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#F0F4FA"/>
-        <stop offset="100%" stop-color="#8A96B2"/>
-      </linearGradient>
-      <linearGradient id="lapisGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#3A6BD4"/>
-        <stop offset="100%" stop-color="#0F2A6A"/>
-      </linearGradient>
-      <linearGradient id="emeraldGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#5EE0A5"/>
-        <stop offset="100%" stop-color="#0F5A3A"/>
-      </linearGradient>
-      <linearGradient id="rubyGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#FF7A9A"/>
-        <stop offset="100%" stop-color="#7A0F2A"/>
-      </linearGradient>
-    </defs>
-  </svg>
-
-  <div class="starfield" id="starfield" aria-hidden="true"></div>
-  <div class="milkyway" aria-hidden="true"></div>
- 
-  <!-- ⬇ Effets décoratifs optionnels (étoiles filantes + poussière dorée) -->
+  <!-- ===== Atmosphère: étoiles + nébuleuse ===== -->
+  <div class="starfield fixed inset-0 pointer-events-none -z-10" id="starfield" aria-hidden="true"></div>
+  <div class="milkyway fixed inset-0 pointer-events-none -z-10" aria-hidden="true"></div>
   <div class="shooting-star" aria-hidden="true"></div>
   <div class="shooting-star s2" aria-hidden="true"></div>
-  <div class="gold-particles" id="goldParticles" aria-hidden="true"></div>
+  <div class="gold-particles fixed inset-0 pointer-events-none -z-10" id="goldParticles" aria-hidden="true"></div>
 
-  <div class="app" id="app">
+  <!-- ============================================================ -->
+  <!-- ===                    APP                                === -->
+  <!-- ============================================================ -->
+  <div class="app relative min-h-screen pb-24 max-w-md mx-auto" id="app">
 
-        <!-- LOGIN -->
-    <section class="screen active" id="screen-login" data-screen="login">
-
-      <!-- ✦ Cadre hero principal (lune + lanternes + titre arabe) -->
-      <div class="login-hero">
-        <svg class="login-hero-frame" viewBox="0 0 340 380" preserveAspectRatio="none" aria-hidden="true">
-          <use href="#ornateFrame"/>
-          <g transform="translate(0,0)"><use href="#cornerFlourish" width="68" height="68"/></g>
-          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="68" height="68"/></g>
-          <g transform="translate(0,380) scale(1,-1)"><use href="#cornerFlourish" width="68" height="68"/></g>
-          <g transform="translate(340,380) scale(-1,-1)"><use href="#cornerFlourish" width="68" height="68"/></g>
-          <g transform="translate(-2,165)"><use href="#sideCart" width="28" height="55"/></g>
-          <g transform="translate(314,165)"><use href="#sideCart" width="28" height="55"/></g>
-          <g transform="translate(150,-4)"><use href="#midCart" width="44" height="18"/></g>
-          <g transform="translate(150,366)"><use href="#midCart" width="44" height="18"/></g>
-        </svg>
-
-        <div class="login-hero-inner">
-          <!-- Lanternes suspendues -->
-          <div class="login-lanterns" aria-hidden="true">
-            <div class="lantern"></div>
-            <div class="lantern l2"></div>
-            <div class="lantern l3"></div>
-            <div class="lantern l4"></div>
-          </div>
-
-          <!-- Lune avec halo lumineux -->
-          <div class="login-crescent" aria-hidden="true">
-            <div class="moon-halo"></div>
-            <svg viewBox="0 0 200 200">
-              <circle cx="100" cy="100" r="95" fill="url(#moonGlow)"/>
-              <path d="M 140 40 A 70 70 0 1 0 140 160 A 55 55 0 1 1 140 40 Z"
-                    fill="url(#goldGradV)" stroke="#F4D77A" stroke-width="1.5"/>
-              <circle cx="50" cy="50" r="2" fill="#F4D77A"/>
-              <circle cx="160" cy="170" r="1.5" fill="#F4D77A"/>
-              <circle cx="30" cy="130" r="1.2" fill="#F4D77A" opacity=".7"/>
-            </svg>
-          </div>
-
-          <!-- Étoiles scintillantes décoratives -->
-          <div class="login-stars" aria-hidden="true">
-            <span class="twink t1"></span>
-            <span class="twink t2"></span>
-            <span class="twink t3"></span>
-            <span class="twink t4"></span>
-            <span class="twink t5"></span>
-            <span class="twink t6"></span>
-          </div>
-
-          <!-- Titre arabe -->
-          <h1 class="login-brand-title">دار اللغة</h1>
-
-          <!-- Diviseur ornemental rosette -->
-          <div class="login-rosette-divider" aria-hidden="true">
-            <span class="div-line"></span>
-            <svg viewBox="0 0 22 22"><use href="#rosette"/></svg>
-            <span class="div-line"></span>
-          </div>
-
-          <p class="login-tagline">Apprenez l'arabe avec <span class="accent">élégance</span></p>
+    <!-- ============================================================
+         LOGIN
+    ============================================================ -->
+    <section class="screen active px-6 pt-16" id="screen-login" data-screen="login">
+      <div class="flex flex-col items-center text-center mb-10 animate-fade-up" style="animation-delay:.1s">
+        <!-- Lune subtile -->
+        <div class="relative w-20 h-20 mb-8">
+          <div class="absolute inset-0 rounded-full bg-gold-300/30 blur-3xl animate-glow-pulse"></div>
+          <svg viewBox="0 0 100 100" class="relative w-full h-full">
+            <path d="M 70 20 A 35 35 0 1 0 70 80 A 28 28 0 1 1 70 20 Z" fill="url(#goldGradV)"/>
+          </svg>
         </div>
+
+        <h1 class="font-arabic text-7xl font-bold gold-text-gradient leading-none drop-shadow-[0_0_30px_rgba(232,200,120,0.35)]" dir="rtl">دار اللغة</h1>
+        
+        <!-- Séparateur losange -->
+        <div class="flex items-center gap-4 mt-6 mb-3">
+          <span class="h-px w-16 bg-gradient-to-r from-transparent to-gold-500/60"></span>
+          <span class="w-1.5 h-1.5 rotate-45 bg-gold-400"></span>
+          <span class="h-px w-16 bg-gradient-to-l from-transparent to-gold-500/60"></span>
+        </div>
+
+        <p class="font-display italic text-lg text-ink-soft">
+          Apprenez l'arabe avec <span class="text-gold-200 font-semibold not-italic">élégance</span>
+        </p>
       </div>
 
-      <!-- ✦ Cadre formulaire de connexion -->
-      <div class="login-form-frame">
-        <svg class="lff-frame" viewBox="0 0 340 360" preserveAspectRatio="none" aria-hidden="true">
-          <use href="#ornateFrame"/>
-          <g transform="translate(0,0)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(0,360) scale(1,-1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(340,360) scale(-1,-1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-        </svg>
+      <!-- Card formulaire glassmorphism -->
+      <div class="glass-card p-7 animate-fade-up" style="animation-delay:.25s">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="h-px flex-1 bg-gold-500/30"></span>
+          <span class="font-kufi text-xs tracking-[0.3em] uppercase text-gold-200">Bienvenue</span>
+          <span class="h-px flex-1 bg-gold-500/30"></span>
+        </div>
 
-        <div class="lff-inner">
-          <div class="lff-title">
-            <span class="lff-title-line"></span>
-            <span class="lff-title-text">Bienvenue</span>
-            <span class="lff-title-line"></span>
+        <form id="loginForm" autocomplete="on" novalidate class="space-y-3">
+          <div class="input-shell">
+            <svg class="w-4 h-4 text-gold-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7 L12 13 L21 7"/></svg>
+            <input class="input-bare" type="email" name="email" placeholder="Adresse email" id="loginEmail" autocomplete="email" required/>
           </div>
 
-          <form id="loginForm" autocomplete="on" novalidate>
-            <div class="input-group">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
-                <rect x="3" y="5" width="18" height="14" rx="2"/>
-                <path d="M3 7 L12 13 L21 7"/>
-              </svg>
-              <input class="input input-gold" type="email" name="email" placeholder="Adresse email" id="loginEmail" autocomplete="email" required/>
-            </div>
+          <div class="input-shell">
+            <svg class="w-4 h-4 text-gold-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11 V7 Q8 4 12 4 Q16 4 16 7 V11"/></svg>
+            <input class="input-bare" type="password" name="password" placeholder="Mot de passe" id="loginPass" autocomplete="current-password" required/>
+          </div>
 
-            <div class="input-group">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="5" y="11" width="14" height="10" rx="2"/>
-                <path d="M8 11 V7 Q8 4 12 4 Q16 4 16 7 V11"/>
-                <circle cx="12" cy="16" r="1.2" fill="url(#goldGrad)"/>
-              </svg>
-              <input class="input input-gold" type="password" name="password" placeholder="Mot de passe" id="loginPass" autocomplete="current-password" required/>
-            </div>
+          <label class="flex items-start gap-3 text-xs text-ink-soft cursor-pointer pt-1">
+            <input type="checkbox" id="loginNewsletter" class="checkbox-gold mt-0.5"/>
+            <span>Recevoir nos formations &amp; livres d'apprentissage</span>
+          </label>
 
-            <label class="checkbox-row checkbox-gold">
-              <input type="checkbox" id="loginNewsletter" />
-              <span>Recevoir nos formations &amp; livres d'apprentissage</span>
-            </label>
-
-            <button class="btn-baroque-primary" data-action="login-email" type="submit">
-              <svg class="bbp-frame" viewBox="0 0 280 56" preserveAspectRatio="none" aria-hidden="true">
-                <rect x="2" y="2" width="276" height="52" rx="26" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
-                <rect x="6" y="6" width="268" height="44" rx="22" fill="none" stroke="#fdeec3" stroke-width=".6" opacity=".6"/>
-                <g transform="translate(8,18)"><use href="#sideCart" width="14" height="20"/></g>
-                <g transform="translate(258,18)"><use href="#sideCart" width="14" height="20"/></g>
-              </svg>
-              <span class="bbp-label">Se connecter</span>
-            </button>
-          </form>
-
-          <div class="login-divider"><span>OU</span></div>
-
-          <button class="btn-baroque-secondary" data-action="login-guest" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
-              <circle cx="12" cy="8" r="4"/>
-              <path d="M4 21 Q4 14 12 14 Q20 14 20 21"/>
-            </svg>
-            <span>Continuer en invité</span>
+          <button class="btn-primary w-full mt-5" data-action="login-email" type="submit">
+            <span>Se connecter</span>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12 H19 M13 6 L19 12 L13 18"/></svg>
           </button>
+        </form>
 
-          <button class="btn-baroque-create" data-action="show-register" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="9"/>
-              <path d="M12 8 V16 M8 12 H16"/>
-            </svg>
-            <span>Créer un compte</span>
-          </button>
+        <div class="flex items-center gap-4 my-6">
+          <span class="h-px flex-1 bg-gold-500/20"></span>
+          <span class="font-kufi text-[10px] tracking-[0.4em] uppercase text-ink-muted">ou</span>
+          <span class="h-px flex-1 bg-gold-500/20"></span>
         </div>
+
+        <button class="btn-ghost w-full" data-action="login-guest" type="button">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21 Q4 14 12 14 Q20 14 20 21"/></svg>
+          <span>Continuer en invité</span>
+        </button>
+
+        <button class="btn-outline w-full mt-2" data-action="show-register" type="button">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8 V16 M8 12 H16"/></svg>
+          <span>Créer un compte</span>
+        </button>
       </div>
 
-      <!-- ✦ Petit pied de page baroque -->
-      <div class="login-footer" aria-hidden="true">
-        <svg viewBox="0 0 22 22"><use href="#rosette"/></svg>
-        <span class="login-footer-text">بسم الله</span>
-        <svg viewBox="0 0 22 22"><use href="#rosette"/></svg>
+      <div class="flex items-center justify-center gap-3 mt-8 opacity-50">
+        <span class="w-1 h-1 rotate-45 bg-gold-400"></span>
+        <span class="font-arabic text-sm text-gold-200/70" dir="rtl">بسم الله</span>
+        <span class="w-1 h-1 rotate-45 bg-gold-400"></span>
       </div>
-
     </section>
 
-    <!-- REGISTER -->
-    <section class="screen" id="screen-register" data-screen="register">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-
-      <div class="top-bar">
-        <button class="icon-btn" data-action="goto" data-target="login" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
-        </button>
-        <div class="hello">Créer un <b>compte</b></div>
-        <div class="spacer-40"></div>
+    <!-- ============================================================
+         REGISTER
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-register" data-screen="register">
+      <div class="brand-tiny">
+        <h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">Inscription</div>
-        <form id="registerForm" novalidate>
+      <div class="top-nav">
+        <button class="icon-btn" data-action="goto" data-target="login" aria-label="Retour">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
+        </button>
+        <div class="top-nav-title">Créer un <b>compte</b></div>
+        <div class="w-10"></div>
+      </div>
+
+      <div class="glass-card p-6 mt-2">
+        <div class="section-label mb-5">Inscription</div>
+        <form id="registerForm" novalidate class="space-y-3">
           <input class="input" type="text" name="pseudo" id="regPseudo" placeholder="Pseudo" required autocomplete="username"/>
           <input class="input" type="email" name="email" id="regEmail" placeholder="Email" required autocomplete="email"/>
           <input class="input" type="password" name="password" id="regPass" placeholder="Mot de passe" required autocomplete="new-password"/>
           <input class="input" type="password" name="passwordConfirm" id="regPassConfirm" placeholder="Confirmer le mot de passe" required autocomplete="new-password"/>
 
-          <label class="checkbox-row">
-            <input type="checkbox" id="regNewsletter" />
-            <span>Je souhaite recevoir des offres de formations &amp; livres d'apprentissage</span>
+          <label class="flex items-start gap-3 text-xs text-ink-soft cursor-pointer pt-2">
+            <input type="checkbox" id="regNewsletter" class="checkbox-gold mt-0.5"/>
+            <span>Recevoir des offres de formations &amp; livres d'apprentissage</span>
           </label>
-          <label class="checkbox-row">
-            <input type="checkbox" id="regTerms" required />
-            <span>J'accepte les conditions d'utilisation et la politique de confidentialité</span>
+          <label class="flex items-start gap-3 text-xs text-ink-soft cursor-pointer">
+            <input type="checkbox" id="regTerms" required class="checkbox-gold mt-0.5"/>
+            <span>J'accepte les conditions d'utilisation</span>
           </label>
 
-          <button class="btn btn-gold mt-16" data-action="register" type="submit">Créer mon compte</button>
+          <button class="btn-primary w-full mt-4" data-action="register" type="submit">Créer mon compte</button>
         </form>
       </div>
     </section>
 
-        <!-- HOME -->
-    <section class="screen" id="screen-home" data-screen="home">
-      <div class="brand frame">
-        <span class="corner-bl" aria-hidden="true"></span>
-        <span class="corner-br" aria-hidden="true"></span>
-        <div class="lanterns" aria-hidden="true">
-          <div class="lantern"></div>
-          <div class="lantern l2"></div>
-          <div class="lantern l3"></div>
-          <div class="lantern l4"></div>
+    <!-- ============================================================
+         HOME
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-home" data-screen="home">
+      <!-- Header salutation + profil -->
+      <div class="flex items-center justify-between mb-6 animate-fade-up">
+        <div>
+          <div class="font-kufi text-[10px] tracking-[0.3em] uppercase text-ink-muted">Marhaba</div>
+          <div class="font-display text-2xl text-ink mt-0.5" data-bind="pseudo">Ahmed</div>
         </div>
-        <div class="crescent-wrap" aria-hidden="true">
-          <div class="crescent">
-            <svg viewBox="0 0 200 200">
-              <circle cx="100" cy="100" r="95" fill="url(#moonGlow)"/>
-              <path d="M 140 40 A 70 70 0 1 0 140 160 A 55 55 0 1 1 140 40 Z"
-                    fill="url(#goldGradV)" stroke="#F4D77A" stroke-width="1.5"/>
-              <circle cx="50" cy="50" r="2" fill="#F4D77A"/>
-              <circle cx="160" cy="170" r="1.5" fill="#F4D77A"/>
-            </svg>
-          </div>
-        </div>
-        <h1 class="brand-title">دار اللغة</h1>
-        <p class="brand-subtitle">Apprenez l'arabe avec <span class="accent">élégance</span></p>
-
-        <div class="cta-wrap">
-          <button class="btn btn-gold" data-action="goto" data-target="lesson" type="button">Commencer</button>
-        </div>
-      </div>
-
-      <div class="top-bar">
-        <div class="hello">Marhaba, <b data-bind="pseudo">Ahmed</b></div>
-        <button class="icon-btn" data-action="goto" data-target="profile" aria-label="Profil">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+        <button class="icon-btn-lg" data-action="goto" data-target="profile" aria-label="Profil">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21 Q4 14 12 14 Q20 14 20 21"/></svg>
         </button>
       </div>
 
-            <div class="baroque-card-frame">
-        <svg class="bcf-frame" viewBox="0 0 340 200" preserveAspectRatio="none" aria-hidden="true">
-          <use href="#ornateFrame"/>
-          <g transform="translate(0,0)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(0,200) scale(1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(340,200) scale(-1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-        </svg>
-        <div class="bcf-inner">
-          <div class="bcf-title">La Leçon du Jour</div>
-          <div class="word-ar" data-bind="daily-ar">—</div>
-          <div class="transliter" data-bind="daily-translit">—</div>
-          <div class="word-fr" data-bind="daily-fr">—</div>
-        </div>
-      </div>
-
-
-      <!-- Cards baroques injectées par le script -->
-      <div id="homeBaroqueContent"></div>
-
-      <div class="stats-row">
-        <div class="stat">
-          <span class="num" data-bind="streak">0</span>
-          <div class="lbl">Streak</div>
-        </div>
-        <div class="stat">
-          <span class="num"><span data-bind="xp">0</span> <span class="unit">XP</span></span>
-          <div class="lbl">Points</div>
-        </div>
-        <div class="stat">
-          <span class="num" data-bind="level">1</span>
-          <div class="lbl">Niveau</div>
-        </div>
-      </div>
-
-      <div class="panel boost-banner" id="boostBanner" hidden>
-        <div class="boost-banner-inner">
-          <svg class="boost-icon" viewBox="0 0 24 24" fill="url(#goldGrad)" aria-hidden="true">
-            <path d="M13 2 L4 14 L11 14 L9 22 L20 10 L13 10 Z"/>
+      <!-- Hero brand -->
+      <div class="relative flex flex-col items-center text-center py-8 mb-6 animate-fade-up" style="animation-delay:.1s">
+        <div class="relative w-16 h-16 mb-4">
+          <div class="absolute inset-0 rounded-full bg-gold-300/30 blur-2xl animate-glow-pulse"></div>
+          <svg viewBox="0 0 100 100" class="relative w-full h-full">
+            <path d="M 70 20 A 35 35 0 1 0 70 80 A 28 28 0 1 1 70 20 Z" fill="url(#goldGradV)"/>
           </svg>
-          <div class="boost-info">
-            <div class="boost-label">Boost XP actif</div>
-            <div class="boost-value">×<span id="boostMultiplier">2</span> · <span id="boostTimer">59:00</span></div>
+        </div>
+
+        <h1 class="font-arabic text-6xl font-bold gold-text-gradient leading-none" dir="rtl">دار اللغة</h1>
+        
+        <div class="flex items-center gap-3 mt-4 mb-2">
+          <span class="h-px w-10 bg-gold-500/50"></span>
+          <span class="w-1 h-1 rotate-45 bg-gold-400"></span>
+          <span class="h-px w-10 bg-gold-500/50"></span>
+        </div>
+
+        <p class="font-display italic text-sm text-ink-soft">
+          Apprenez l'arabe avec <span class="text-gold-200 font-medium not-italic">élégance</span>
+        </p>
+
+        <button class="btn-primary mt-6 px-10" data-action="goto" data-target="themes" type="button">
+          <span>Commencer</span>
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12 H19 M13 6 L19 12 L13 18"/></svg>
+        </button>
+      </div>
+
+      <!-- Stats trio -->
+      <div class="grid grid-cols-3 gap-3 mb-8 animate-fade-up" style="animation-delay:.2s">
+        <div class="stat-chip">
+          <svg class="w-4 h-4 text-gold-300" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 L4 14 L11 14 L9 22 L20 10 L13 10 Z"/></svg>
+          <div>
+            <div class="stat-num" data-bind="streak">0</div>
+            <div class="stat-lbl">Streak</div>
           </div>
+        </div>
+        <div class="stat-chip">
+          <svg class="w-4 h-4 text-gold-300" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L15 9 L22 10 L17 15 L18 22 L12 18 L6 22 L7 15 L2 10 L9 9 Z"/></svg>
+          <div>
+            <div class="stat-num"><span data-bind="xp">0</span><span class="text-[10px] text-ink-muted ml-0.5">XP</span></div>
+            <div class="stat-lbl">Points</div>
+          </div>
+        </div>
+        <div class="stat-chip">
+          <svg class="w-4 h-4 text-gold-300" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 L20 8 L20 16 L12 21 L4 16 L4 8 Z"/></svg>
+          <div>
+            <div class="stat-num" data-bind="level">1</div>
+            <div class="stat-lbl">Niveau</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cards baroques injectées par baroque-renderer.js -->
+      <div id="homeBaroqueContent" class="animate-fade-up" style="animation-delay:.3s"></div>
+
+      <!-- Boost banner -->
+      <div class="glass-card p-4 mt-4 flex items-center gap-4 boost-glow" id="boostBanner" hidden>
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-gold-200 to-gold-500 flex items-center justify-center shadow-glow">
+          <svg class="w-5 h-5 text-night-900" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 L4 14 L11 14 L9 22 L20 10 L13 10 Z"/></svg>
+        </div>
+        <div class="flex-1">
+          <div class="font-kufi text-[10px] tracking-[0.2em] uppercase text-ink-muted">Boost XP actif</div>
+          <div class="font-display text-lg text-gold-200">×<span id="boostMultiplier">2</span> · <span id="boostTimer">59:00</span></div>
         </div>
       </div>
 
       <div class="ad-slot" id="adSlotHome" data-ad-position="home" hidden></div>
     </section>
 
-    <!-- LESSON -->
-    <section class="screen" id="screen-lesson" data-screen="lesson">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         LESSON (sans la card "Leçon du Jour")
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-lesson" data-screen="lesson">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello">Leçon du <b>Jour</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title">Parcours d'<b>apprentissage</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <div class="panel daily-lesson">
-        <div class="panel-title">Parcours d'aujourd'hui</div>
-        <div class="word-ar" data-bind="daily-ar">—</div>
-        <div class="transliter" data-bind="daily-translit">—</div>
-        <div class="word-fr" data-bind="daily-fr">—</div>
-        <p class="lesson-hint">3 étapes : découvrir · réviser · pratiquer.</p>
-      </div>
+      <div class="space-y-3 mt-2">
+        <button class="module-card" data-action="goto" data-target="themes" type="button">
+          <div class="module-icon">
+            <svg class="w-7 h-7" viewBox="0 0 60 60"><use href="#iconBook"/></svg>
+          </div>
+          <div class="flex-1 text-left">
+            <div class="module-step">Étape 1</div>
+            <div class="module-name">Découvrir</div>
+            <div class="module-desc">Thèmes &amp; vocabulaire</div>
+          </div>
+          <svg class="w-4 h-4 text-gold-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6 L15 12 L9 18"/></svg>
+        </button>
 
-      <div class="modules mt-12">
-        <button class="module" data-action="goto" data-target="themes" type="button">
-          <div class="ico md"><svg viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="1.8" aria-hidden="true"><path d="M3 6 Q12 3 21 6 V19 Q12 16 3 19 Z M12 5 V18"/></svg></div>
-          <div class="name">1. Découvrir</div>
-          <div class="fr">thèmes &amp; cartes</div>
+        <button class="module-card" data-action="goto" data-target="quiz" type="button">
+          <div class="module-icon">
+            <svg class="w-7 h-7" viewBox="0 0 60 60"><use href="#iconStar"/></svg>
+          </div>
+          <div class="flex-1 text-left">
+            <div class="module-step">Étape 2</div>
+            <div class="module-name">Réviser</div>
+            <div class="module-desc">Quiz à choix multiples</div>
+          </div>
+          <svg class="w-4 h-4 text-gold-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6 L15 12 L9 18"/></svg>
         </button>
-        <button class="module" data-action="goto" data-target="quiz" type="button">
-          <div class="ico md"><svg viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 9 Q12 7 15 9 Q15 11 12 12 V14 M12 17 V17.5"/></svg></div>
-          <div class="name">2. Réviser</div>
-          <div class="fr">quiz QCM</div>
-        </button>
-        <button class="module wide" data-action="goto" data-target="rapid" type="button">
-          <div class="ico md"><svg viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 8 V13 L15 15 M9 3 H15"/></svg></div>
-          <div class="name">3. Sprint final</div>
-          <div class="fr">révision chronométrée · bonus XP</div>
+
+        <button class="module-card module-card-accent" data-action="goto" data-target="rapid" type="button">
+          <div class="module-icon">
+            <svg class="w-7 h-7" viewBox="0 0 60 60"><use href="#iconTrophy"/></svg>
+          </div>
+          <div class="flex-1 text-left">
+            <div class="module-step">Étape 3</div>
+            <div class="module-name">Sprint final</div>
+            <div class="module-desc">Révision chronométrée · Bonus XP</div>
+          </div>
+          <svg class="w-4 h-4 text-gold-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6 L15 12 L9 18"/></svg>
         </button>
       </div>
     </section>
-    <!-- THEMES -->
-    <section class="screen" id="screen-themes" data-screen="themes">
 
-      <!-- ✦ Hero baroque (titre + sous-titre) -->
-      <div class="themes-hero">
-        <svg class="themes-hero-frame" viewBox="0 0 340 160" preserveAspectRatio="none" aria-hidden="true">
-          <use href="#ornateFrame"/>
-          <g transform="translate(0,0)"><use href="#cornerFlourish" width="60" height="60"/></g>
-          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="60" height="60"/></g>
-          <g transform="translate(0,160) scale(1,-1)"><use href="#cornerFlourish" width="60" height="60"/></g>
-          <g transform="translate(340,160) scale(-1,-1)"><use href="#cornerFlourish" width="60" height="60"/></g>
-          <g transform="translate(-2,60)"><use href="#sideCart" width="24" height="40"/></g>
-          <g transform="translate(318,60)"><use href="#sideCart" width="24" height="40"/></g>
-          <g transform="translate(150,-4)"><use href="#midCart" width="40" height="16"/></g>
-          <g transform="translate(150,148)"><use href="#midCart" width="40" height="16"/></g>
-        </svg>
+    <!-- ============================================================
+         THEMES
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-themes" data-screen="themes">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
+        <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
+        </button>
+        <div class="top-nav-title">Les <b>Thèmes</b></div>
+        <div class="w-10"></div>
+      </div>
 
-        <div class="themes-hero-inner">
-          <button class="themes-back-btn" data-action="goto" data-target="home" aria-label="Retour" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M15 18 L9 12 L15 6"/>
-            </svg>
-          </button>
-
-          <!-- Petite décoration livre ouvert -->
-          <svg class="themes-hero-icon" viewBox="0 0 60 60" aria-hidden="true">
-            <use href="#iconBook"/>
-          </svg>
-
-          <h2 class="themes-hero-title">Les Thèmes</h2>
-
-          <div class="themes-rosette-divider" aria-hidden="true">
-            <span class="div-line"></span>
-            <svg viewBox="0 0 22 22"><use href="#rosette"/></svg>
-            <span class="div-line"></span>
-          </div>
-
-          <p class="themes-hero-sub">Choisissez la voie de votre apprentissage</p>
+      <div class="text-center my-6">
+        <h2 class="font-display text-4xl font-medium gold-text-gradient">Choisissez votre voie</h2>
+        <div class="flex items-center justify-center gap-3 mt-3">
+          <span class="h-px w-12 bg-gradient-to-r from-transparent to-gold-500/60"></span>
+          <span class="w-1.5 h-1.5 rotate-45 bg-gold-400"></span>
+          <span class="h-px w-12 bg-gradient-to-l from-transparent to-gold-500/60"></span>
         </div>
+        <p class="font-display italic text-sm text-ink-soft mt-3">
+          Parcourez les thèmes d'apprentissage
+        </p>
       </div>
 
-      <!-- ✦ Section "Parcourir les thèmes" -->
-      <div class="baroque-section-head">
-        <span class="bsh-line"></span>
-        <svg class="bsh-rosette" viewBox="0 0 22 22"><use href="#rosette"/></svg>
-        <span class="bsh-text">PARCOURIR LES THÈMES</span>
-        <svg class="bsh-rosette" viewBox="0 0 22 22"><use href="#rosette"/></svg>
-        <span class="bsh-line"></span>
-      </div>
-
-      <!-- ✦ Grille des thèmes (remplie par themes.js) -->
       <div class="themes-grid baroque-themes-grid" id="themesGrid" role="list"></div>
-
-      <!-- ✦ Footer décoratif -->
-      <div class="themes-footer" aria-hidden="true">
-        <svg viewBox="0 0 22 22"><use href="#rosette"/></svg>
-        <span class="themes-footer-text">Que la science vous éclaire</span>
-        <svg viewBox="0 0 22 22"><use href="#rosette"/></svg>
-      </div>
-
     </section>
 
-
-    <!-- THEME LEVELS -->
-    <section class="screen" id="screen-theme-levels" data-screen="theme-levels">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         THEME LEVELS
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-theme-levels" data-screen="theme-levels">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="themes" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello"><b data-bind="theme-name">—</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title"><b data-bind="theme-name">—</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <div class="panel">
-        <div class="panel-title" data-bind="theme-name-ar">—</div>
-        <p class="theme-intro" data-bind="theme-intro">—</p>
+      <div class="glass-card p-6 mt-2">
+        <div class="font-arabic text-2xl text-gold-200 text-center" dir="rtl" data-bind="theme-name-ar">—</div>
+        <p class="font-display italic text-sm text-ink-soft text-center mt-2" data-bind="theme-intro">—</p>
 
-        <div class="levels-list" id="levelsList"></div>
+        <div class="levels-list mt-5" id="levelsList"></div>
       </div>
 
-      <div class="panel mt-12">
-        <div class="panel-title">Modes d'entraînement</div>
-        <button class="btn btn-outline" data-action="practice-theme" data-mode="cards" type="button">Cartes d'apprentissage</button>
-        <button class="btn btn-outline mt-8" data-action="practice-theme" data-mode="qcm" type="button">QCM sur ce thème</button>
-        <button class="btn btn-outline mt-8" data-action="practice-theme" data-mode="rapid" type="button">Révision rapide</button>
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label mb-4">Modes d'entraînement</div>
+        <button class="btn-outline w-full" data-action="practice-theme" data-mode="cards" type="button">Cartes d'apprentissage</button>
+        <button class="btn-outline w-full mt-2" data-action="practice-theme" data-mode="qcm" type="button">QCM sur ce thème</button>
+        <button class="btn-outline w-full mt-2" data-action="practice-theme" data-mode="rapid" type="button">Révision rapide</button>
       </div>
 
-      <div class="theme-leaderboard-cta" style="margin-top:32px;text-align:center;">
-        <button class="btn btn-gold" id="btnThemeLeaderboard" type="button">
-          🏆 Classement de ce thème
+      <div class="mt-6 text-center">
+        <button class="btn-primary" id="btnThemeLeaderboard" type="button">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4 H19 V8 Q19 14 12 15 Q5 14 5 8 Z M8 18 H16 V20 H8 Z M11 15 H13 V19 H11 Z"/></svg>
+          <span>Classement de ce thème</span>
         </button>
-        <div id="themeMyStats" class="theme-my-stats" style="margin-top:12px;font-size:0.9em;opacity:0.85;"></div>
+        <div id="themeMyStats" class="mt-3 text-sm text-ink-soft italic"></div>
       </div>
     </section>
 
-    <!-- VOCAB -->
-    <section class="screen" id="screen-vocab" data-screen="vocab">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         VOCAB
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-vocab" data-screen="vocab">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="themes" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello"><b data-bind="vocab-context">Vocabulaire</b></div>
+        <div class="top-nav-title"><b data-bind="vocab-context">Vocabulaire</b></div>
         <button class="icon-btn" data-action="speak-word" aria-label="Écouter">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 10 V14 H7 L12 18 V6 L7 10 Z"/><path d="M16 8 Q20 12 16 16"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10 V14 H7 L12 18 V6 L7 10 Z"/><path d="M16 8 Q20 12 16 16"/></svg>
         </button>
       </div>
 
-      <div class="panel vocab-card" id="vocabCard"></div>
+      <div class="vocab-card glass-card p-10 my-6 min-h-[280px] flex flex-col items-center justify-center text-center" id="vocabCard"></div>
 
-      <div class="deck-progress" id="deckProgress">— / —</div>
+      <div class="text-center font-kufi text-xs tracking-[0.3em] uppercase text-ink-muted" id="deckProgress">— / —</div>
 
-      <div class="deck-controls">
-        <button class="btn btn-outline" data-action="vocab-review" data-known="false" type="button">À revoir</button>
-        <button class="btn btn-gold" data-action="vocab-review" data-known="true" type="button">Connu ✓</button>
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <button class="btn-outline" data-action="vocab-review" data-known="false" type="button">À revoir</button>
+        <button class="btn-primary" data-action="vocab-review" data-known="true" type="button">Connu ✓</button>
       </div>
 
-      <button class="btn btn-ghost mt-12" data-action="flip-card" type="button">Retourner la carte</button>
+      <button class="btn-ghost w-full mt-3" data-action="flip-card" type="button">Retourner la carte</button>
     </section>
 
-    <!-- READING -->
-    <section class="screen" id="screen-reading" data-screen="reading">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         READING
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-reading" data-screen="reading">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello">Apprendre à <b>lire</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title">Apprendre à <b>lire</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">Progression de l'alphabet</div>
-        <div class="alphabet-progress">
-          <div class="xp-bar"><div class="fill" id="alphabetFill"></div></div>
-          <div class="xp-label">
-            <span><span id="lettersLearned">0</span> / 28 lettres</span>
-            <span id="nextMilestone">Prochain palier : mot composé</span>
-          </div>
+      <div class="glass-card p-6 mt-2">
+        <div class="section-label mb-3">Progression de l'alphabet</div>
+        <div class="progress-bar"><div class="progress-fill" id="alphabetFill"></div></div>
+        <div class="flex justify-between text-xs text-ink-muted mt-2">
+          <span><span id="lettersLearned">0</span> / 28 lettres</span>
+          <span id="nextMilestone">Prochain palier : mot composé</span>
         </div>
 
-        <div class="letters-grid" id="lettersGrid" role="list"></div>
+        <div class="letters-grid mt-5" id="lettersGrid" role="list"></div>
       </div>
 
-      <div class="panel reading-card" id="readingCard"></div>
-      <!-- Mini-quiz de validation des lettres (anti-triche) -->
-      <div class="panel" id="letterMiniQuizCard" hidden>
-        <div class="panel-title" id="letterMiniQuizTitle">VALIDATION</div>
+      <div class="glass-card p-8 mt-4 min-h-[200px]" id="readingCard"></div>
+
+      <div class="glass-card p-6 mt-4" id="letterMiniQuizCard" hidden>
+        <div class="section-label mb-3" id="letterMiniQuizTitle">Validation</div>
         <div id="letterMiniQuizContent"></div>
       </div>
 
-      <div class="deck-controls">
-        <button class="btn btn-outline" data-action="letter-review" data-known="false" type="button">À revoir</button>
-        <button class="btn btn-gold" data-action="letter-review" data-known="true" type="button">Mémorisée ✓</button>
-      </div>
-      <!-- Modes d'entraînement spécifiques aux lettres -->
-      <div class="panel mt-12" id="letterTrainingActions">
-        <div class="panel-title">Entraînement</div>
-        <button class="btn btn-outline" data-action="letter-quiz" type="button">QCM des lettres</button>
-        <button class="btn btn-outline mt-8" data-action="letter-rapid" type="button">Révision rapide lettres</button>
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <button class="btn-outline" data-action="letter-review" data-known="false" type="button">À revoir</button>
+        <button class="btn-primary" data-action="letter-review" data-known="true" type="button">Mémorisée ✓</button>
       </div>
 
-      <div class="panel mt-12 milestone-card" id="milestoneCard" hidden>
-        <div class="panel-title">Nouveau mot débloqué !</div>
-        <div class="word-ar" data-bind="milestone-ar">—</div>
-        <div class="transliter" data-bind="milestone-translit">—</div>
-        <div class="word-fr" data-bind="milestone-fr">—</div>
-        <p class="milestone-hint">Ce mot n'utilise que des lettres que vous connaissez déjà.</p>
-        <button class="btn btn-gold mt-12" data-action="learn-milestone-word" type="button">Apprendre ce mot</button>
+      <div class="glass-card p-6 mt-4" id="letterTrainingActions">
+        <div class="section-label mb-3">Entraînement</div>
+        <button class="btn-outline w-full" data-action="letter-quiz" type="button">QCM des lettres</button>
+        <button class="btn-outline w-full mt-2" data-action="letter-rapid" type="button">Révision rapide lettres</button>
+      </div>
+
+      <div class="glass-card p-7 mt-4 text-center milestone-card" id="milestoneCard" hidden>
+        <div class="section-label mb-3 text-gold-200">Nouveau mot débloqué</div>
+        <div class="font-arabic text-5xl text-gold-200 my-3" dir="rtl" data-bind="milestone-ar">—</div>
+        <div class="font-kufi text-xs tracking-[0.3em] uppercase text-gold-400" data-bind="milestone-translit">—</div>
+        <div class="font-display italic text-xl text-ink mt-2" data-bind="milestone-fr">—</div>
+        <p class="text-xs text-ink-muted italic mt-4">Ce mot n'utilise que des lettres connues.</p>
+        <button class="btn-primary w-full mt-5" data-action="learn-milestone-word" type="button">Apprendre ce mot</button>
       </div>
     </section>
 
-        <!-- QUIZ -->
-    <section class="screen" id="screen-quiz" data-screen="quiz">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         QUIZ
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-quiz" data-screen="quiz">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello"><b>Quiz QCM</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title">Quiz <b>QCM</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <!-- Bandeau de progression baroque -->
-      <div class="quiz-progress-baroque">
-        <svg class="qpb-icon" viewBox="0 0 22 22" aria-hidden="true"><use href="#rosette"/></svg>
-        <div class="qpb-info">
-          <span class="qpb-label">Question</span>
-          <span class="qpb-num"><b id="quizNum">—</b> / <span id="quizTotal">—</span></span>
+      <!-- Progress bar -->
+      <div class="flex items-center justify-between mb-3 mt-2">
+        <div>
+          <div class="font-kufi text-[10px] tracking-[0.3em] uppercase text-ink-muted">Question</div>
+          <div class="font-display text-xl text-ink"><b id="quizNum" class="text-gold-200">—</b> <span class="text-ink-muted">/</span> <span id="quizTotal">—</span></div>
         </div>
-        <div class="qpb-xp" id="quizReward">+10 XP</div>
+        <div class="px-3 py-1.5 rounded-full bg-gold-400/10 border border-gold-400/30 font-kufi text-xs tracking-wider text-gold-200" id="quizReward">+10 XP</div>
       </div>
 
-      <!-- Barre de progression -->
-      <div class="quiz-progress-bar">
-        <div class="qpb-fill" id="quizProgressFill" style="width:0%"></div>
+      <div class="progress-bar mb-6"><div class="progress-fill" id="quizProgressFill" style="width:0%"></div></div>
+
+      <div class="glass-card p-7 text-center">
+        <div class="quiz-question font-arabic text-5xl text-gold-100 leading-tight my-3" dir="rtl" id="quizQuestion">—</div>
+        <div class="font-display italic text-base text-ink-soft" id="quizQuestionFr">—</div>
+
+        <div class="space-y-2.5 mt-6 quiz-answers" id="quizAnswers" role="radiogroup" aria-label="Réponses possibles"></div>
       </div>
 
-      <!-- Cadre baroque question -->
-      <div class="baroque-card-frame">
-        <svg class="bcf-frame" viewBox="0 0 340 280" preserveAspectRatio="none" aria-hidden="true">
-          <use href="#ornateFrame"/>
-          <g transform="translate(0,0)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(0,280) scale(1,-1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(340,280) scale(-1,-1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-        </svg>
-        <div class="bcf-inner">
-          <div class="bcf-title">Choisissez la bonne réponse</div>
-
-          <div class="quiz-divider" aria-hidden="true">
-            <span class="qd-line"></span>
-            <svg class="qd-rosette" viewBox="0 0 22 22"><use href="#rosette"/></svg>
-            <span class="qd-line"></span>
-          </div>
-
-          <div class="quiz-question" id="quizQuestion">—</div>
-          <div class="quiz-question-fr" id="quizQuestionFr">—</div>
-
-          <div class="quiz-answers" id="quizAnswers" role="radiogroup" aria-label="Réponses possibles"></div>
-        </div>
-      </div>
-
-      <button class="btn-baroque-primary mt-12" data-action="quiz-next" id="quizNextBtn" type="button" disabled>
-        <svg class="bbp-frame" viewBox="0 0 280 56" preserveAspectRatio="none" aria-hidden="true">
-          <rect x="2" y="2" width="276" height="52" rx="26" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
-          <rect x="6" y="6" width="268" height="44" rx="22" fill="none" stroke="#fdeec3" stroke-width=".6" opacity=".6"/>
-          <g transform="translate(8,18)"><use href="#sideCart" width="14" height="20"/></g>
-          <g transform="translate(258,18)"><use href="#sideCart" width="14" height="20"/></g>
-        </svg>
-        <span class="bbp-label">Vérifier</span>
+      <button class="btn-primary w-full mt-5" data-action="quiz-next" id="quizNextBtn" type="button" disabled>
+        <span>Vérifier</span>
       </button>
     </section>
 
-
-        <!-- RAPID -->
-    <section class="screen" id="screen-rapid" data-screen="rapid">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         RAPID
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-rapid" data-screen="rapid">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello">Révision <b>Rapide</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title">Révision <b>Rapide</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <!-- Combo badge -->
-      <div class="rapid-combo-baroque" id="comboBadge" hidden>
-        <svg class="rcb-flame" viewBox="0 0 24 24" fill="url(#goldBright)" aria-hidden="true">
-          <path d="M12 2 Q8 6 8 10 Q8 13 10 14 Q9 11 11 9 Q11 12 13 13 Q15 12 15 10 Q15 7 13 5 Q13 8 12 9 Q12 6 12 2 Z M5 14 Q5 20 12 22 Q19 20 19 14 Q19 18 12 20 Q5 18 5 14 Z"/>
-        </svg>
-        <div class="rcb-text">
-          <span class="rcb-label">Combo</span>
-          <span class="rcb-val">×<span id="comboVal">0</span></span>
+      <!-- Combo -->
+      <div class="combo-pill" id="comboBadge" hidden>
+        <svg class="w-4 h-4 text-gold-200" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 Q8 6 8 10 Q8 13 10 14 Q15 12 15 10 Q15 7 13 5 Q13 8 12 9 Q12 6 12 2 Z M5 14 Q5 20 12 22 Q19 20 19 14 Q19 18 12 20 Q5 18 5 14 Z"/></svg>
+        <div>
+          <div class="font-kufi text-[9px] tracking-[0.25em] uppercase text-ink-muted">Combo</div>
+          <div class="font-display font-bold text-base text-gold-200">×<span id="comboVal">0</span></div>
         </div>
       </div>
 
-      <!-- Cadre baroque principal -->
-      <div class="baroque-card-frame">
-        <svg class="bcf-frame" viewBox="0 0 340 360" preserveAspectRatio="none" aria-hidden="true">
-          <use href="#ornateFrame"/>
-          <g transform="translate(0,0)"><use href="#cornerFlourish" width="60" height="60"/></g>
-          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="60" height="60"/></g>
-          <g transform="translate(0,360) scale(1,-1)"><use href="#cornerFlourish" width="60" height="60"/></g>
-          <g transform="translate(340,360) scale(-1,-1)"><use href="#cornerFlourish" width="60" height="60"/></g>
-        </svg>
-        <div class="bcf-inner text-center">
-          <div class="bcf-title">Sprint Chronométré</div>
-
-          <!-- Timer doré -->
-          <div class="rapid-timer-baroque">
-            <svg class="rtb-ring" viewBox="0 0 120 120" aria-hidden="true">
-              <defs>
-                <linearGradient id="timerGold" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#fdeec3"/>
-                  <stop offset="50%" stop-color="#f0c860"/>
-                  <stop offset="100%" stop-color="#9c7019"/>
-                </linearGradient>
-              </defs>
-              <circle class="rtb-bg" cx="60" cy="60" r="52" fill="none" stroke="rgba(212,175,55,.15)" stroke-width="5"/>
-              <circle class="rtb-progress" id="timerCircle" cx="60" cy="60" r="52" fill="none" stroke="url(#timerGold)" stroke-width="5" stroke-linecap="round" transform="rotate(-90 60 60)"/>
-            </svg>
-            <div class="rtb-value" id="timerVal">30</div>
-            <div class="rtb-unit">sec</div>
+      <div class="glass-card p-7 mt-3 text-center">
+        <!-- Timer circulaire -->
+        <div class="relative w-32 h-32 mx-auto mb-4">
+          <svg viewBox="0 0 120 120" class="absolute inset-0">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(212,175,55,0.12)" stroke-width="4"/>
+            <circle id="timerCircle" cx="60" cy="60" r="52" fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round" transform="rotate(-90 60 60)" style="stroke-dasharray:326.7;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear"/>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <div class="font-display text-5xl font-bold gold-text-gradient leading-none" id="timerVal">30</div>
+            <div class="font-kufi text-[9px] tracking-[0.3em] uppercase text-ink-muted mt-1">sec</div>
           </div>
-
-          <div class="quiz-divider" aria-hidden="true">
-            <span class="qd-line"></span>
-            <svg class="qd-rosette" viewBox="0 0 22 22"><use href="#rosette"/></svg>
-            <span class="qd-line"></span>
-          </div>
-
-          <div class="quiz-question" id="rapidQuestion">—</div>
-          <div class="quiz-question-fr" id="rapidQuestionFr">Appuyez sur Démarrer</div>
-
-          <div class="quiz-answers" id="rapidAnswers" role="radiogroup" aria-label="Réponses rapides"></div>
         </div>
+
+        <div class="font-arabic text-4xl text-gold-100" dir="rtl" id="rapidQuestion">—</div>
+        <div class="font-display italic text-sm text-ink-soft mt-2" id="rapidQuestionFr">Appuyez sur Démarrer</div>
+
+        <div class="space-y-2.5 mt-5 quiz-answers" id="rapidAnswers" role="radiogroup" aria-label="Réponses rapides"></div>
       </div>
 
-      <button class="btn-baroque-primary mt-12" id="rapidStartBtn" data-action="start-rapid" type="button">
-        <svg class="bbp-frame" viewBox="0 0 280 56" preserveAspectRatio="none" aria-hidden="true">
-          <rect x="2" y="2" width="276" height="52" rx="26" fill="url(#goldDome)" stroke="#3d2806" stroke-width="1.2"/>
-          <rect x="6" y="6" width="268" height="44" rx="22" fill="none" stroke="#fdeec3" stroke-width=".6" opacity=".6"/>
-          <g transform="translate(8,18)"><use href="#sideCart" width="14" height="20"/></g>
-          <g transform="translate(258,18)"><use href="#sideCart" width="14" height="20"/></g>
-        </svg>
-        <span class="bbp-label">Démarrer</span>
+      <button class="btn-primary w-full mt-5" id="rapidStartBtn" data-action="start-rapid" type="button">
+        Démarrer
       </button>
     </section>
 
-
-    <!-- CHAT -->
-    <section class="screen" id="screen-chat" data-screen="chat">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         CHAT (sans premium ni quota)
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-chat" data-screen="chat">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello">IA <b>Conversation</b></div>
-        <button class="icon-btn" data-action="chat-language-toggle" id="chatLangBtn" aria-label="Changer la langue">
-          <span class="lang-badge" id="chatLangBadge">FR</span>
+        <div class="top-nav-title">IA <b>Conversation</b></div>
+        <button class="icon-btn" data-action="chat-language-toggle" id="chatLangBtn" aria-label="Langue">
+          <span class="font-kufi text-[10px] tracking-widest text-gold-200" id="chatLangBadge">FR</span>
         </button>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">Entraînement à la Conversation</div>
-        <p class="chat-hint">Écrivez ou parlez — corrections instantanées.</p>
+      <div class="glass-card p-5 mt-2">
+        <div class="section-label mb-2">Entraînement à la Conversation</div>
+        <p class="text-xs italic text-ink-soft mb-4">Écrivez ou parlez — corrections instantanées.</p>
 
-        <div class="chat-wrap">
-          <div class="chat-msgs" id="chatMsgs" aria-live="polite"></div>
+        <div class="chat-msgs" id="chatMsgs" aria-live="polite"></div>
 
-          <div class="voice-indicator" id="voiceIndicator" hidden>
-            <div class="voice-wave"><span></span><span></span><span></span><span></span><span></span></div>
-            <span class="voice-label">Parlez maintenant…</span>
-          </div>
-
-          <div class="chat-input-row">
-            <button class="chat-mic" id="chatMicBtn" data-action="chat-mic" aria-label="Parler" type="button">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 Q9 2 9 5 V11 Q9 14 12 14 Q15 14 15 11 V5 Q15 2 12 2 Z M6 11 Q6 16 12 16 Q18 16 18 11 M12 16 V20 M9 20 H15"/></svg>
-            </button>
-            <input class="chat-input" id="chatInput" placeholder="Écrivez en arabe ou en français…" autocomplete="off"/>
-            <button class="chat-send" id="chatSendBtn" data-action="chat-send" aria-label="Envoyer" type="button">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 12 L21 4 L15 20 L12 13 Z"/></svg>
-            </button>
-          </div>
-
-          <div class="chat-tools">
-            <label class="toggle-row">
-              <input type="checkbox" id="chatReadAloud" checked/>
-              <span>Lire les réponses à voix haute</span>
-            </label>
-          </div>
-
-          <!-- ====== v2.1 MODIF A2 : ajout data-premium="true" (quota chat masqué hors premium) ====== -->
-          <div class="quota-bar" id="quotaBar" data-premium="true">
-            <span>Messages gratuits aujourd'hui</span>
-            <b><span id="quotaUsed">0</span> / 10</b>
-          </div>
+        <div class="voice-indicator" id="voiceIndicator" hidden>
+          <div class="voice-wave"><span></span><span></span><span></span><span></span><span></span></div>
+          <span class="font-kufi text-[10px] tracking-widest text-gold-200">Parlez maintenant…</span>
         </div>
-      </div>
 
-      <!-- ====== v2.1 MODIF A3 : ajout data-premium="true" (bouton "Passer Premium") ====== -->
-      <button class="btn btn-outline mt-12" data-action="goto" data-target="premium" type="button" data-premium="true">
-        ✦ Passer Premium — IA illimitée
-      </button>
+        <div class="chat-input-row">
+          <button class="chat-mic" id="chatMicBtn" data-action="chat-mic" aria-label="Parler" type="button">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 Q9 2 9 5 V11 Q9 14 12 14 Q15 14 15 11 V5 Q15 2 12 2 Z M6 11 Q6 16 12 16 Q18 16 18 11 M12 16 V20 M9 20 H15"/></svg>
+          </button>
+          <input class="chat-input" id="chatInput" placeholder="Écrivez en arabe ou en français…" autocomplete="off"/>
+          <button class="chat-send" id="chatSendBtn" data-action="chat-send" aria-label="Envoyer" type="button">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 12 L21 4 L15 20 L12 13 Z"/></svg>
+          </button>
+        </div>
+
+        <label class="flex items-center gap-3 mt-4 text-xs text-ink-soft cursor-pointer">
+          <input type="checkbox" id="chatReadAloud" checked class="checkbox-gold"/>
+          <span>Lire les réponses à voix haute</span>
+        </label>
+      </div>
     </section>
 
-    <!-- LISTS -->
-    <section class="screen" id="screen-lists" data-screen="lists">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         LISTS
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-lists" data-screen="lists">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello">Mes <b>Listes</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title">Mes <b>Listes</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">Créer une liste</div>
+      <div class="glass-card p-6 mt-2">
+        <div class="section-label mb-3">Créer une liste</div>
         <form id="createListForm" novalidate>
           <input class="input" id="newListName" placeholder="Nom de la liste (ex: Voyage)" required/>
-          <button class="btn btn-gold mt-12" data-action="create-list" type="submit">Créer</button>
+          <button class="btn-primary w-full mt-3" data-action="create-list" type="submit">Créer</button>
         </form>
       </div>
 
-      <div class="panel mt-16">
-        <div class="panel-title">Mes listes personnalisées</div>
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label mb-3">Mes listes personnalisées</div>
         <div id="listsContainer"></div>
       </div>
     </section>
 
-    <!-- LIST DETAIL -->
-    <section class="screen" id="screen-list-detail" data-screen="list-detail">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         LIST DETAIL
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-list-detail" data-screen="list-detail">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="lists" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello"><b id="listDetailTitle">—</b></div>
-        <button class="icon-btn" data-action="delete-current-list" aria-label="Supprimer la liste">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7 H20 M9 7 V4 H15 V7 M6 7 L7 20 H17 L18 7"/></svg>
+        <div class="top-nav-title"><b id="listDetailTitle">—</b></div>
+        <button class="icon-btn" data-action="delete-current-list" aria-label="Supprimer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7 H20 M9 7 V4 H15 V7 M6 7 L7 20 H17 L18 7"/></svg>
         </button>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">Ajouter un mot</div>
-        <form id="addWordForm" novalidate>
-          <input class="input" id="wordArInput" placeholder="Mot en arabe (ex: سلام)" dir="rtl" required/>
+      <div class="glass-card p-6 mt-2">
+        <div class="section-label mb-3">Ajouter un mot</div>
+        <form id="addWordForm" novalidate class="space-y-2">
+          <input class="input" id="wordArInput" placeholder="Mot en arabe" dir="rtl" required/>
           <input class="input" id="wordTranslitInput" placeholder="Translittération (ex: salām)"/>
           <input class="input" id="wordFrInput" placeholder="Traduction française" required/>
           <input class="input" id="wordExampleInput" placeholder="Exemple (optionnel)" dir="rtl"/>
-          <button class="btn btn-outline mt-8" data-action="add-word-to-list" type="submit">Ajouter</button>
+          <button class="btn-outline w-full mt-2" data-action="add-word-to-list" type="submit">Ajouter</button>
         </form>
       </div>
 
-      <div class="panel mt-12">
-        <div class="panel-title">Apprendre cette liste</div>
-        <p class="list-hint">Chaque mot mémorisé (10 révisions) ajoute des points XP.</p>
-        <div class="list-learn-actions">
-          <button class="btn btn-gold" data-action="learn-list" data-mode="cards" type="button">Cartes</button>
-          <button class="btn btn-outline mt-8" data-action="learn-list" data-mode="qcm" type="button">QCM</button>
-          <button class="btn btn-outline mt-8" data-action="learn-list" data-mode="rapid" type="button">Révision rapide</button>
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label mb-3">Apprendre cette liste</div>
+        <p class="text-xs italic text-ink-soft mb-3">Chaque mot mémorisé ajoute des points XP.</p>
+        <div class="space-y-2">
+          <button class="btn-primary w-full" data-action="learn-list" data-mode="cards" type="button">Cartes</button>
+          <button class="btn-outline w-full" data-action="learn-list" data-mode="qcm" type="button">QCM</button>
+          <button class="btn-outline w-full" data-action="learn-list" data-mode="rapid" type="button">Révision rapide</button>
         </div>
       </div>
 
-      <div class="panel mt-12">
-        <div class="panel-title">Mots de la liste</div>
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label mb-3">Mots de la liste</div>
         <div id="listWords"></div>
       </div>
     </section>
 
-        <!-- PROFILE -->
-    <section class="screen" id="screen-profile" data-screen="profile">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         PROFILE
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-profile" data-screen="profile">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello">Mon <b>Profil</b></div>
+        <div class="top-nav-title">Mon <b>Profil</b></div>
         <button class="icon-btn" data-action="goto" data-target="settings" aria-label="Paramètres">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2 V5 M12 19 V22 M2 12 H5 M19 12 H22 M4.5 4.5 L6.5 6.5 M17.5 17.5 L19.5 19.5 M4.5 19.5 L6.5 17.5 M17.5 6.5 L19.5 4.5"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 2 V5 M12 19 V22 M2 12 H5 M19 12 H22 M4.5 4.5 L6.5 6.5 M17.5 17.5 L19.5 19.5 M4.5 19.5 L6.5 17.5 M17.5 6.5 L19.5 4.5"/></svg>
         </button>
       </div>
 
-      <!-- IDENTITÉ : Avatar + Pseudo + Rang + Niveau + XP -->
-      <div class="baroque-card-frame">
-        <svg class="bcf-frame" viewBox="0 0 340 280" preserveAspectRatio="none" aria-hidden="true">
-          <use href="#ornateFrame"/>
-          <g transform="translate(0,0)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(0,280) scale(1,-1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(340,280) scale(-1,-1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-        </svg>
-        <div class="bcf-inner profile-head">
-          <div class="avatar" id="profileAvatar">A</div>
-          <div class="pseudo" data-bind="pseudo">—</div>
+      <!-- Identity -->
+      <div class="glass-card p-7 mt-2 text-center">
+        <div class="avatar mx-auto" id="profileAvatar">A</div>
+        <div class="font-display text-2xl text-ink mt-3" data-bind="pseudo">—</div>
 
-          <div class="profile-rank">
-            <svg class="rank-icon" viewBox="0 0 24 24" fill="url(#goldGrad)" aria-hidden="true">
-              <path d="M12 2 L15 8 L22 9 L17 14 L18 21 L12 18 L6 21 L7 14 L2 9 L9 8 Z"/>
-            </svg>
-            <span class="rank-label">Rang</span>
-            <span class="rank-value" id="profileRank">#—</span>
-          </div>
+        <div class="inline-flex items-center gap-2 mt-3 px-4 py-1.5 rounded-full bg-gold-400/10 border border-gold-400/30">
+          <svg class="w-4 h-4 text-gold-300" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L15 8 L22 9 L17 14 L18 21 L12 18 L6 21 L7 14 L2 9 L9 8 Z"/></svg>
+          <span class="font-kufi text-[10px] tracking-[0.2em] uppercase text-gold-300">Rang</span>
+          <span class="font-display font-bold text-gold-200" id="profileRank">#—</span>
+        </div>
 
-          <div class="level-chip">Niveau <span data-bind="level">—</span> · <span id="levelTitle">Apprenti</span></div>
-          <div class="xp-bar"><div class="fill" id="xpFill"></div></div>
-          <div class="xp-label">
-            <span><span id="xpCurrent">0</span> XP</span>
-            <span>Suivant : <span id="xpNext">0</span></span>
-          </div>
+        <div class="font-display text-lg text-gold-200 mt-4">
+          Niveau <span data-bind="level">—</span> · <span id="levelTitle">Apprenti</span>
+        </div>
+
+        <div class="progress-bar mt-4"><div class="progress-fill" id="xpFill"></div></div>
+        <div class="flex justify-between text-xs text-ink-muted mt-2">
+          <span><span id="xpCurrent">0</span> XP</span>
+          <span>Suivant : <span id="xpNext">0</span></span>
         </div>
       </div>
 
-      <!-- INFOS PERSONNELLES (Genre / Pays / Ville) -->
-      <div class="baroque-card-frame mt-12">
-        <svg class="bcf-frame" viewBox="0 0 340 200" preserveAspectRatio="none" aria-hidden="true">
-          <use href="#ornateFrame"/>
-          <g transform="translate(0,0)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(0,200) scale(1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(340,200) scale(-1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-        </svg>
-        <div class="bcf-inner">
-          <div class="bcf-title">À propos</div>
-
-          <div class="info-row">
-            <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
-              <circle cx="12" cy="8" r="4"/><path d="M4 21 Q4 14 12 14 Q20 14 20 21"/>
-            </svg>
-            <span class="info-label">Genre</span>
-            <span class="info-value" id="profileGender">—</span>
-          </div>
-
-          <div class="info-row">
-            <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"/><path d="M2 12 H22 M12 2 Q16 6 16 12 Q16 18 12 22 Q8 18 8 12 Q8 6 12 2"/>
-            </svg>
-            <span class="info-label">Pays</span>
-            <span class="info-value" id="profileCountry">—</span>
-          </div>
-
-          <div class="info-row">
-            <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 22 Q5 15 5 10 Q5 5 12 3 Q19 5 19 10 Q19 15 12 22 Z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-            <span class="info-label">Ville</span>
-            <span class="info-value" id="profileCity">—</span>
-          </div>
+      <!-- Infos -->
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label mb-4">À propos</div>
+        <div class="info-row">
+          <svg class="w-4 h-4 text-gold-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21 Q4 14 12 14 Q20 14 20 21"/></svg>
+          <span class="info-label">Genre</span>
+          <span class="info-value" id="profileGender">—</span>
+        </div>
+        <div class="info-row">
+          <svg class="w-4 h-4 text-gold-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12 H22"/></svg>
+          <span class="info-label">Pays</span>
+          <span class="info-value" id="profileCountry">—</span>
+        </div>
+        <div class="info-row">
+          <svg class="w-4 h-4 text-gold-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22 Q5 15 5 10 Q5 5 12 3 Q19 5 19 10 Q19 15 12 22 Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span class="info-label">Ville</span>
+          <span class="info-value" id="profileCity">—</span>
         </div>
       </div>
 
-      <!-- DESCRIPTION / BIO -->
-      <div class="baroque-card-frame mt-12">
-        <svg class="bcf-frame" viewBox="0 0 340 220" preserveAspectRatio="none" aria-hidden="true">
-          <use href="#ornateFrame"/>
-          <g transform="translate(0,0)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(0,220) scale(1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(340,220) scale(-1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-        </svg>
-        <div class="bcf-inner">
-          <div class="bcf-title">Description</div>
-          <div class="profile-bio" id="profileBio">Aucune description. Touchez « Modifier » pour vous présenter.</div>
-          <div class="bio-char-count"><span id="bioCharCount">0</span> / 5000 caractères</div>
-          <button class="btn btn-outline mt-12" data-action="edit-profile" type="button">
-            ✎ Modifier mon profil
-          </button>
+      <!-- Bio -->
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label mb-3">Description</div>
+        <div class="bio-box" id="profileBio">Aucune description. Touchez « Modifier » pour vous présenter.</div>
+        <div class="text-right text-[10px] text-ink-muted italic mt-2"><span id="bioCharCount">0</span> / 5000 caractères</div>
+        <button class="btn-outline w-full mt-3" data-action="edit-profile" type="button">
+          Modifier mon profil
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label mb-4">Statistiques</div>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="mini-stat"><b id="wordsLearned">0</b><span>mots</span></div>
+          <div class="mini-stat"><b id="lettersDone">0</b><span>lettres</span></div>
+          <div class="mini-stat"><b id="badgesUnlocked">0</b><span>badges</span></div>
         </div>
       </div>
 
-      <!-- STATISTIQUES -->
-      <div class="baroque-card-frame mt-12">
-        <svg class="bcf-frame" viewBox="0 0 340 160" preserveAspectRatio="none" aria-hidden="true">
-          <use href="#ornateFrame"/>
-          <g transform="translate(0,0)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(0,160) scale(1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(340,160) scale(-1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-        </svg>
-        <div class="bcf-inner">
-          <div class="bcf-title">Statistiques</div>
-          <div class="profile-stats">
-            <div class="mini-stat"><b id="wordsLearned">0</b><span>mots appris</span></div>
-            <div class="mini-stat"><b id="lettersDone">0</b><span>lettres lues</span></div>
-            <div class="mini-stat"><b id="badgesUnlocked">0</b><span>badges</span></div>
-          </div>
-        </div>
+      <!-- Medals -->
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label mb-4">Mes Médailles</div>
+        <div class="medals-grid" id="profileMedals"></div>
+        <button class="btn-outline w-full mt-4" data-action="goto" data-target="badges" type="button">
+          Voir toutes les médailles
+        </button>
       </div>
 
-      <!-- MÉDAILLES / BADGES (scroll, illimité) -->
-      <div class="baroque-card-frame mt-12">
-        <svg class="bcf-frame" viewBox="0 0 340 260" preserveAspectRatio="none" aria-hidden="true">
-          <use href="#ornateFrame"/>
-          <g transform="translate(0,0)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(0,260) scale(1,-1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(340,260) scale(-1,-1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-        </svg>
-        <div class="bcf-inner">
-          <div class="bcf-title">Mes Médailles</div>
-          <div class="medals-grid" id="profileMedals">
-            <!-- Médailles injectées dynamiquement par JS -->
-          </div>
-          <button class="btn btn-outline mt-12" data-action="goto" data-target="badges" type="button">
-            Voir toutes les médailles
-          </button>
+      <!-- Boosts XP -->
+      <div class="glass-card p-6 mt-4" id="boostInventory">
+        <div class="section-label mb-3">Boosts XP</div>
+        <p class="text-xs italic text-ink-soft mb-4">Cumulez jusqu'à 3 boosts et activez-les quand vous voulez.</p>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="boost-slot" id="boostSlot1"><span class="text-xs text-ink-muted italic">vide</span></div>
+          <div class="boost-slot" id="boostSlot2"><span class="text-xs text-ink-muted italic">vide</span></div>
+          <div class="boost-slot" id="boostSlot3"><span class="text-xs text-ink-muted italic">vide</span></div>
         </div>
+        <button class="btn-primary w-full mt-4" data-action="activate-boost" id="activateBoostBtn" type="button" disabled>Activer le boost</button>
       </div>
 
-      <!-- BOOSTS XP (déplacé en bas comme demandé) -->
-      <div class="baroque-card-frame mt-12" id="boostInventory">
-        <svg class="bcf-frame" viewBox="0 0 340 200" preserveAspectRatio="none" aria-hidden="true">
-          <use href="#ornateFrame"/>
-          <g transform="translate(0,0)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(0,200) scale(1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(340,200) scale(-1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-        </svg>
-        <div class="bcf-inner">
-          <div class="bcf-title">Boosts XP</div>
-          <p class="boost-hint">Cumulez vos boosts (jusqu'à 3) et activez-les quand vous voulez.</p>
-          <div class="boost-stack">
-            <div class="boost-slot" id="boostSlot1"><span class="boost-empty">vide</span></div>
-            <div class="boost-slot" id="boostSlot2"><span class="boost-empty">vide</span></div>
-            <div class="boost-slot" id="boostSlot3"><span class="boost-empty">vide</span></div>
-          </div>
-          <button class="btn btn-gold mt-12" data-action="activate-boost" id="activateBoostBtn" type="button" disabled>Activer le boost</button>
-        </div>
-      </div>
-
-      <!-- COMPTE (paramètres compte) -->
-      <div class="baroque-card-frame mt-12">
-        <svg class="bcf-frame" viewBox="0 0 340 240" preserveAspectRatio="none" aria-hidden="true">
-          <use href="#ornateFrame"/>
-          <g transform="translate(0,0)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(0,240) scale(1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-          <g transform="translate(340,240) scale(-1,-1)"><use href="#cornerFlourish" width="50" height="50"/></g>
-        </svg>
-        <div class="bcf-inner">
-          <div class="bcf-title">Compte</div>
-          <input class="input" id="pseudoInput" placeholder="Changer le pseudo"/>
-          <button class="btn btn-outline mt-8" data-action="save-pseudo" type="button">Enregistrer</button>
-          <button class="btn btn-ghost mt-8" data-action="export-data" type="button">Exporter mes données</button>
-          <button class="btn btn-ghost mt-8" data-action="logout" type="button">Se déconnecter</button>
-        </div>
+      <!-- Compte -->
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label mb-3">Compte</div>
+        <input class="input" id="pseudoInput" placeholder="Changer le pseudo"/>
+        <button class="btn-outline w-full mt-2" data-action="save-pseudo" type="button">Enregistrer</button>
+        <button class="btn-ghost w-full mt-2" data-action="export-data" type="button">Exporter mes données</button>
+        <button class="btn-ghost w-full mt-2" data-action="logout" type="button">Se déconnecter</button>
       </div>
     </section>
 
-
-    <!-- BADGES -->
-    <section class="screen" id="screen-badges" data-screen="badges">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         BADGES
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-badges" data-screen="badges">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="profile" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello"><b>Badges</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title"><b>Badges</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">Collection</div>
-        <div class="badges-stats">
-          <span><b id="badgesCount">0</b> / <span id="badgesTotal">30</span></span>
-          <span>débloqués</span>
+      <div class="glass-card p-6 mt-2">
+        <div class="section-label mb-3">Collection</div>
+        <div class="text-center font-display text-2xl text-gold-200">
+          <b id="badgesCount">0</b> <span class="text-ink-muted">/</span> <span id="badgesTotal">30</span>
+          <div class="font-kufi text-[10px] tracking-[0.3em] uppercase text-ink-muted mt-1">débloqués</div>
         </div>
 
-        <div class="badges-filters" role="tablist">
+        <div class="flex flex-wrap gap-2 mt-5" role="tablist">
           <button class="filter-chip active" data-filter="all" type="button">Tous</button>
           <button class="filter-chip" data-filter="assiduity" type="button">Assiduité</button>
           <button class="filter-chip" data-filter="vocab" type="button">Vocabulaire</button>
@@ -1310,49 +979,53 @@
       </div>
     </section>
 
-    <!-- WOTD -->
-    <section class="screen" id="screen-wotd" data-screen="wotd">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         WOTD
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-wotd" data-screen="wotd">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello">Mot du <b>Jour</b></div>
+        <div class="top-nav-title">Mot du <b>Jour</b></div>
         <button class="icon-btn" data-action="speak-word" aria-label="Écouter">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 10 V14 H7 L12 18 V6 L7 10 Z"/><path d="M16 8 Q20 12 16 16"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10 V14 H7 L12 18 V6 L7 10 Z"/><path d="M16 8 Q20 12 16 16"/></svg>
         </button>
       </div>
 
-      <div class="panel wotd-card">
-        <div class="panel-title">Aujourd'hui</div>
-        <div class="ar" data-bind="wotd-ar">—</div>
-        <div class="translit" data-bind="wotd-translit">—</div>
-        <div class="fr" data-bind="wotd-fr">—</div>
-        <div class="def" data-bind="wotd-def">—</div>
+      <div class="glass-card p-7 mt-2 text-center wotd-card">
+        <div class="section-label mb-4">Aujourd'hui</div>
+        <div class="font-arabic text-6xl text-gold-200 my-3" dir="rtl" data-bind="wotd-ar">—</div>
+        <div class="font-kufi text-xs tracking-[0.3em] uppercase text-gold-400" data-bind="wotd-translit">—</div>
+        <div class="font-display italic text-xl text-ink mt-2" data-bind="wotd-fr">—</div>
+        <div class="text-sm text-ink-soft mt-3" data-bind="wotd-def">—</div>
 
-        <div class="wotd-example">
-          <div class="ar" data-bind="wotd-example-ar">—</div>
-          <div class="fr" data-bind="wotd-example-fr">—</div>
+        <div class="mt-5 p-4 rounded-xl bg-night-700/40 border border-gold-400/15">
+          <div class="font-arabic text-xl text-gold-200" dir="rtl" data-bind="wotd-example-ar">—</div>
+          <div class="font-display italic text-sm text-ink-soft mt-1" data-bind="wotd-example-fr">—</div>
         </div>
 
-        <button class="btn btn-gold mt-16" data-action="add-wotd-to-list" type="button">Ajouter à mes mots</button>
+        <button class="btn-primary w-full mt-5" data-action="add-wotd-to-list" type="button">Ajouter à mes mots</button>
       </div>
     </section>
 
-    <!-- CONTACT -->
-    <section class="screen" id="screen-contact" data-screen="contact">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         CONTACT
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-contact" data-screen="contact">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello"><b>Contact</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title"><b>Contact</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">Écrivez-nous</div>
-        <form id="contactForm" novalidate>
+      <div class="glass-card p-6 mt-2">
+        <div class="section-label mb-3">Écrivez-nous</div>
+        <form id="contactForm" novalidate class="space-y-2">
           <input class="input" type="text" id="ctName" name="name" placeholder="Votre nom" required/>
           <input class="input" type="email" id="ctEmail" name="email" placeholder="Votre email" required/>
           <select class="input" id="ctSubject" name="subject" required>
@@ -1363,461 +1036,314 @@
             <option value="partnership">Partenariat / formation</option>
             <option value="other">Autre</option>
           </select>
-          <textarea class="textarea" id="ctMsg" name="message" placeholder="Votre message…" required></textarea>
-          <button class="btn btn-gold mt-12" data-action="send-contact" type="submit">Envoyer</button>
+          <textarea class="input min-h-[120px] resize-y" id="ctMsg" name="message" placeholder="Votre message…" required></textarea>
+          <button class="btn-primary w-full mt-2" data-action="send-contact" type="submit">Envoyer</button>
         </form>
       </div>
     </section>
 
-    <!-- ====== v2.1 MODIF A5 : ajout data-premium="true" sur la section premium entière ====== -->
-    <!-- PREMIUM -->
-    <section class="screen" id="screen-premium" data-screen="premium" data-premium="true">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
-        <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
-        </button>
-        <div class="hello"><b>Premium</b></div>
-        <div class="spacer-40"></div>
-      </div>
-
-      <div class="panel premium-hero">
-        <svg class="premium-crown" viewBox="0 0 64 64" fill="url(#goldGrad)" stroke="#F4D77A" stroke-width="1.5" aria-hidden="true">
-          <path d="M6 20 L16 34 L24 16 L32 36 L40 16 L48 34 L58 20 L54 48 H10 Z"/>
-          <circle cx="6" cy="20" r="3" fill="#F4D77A"/>
-          <circle cx="58" cy="20" r="3" fill="#F4D77A"/>
-          <circle cx="32" cy="14" r="3" fill="#F4D77A"/>
-        </svg>
-        <div class="premium-title">PASS PREMIUM</div>
-        <div class="premium-price">Accès illimité pour <b data-bind="premium-price">7,99€</b> / mois</div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-title">Vos avantages</div>
-        <div class="benefits">
-          <div class="benefit">
-            <div class="ck" aria-hidden="true">✓</div>
-            <div class="txt">IA Conversationnelle illimitée<small>Plus de limite de 10 messages / jour</small></div>
-          </div>
-          <div class="benefit">
-            <div class="ck" aria-hidden="true">✓</div>
-            <div class="txt">Corrections avancées &amp; mode vocal<small>Explications grammaticales, reconnaissance vocale, lecture à voix haute</small></div>
-          </div>
-          <div class="benefit">
-            <div class="ck" aria-hidden="true">✓</div>
-            <div class="txt">Progression accélérée<small>Bonus XP × 2 sur tous les exercices</small></div>
-          </div>
-          <div class="benefit">
-            <div class="ck" aria-hidden="true">✓</div>
-            <div class="txt">Niveau Mouallim débloqué<small>Expressions rares &amp; littéraires</small></div>
-          </div>
-          <div class="benefit">
-            <div class="ck" aria-hidden="true">✓</div>
-            <div class="txt">Badges dorés exclusifs<small>Prestige &amp; reconnaissance</small></div>
-          </div>
-          <div class="benefit">
-            <div class="ck" aria-hidden="true">✓</div>
-            <div class="txt">Sans publicité · Hors-ligne<small>Cache complet pour voyager</small></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel mt-12">
-        <div class="panel-title">Choisissez un mode de paiement</div>
-
-        <button class="pay-btn pay-card" data-action="pay-stripe" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10 H22 M6 15 H10"/></svg>
-          <span>Carte bancaire<small>Visa · Mastercard · Amex</small></span>
-        </button>
-
-        <button class="pay-btn pay-paypal" data-action="pay-paypal" type="button">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4 H15 Q20 4 19 9 Q18 14 13 14 H10 L9 20 H5 Z"/></svg>
-          <span>PayPal<small>Compte ou carte via PayPal</small></span>
-        </button>
-
-        <button class="pay-btn pay-apple" data-action="pay-apple" type="button" id="payAppleBtn" hidden>
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09z"/></svg>
-          <span>Apple Pay<small>Paiement rapide</small></span>
-        </button>
-
-        <button class="pay-btn pay-google" data-action="pay-google" type="button" id="payGoogleBtn" hidden>
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 L4 6 V12 Q4 17 12 22 Q20 17 20 12 V6 Z"/></svg>
-          <span>Google Pay<small>Paiement rapide</small></span>
-        </button>
-
-        <div class="gift-code-row">
-          <input class="input" id="giftCode" placeholder="Code cadeau / promo"/>
-          <button class="btn btn-outline mt-8" data-action="redeem-code" type="button">Valider le code</button>
-        </div>
-
-        <p class="premium-footnote">Annulez quand vous voulez · Paiement sécurisé</p>
-      </div>
-    </section>
-
-    <!-- SETTINGS -->
-    <section class="screen" id="screen-settings" data-screen="settings">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         SETTINGS
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-settings" data-screen="settings">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="profile" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello"><b>Paramètres</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title"><b>Paramètres</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">Son</div>
-        <label class="toggle-row">
-          <input type="checkbox" id="settingTapSound" checked/>
-          <span>Son au toucher des boutons</span>
-        </label>
-        <label class="toggle-row">
-          <input type="checkbox" id="settingFeedbackSound" checked/>
-          <span>Son de bonne / mauvaise réponse</span>
-        </label>
-        <label class="toggle-row">
-          <input type="checkbox" id="settingAmbientSound"/>
-          <span>Ambiance sonore discrète (oud / nay)</span>
-        </label>
+      <div class="glass-card p-6 mt-2">
+        <div class="section-label mb-3">Son</div>
+        <label class="toggle-row"><input type="checkbox" id="settingTapSound" checked class="checkbox-gold"/><span>Son au toucher</span></label>
+        <label class="toggle-row"><input type="checkbox" id="settingFeedbackSound" checked class="checkbox-gold"/><span>Son de réponse</span></label>
+        <label class="toggle-row"><input type="checkbox" id="settingAmbientSound" class="checkbox-gold"/><span>Ambiance sonore (oud / nay)</span></label>
       </div>
 
-      <div class="panel mt-12">
-        <div class="panel-title">Notifications</div>
-        <label class="toggle-row">
-          <input type="checkbox" id="settingStreakNotif" checked/>
-          <span>Rappel quotidien du streak</span>
-        </label>
-        <label class="toggle-row">
-          <input type="checkbox" id="settingWotdNotif" checked/>
-          <span>Notification du mot du jour</span>
-        </label>
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label mb-3">Notifications</div>
+        <label class="toggle-row"><input type="checkbox" id="settingStreakNotif" checked class="checkbox-gold"/><span>Rappel quotidien du streak</span></label>
+        <label class="toggle-row"><input type="checkbox" id="settingWotdNotif" checked class="checkbox-gold"/><span>Notification du mot du jour</span></label>
       </div>
 
-      <div class="panel mt-12">
-        <div class="panel-title">Apprentissage</div>
-        <label class="toggle-row">
-          <input type="checkbox" id="settingShowTranslit" checked/>
-          <span>Afficher la translittération</span>
-        </label>
-        <label class="toggle-row">
-          <input type="checkbox" id="settingOfflineCache" checked/>
-          <span>Cache hors-ligne (thèmes &amp; leçons)</span>
-        </label>
-        <label class="toggle-row">
-          <input type="checkbox" id="settingShareProgress"/>
-          <span>Partage social activé</span>
-        </label>
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label mb-3">Apprentissage</div>
+        <label class="toggle-row"><input type="checkbox" id="settingShowTranslit" checked class="checkbox-gold"/><span>Afficher la translittération</span></label>
+        <label class="toggle-row"><input type="checkbox" id="settingOfflineCache" checked class="checkbox-gold"/><span>Cache hors-ligne</span></label>
+        <label class="toggle-row"><input type="checkbox" id="settingShareProgress" class="checkbox-gold"/><span>Partage social activé</span></label>
       </div>
 
-      <div class="panel mt-12">
-        <div class="panel-title">À propos</div>
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label mb-3">À propos</div>
         <div class="about-row"><span>Version</span><b id="appVersion">—</b></div>
         <div class="about-row"><span>Backend</span><b id="backendStatus">—</b></div>
-        <button class="btn btn-ghost mt-12" data-action="goto" data-target="contact" type="button">Nous contacter</button>
-        <button class="btn btn-ghost mt-8" data-action="reset-data" type="button">Réinitialiser mes données</button>
+        <button class="btn-ghost w-full mt-3" data-action="goto" data-target="contact" type="button">Nous contacter</button>
+        <button class="btn-ghost w-full mt-2" data-action="reset-data" type="button">Réinitialiser mes données</button>
       </div>
     </section>
 
-    <!-- ============================================================ -->
-    <!-- === v2.1 NOUVEAU : 4 ÉCRANS — Contenus déblocables / Dico === -->
-    <!-- === Notions étymologiques / À propos de la méthode       === -->
-    <!-- ============================================================ -->
-
-    <!-- v2.1 NOUVEAU : CONTENUS DÉBLOCABLES -->
-    <section class="screen" id="screen-contenus-debloquables" data-screen="contenus-debloquables">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         CONTENUS DÉBLOCABLES
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-contenus-debloquables" data-screen="contenus-debloquables">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="menu" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello">Contenus <b>déblocables</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title">Contenus <b>déblocables</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">Débloquez en regardant une publicité</div>
-        <p class="unlock-intro">
+      <div class="glass-card p-6 mt-2">
+        <div class="section-label mb-3">Débloquez en regardant une publicité</div>
+        <p class="text-xs italic text-ink-soft leading-relaxed">
           Chaque publicité visionnée vous offre un contenu rare ou un bonus.
-          Les pubs aident à financer les serveurs et améliorer l'application — jazākum Allāhu khayran.
+          Les pubs aident à financer les serveurs — jazākum Allāhu khayran.
         </p>
       </div>
 
-      <!-- Catégorie : Boosts XP -->
-      <div class="panel mt-12">
-        <div class="panel-title">
-          <svg class="cat-icon" viewBox="0 0 24 24" fill="url(#goldGrad)" aria-hidden="true">
-            <path d="M13 2 L4 14 L11 14 L9 22 L20 10 L13 10 Z"/>
-          </svg>
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label flex items-center gap-2 mb-3">
+          <svg class="w-4 h-4 text-gold-300" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 L4 14 L11 14 L9 22 L20 10 L13 10 Z"/></svg>
           Boosts XP
         </div>
-        <p class="cat-hint">Cumulez jusqu'à 3 boosts. Activation manuelle. Limite : 3 publicités par 24h.</p>
-        <div class="unlock-grid" id="boostsGrid">
-          <!-- Items générés dynamiquement par JS -->
-        </div>
+        <p class="text-xs italic text-ink-soft mb-3">Jusqu'à 3 boosts cumulables. Limite : 3 publicités par 24h.</p>
+        <div class="unlock-grid" id="boostsGrid"></div>
       </div>
 
-      <!-- Catégorie : Définitions étymologiques -->
-      <div class="panel mt-12">
-        <div class="panel-title">
-          <svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4 20 V6 Q4 4 6 4 H11 V20 Q11 18 9 18 H6 Q4 18 4 20 Z"/>
-            <path d="M20 20 V6 Q20 4 18 4 H13 V20 Q13 18 15 18 H18 Q20 18 20 20 Z"/>
-            <path d="M12 2 V4 M12 22 V20"/>
-            <circle cx="12" cy="12" r="1"/>
-          </svg>
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label flex items-center gap-2 mb-3">
+          <svg class="w-4 h-4 text-gold-300" viewBox="0 0 60 60"><use href="#iconBook"/></svg>
           Définitions étymologiques
         </div>
-        <p class="cat-hint">Tirées de Mufradāt al-Faẓ al-Qurʾān (al-Rāghib al-Iṣfahānī) et Maqāyīs al-Lugha (Ibn Fāris).</p>
-        <div class="unlock-grid" id="definitionsGrid">
-          <!-- Items générés dynamiquement par JS -->
-        </div>
+        <p class="text-xs italic text-ink-soft mb-3">Tirées de Mufradāt al-Faẓ al-Qurʾān et Maqāyīs al-Lugha.</p>
+        <div class="unlock-grid" id="definitionsGrid"></div>
       </div>
 
-      <!-- Catégorie : Notions étymologiques -->
-      <div class="panel mt-12">
-        <div class="panel-title">
-          <svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="url(#goldGrad)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 3 V13"/>
-            <path d="M12 7 Q9 7 8 5 M12 7 Q15 7 16 5"/>
-            <path d="M12 11 Q9 11 7 9 M12 11 Q15 11 17 9"/>
-            <path d="M5 13 H19 L17 21 H7 Z"/>
-            <path d="M9 17 L11 17 M13 17 L15 17"/>
-          </svg>
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label flex items-center gap-2 mb-3">
+          <svg class="w-4 h-4 text-gold-300" viewBox="0 0 60 60"><use href="#iconScroll"/></svg>
           Notions étymologiques
         </div>
-        <p class="cat-hint">Résumés courts (2 à 4 mots-clés) pour mémoriser facilement la racine d'un mot.</p>
-        <div class="unlock-grid" id="notionsGrid">
-          <!-- Items générés dynamiquement par JS -->
-        </div>
+        <p class="text-xs italic text-ink-soft mb-3">Résumés courts (2-4 mots-clés) pour mémoriser une racine.</p>
+        <div class="unlock-grid" id="notionsGrid"></div>
       </div>
 
-      <!-- Emplacement publicitaire bannière (invisible tant que ADS_ENABLED=false) -->
-      <div class="ad-slot mt-12" id="adSlotUnlock" data-ad-position="unlock-bottom" hidden></div>
+      <div class="ad-slot mt-4" id="adSlotUnlock" data-ad-position="unlock-bottom" hidden></div>
     </section>
 
-    <!-- v2.1 NOUVEAU : MON DICTIONNAIRE ÉTYMOLOGIQUE -->
-    <section class="screen" id="screen-dictionnaire" data-screen="dictionnaire">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         DICTIONNAIRE
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-dictionnaire" data-screen="dictionnaire">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="menu" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello">Mon <b>Dictionnaire</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title">Mon <b>Dictionnaire</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">Dictionnaire étymologique personnel</div>
-        <p class="dico-intro">Vos définitions débloquées, classées par ordre alphabétique.</p>
+      <div class="glass-card p-6 mt-2">
+        <div class="section-label mb-2">Dictionnaire étymologique</div>
+        <p class="text-xs italic text-ink-soft mb-3">Vos définitions débloquées, classées alphabétiquement.</p>
 
         <input class="input" type="search" id="dicoSearch" placeholder="Rechercher un mot…" autocomplete="off"/>
 
-        <div class="dico-filters" id="dicoFilters" role="tablist">
+        <div class="flex flex-wrap gap-2 mt-3" id="dicoFilters" role="tablist">
           <button class="filter-chip active" data-dico-filter="all" type="button">Tous</button>
-          <!-- Filtres par thème générés dynamiquement par JS -->
         </div>
 
-        <div class="dico-stats">
-          <span><b id="dicoCount">0</b> définitions débloquées</span>
+        <div class="text-center font-kufi text-xs tracking-widest text-gold-200 my-4">
+          <b id="dicoCount">0</b> <span class="text-ink-muted">DÉFINITIONS DÉBLOQUÉES</span>
         </div>
 
-        <div class="dico-list" id="dicoList">
-          <!-- Liste des définitions générée dynamiquement par JS -->
-        </div>
+        <div id="dicoList"></div>
 
-        <div class="dico-empty" id="dicoEmpty" hidden>
-          <svg viewBox="0 0 64 64" fill="none" stroke="url(#goldGrad)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 50 V18 Q12 14 16 14 H30 V50 Q30 46 26 46 H16 Q12 46 12 50 Z"/>
-            <path d="M52 50 V18 Q52 14 48 14 H34 V50 Q34 46 38 46 H48 Q52 46 52 50 Z"/>
-          </svg>
-          <p>Votre dictionnaire est vide. Débloquez des définitions dans <b>Contenus déblocables</b>.</p>
-          <button class="btn btn-outline mt-12" data-action="goto" data-target="contenus-debloquables" type="button">Aller débloquer</button>
+        <div class="text-center py-8" id="dicoEmpty" hidden>
+          <svg class="w-16 h-16 mx-auto opacity-50" viewBox="0 0 60 60"><use href="#iconBook"/></svg>
+          <p class="text-sm italic text-ink-soft mt-3">Votre dictionnaire est vide.</p>
+          <button class="btn-outline mt-4" data-action="goto" data-target="contenus-debloquables" type="button">Aller débloquer</button>
         </div>
       </div>
 
-      <!-- Emplacement publicitaire bannière -->
-      <div class="ad-slot mt-12" id="adSlotDico" data-ad-position="dico-bottom" hidden></div>
+      <div class="ad-slot mt-4" id="adSlotDico" data-ad-position="dico-bottom" hidden></div>
     </section>
 
-    <!-- v2.1 NOUVEAU : NOTIONS ÉTYMOLOGIQUES -->
-    <section class="screen" id="screen-notions-etymo" data-screen="notions-etymo">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         NOTIONS ÉTYMO
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-notions-etymo" data-screen="notions-etymo">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="menu" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello">Notions <b>étymologiques</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title">Notions <b>étymologiques</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <div class="panel">
-        <div class="panel-title">Comprendre les racines</div>
-        <p class="notions-intro">
+      <div class="glass-card p-6 mt-2">
+        <div class="section-label mb-2">Comprendre les racines</div>
+        <p class="text-xs italic text-ink-soft leading-relaxed">
           Chaque notion résume en quelques mots-clés l'essence d'une racine arabe.
-          Idéal pour mémoriser rapidement et saisir la logique de la langue.
         </p>
       </div>
 
-      <div class="panel mt-12">
-        <div class="panel-title">Thèmes</div>
-        <div class="notions-themes" id="notionsThemes">
-          <!-- Thèmes générés dynamiquement par JS (chaque thème contient des niveaux 1-10) -->
-        </div>
+      <div class="glass-card p-6 mt-4">
+        <div class="section-label mb-3">Thèmes</div>
+        <div id="notionsThemes"></div>
       </div>
 
-      <!-- Emplacement publicitaire bannière -->
-      <div class="ad-slot mt-12" id="adSlotNotions" data-ad-position="notions-bottom" hidden></div>
+      <div class="ad-slot mt-4" id="adSlotNotions" data-ad-position="notions-bottom" hidden></div>
     </section>
 
-    <!-- v2.1 NOUVEAU : NIVEAUX D'UN THÈME DE NOTIONS -->
-    <section class="screen" id="screen-notions-levels" data-screen="notions-levels">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- NOTIONS LEVELS -->
+    <section class="screen px-6 pt-6" id="screen-notions-levels" data-screen="notions-levels">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="notions-etymo" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello"><b id="notionsThemeName">—</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title"><b id="notionsThemeName">—</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <div class="panel">
-        <div class="panel-title" id="notionsThemeNameAr">—</div>
-        <p class="theme-intro" id="notionsThemeIntro">—</p>
-        <div class="levels-list" id="notionsLevelsList">
-          <!-- Niveaux 1-10 générés dynamiquement par JS -->
-        </div>
+      <div class="glass-card p-6 mt-2">
+        <div class="font-arabic text-2xl text-gold-200 text-center" dir="rtl" id="notionsThemeNameAr">—</div>
+        <p class="font-display italic text-sm text-ink-soft text-center mt-2" id="notionsThemeIntro">—</p>
+        <div class="levels-list mt-5" id="notionsLevelsList"></div>
       </div>
     </section>
 
-    <!-- v2.1 NOUVEAU : DÉTAIL D'UNE NOTION -->
-    <section class="screen" id="screen-notion-detail" data-screen="notion-detail">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- NOTION DETAIL -->
+    <section class="screen px-6 pt-6" id="screen-notion-detail" data-screen="notion-detail">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="notions-levels" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello"><b>Notion</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title"><b>Notion</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <div class="panel notion-card" id="notionCard">
-        <!-- Contenu généré dynamiquement par JS -->
-      </div>
+      <div class="glass-card p-7 mt-2 text-center" id="notionCard"></div>
 
-      <button class="btn btn-outline mt-12" data-action="add-notion-to-dico" id="addNotionToDicoBtn" type="button">
+      <button class="btn-outline w-full mt-4" data-action="add-notion-to-dico" id="addNotionToDicoBtn" type="button">
         Ajouter à mon dictionnaire
       </button>
     </section>
 
-    <!-- v2.1 NOUVEAU : À PROPOS DE NOTRE MÉTHODE -->
-    <section class="screen" id="screen-methode" data-screen="methode">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <!-- ============================================================
+         MÉTHODE
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-methode" data-screen="methode">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="menu" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello">Notre <b>méthode</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title">Notre <b>méthode</b></div>
+        <div class="w-10"></div>
       </div>
 
-      <!-- Contenu éditable depuis le mode admin (chargé depuis Firestore) -->
       <div id="methodeContent">
-        <div class="panel">
-          <div class="panel-title">Bismillāh</div>
-          <p class="methode-text">Chargement…</p>
+        <div class="glass-card p-6 mt-2">
+          <div class="section-label mb-3">Bismillāh</div>
+          <p class="text-sm text-ink-soft italic">Chargement…</p>
         </div>
       </div>
     </section>
-   
-    <!-- GROUPES -->
-    <section class="screen" id="screen-groups" data-screen="groups">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+
+    <!-- ============================================================
+         GROUPS / LEADERBOARD / ADMIN
+    ============================================================ -->
+    <section class="screen px-6 pt-6" id="screen-groups" data-screen="groups">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello">Mes <b>Groupes</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title">Mes <b>Groupes</b></div>
+        <div class="w-10"></div>
       </div>
-      <div id="groupsContent"></div>
-    </section>
-   
-    <!-- LEADERBOARD -->
-    <section class="screen" id="screen-leaderboard" data-screen="leaderboard">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
-        <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
-        </button>
-        <div class="hello">🏆 <b>Classements</b></div>
-        <div class="spacer-40"></div>
-      </div>
-      <div id="leaderboardContent"></div>
+      <div id="groupsContent" class="mt-2"></div>
     </section>
 
-
-    <!-- ADMIN -->
-    <section class="screen" id="screen-admin" data-screen="admin">
-      <div class="brand-small"><h1 class="brand-title">دار اللغة</h1></div>
-      <div class="top-bar">
+    <section class="screen px-6 pt-6" id="screen-leaderboard" data-screen="leaderboard">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
         <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18 L9 12 L15 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
         </button>
-        <div class="hello">Console <b>Admin</b></div>
-        <div class="spacer-40"></div>
+        <div class="top-nav-title">🏆 <b>Classements</b></div>
+        <div class="w-10"></div>
       </div>
-      <div id="adminContent"></div>
+      <div id="leaderboardContent" class="mt-2"></div>
     </section>
 
-        <!-- MENU -->
-    <section class="screen" id="screen-menu" data-screen="menu">
-      <div class="menu-hero">
-        <svg class="menu-hero-frame" viewBox="0 0 340 120" preserveAspectRatio="none" aria-hidden="true">
-          <use href="#ornateFrame"/>
-          <g transform="translate(0,0)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(340,0) scale(-1,1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(0,120) scale(1,-1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(340,120) scale(-1,-1)"><use href="#cornerFlourish" width="55" height="55"/></g>
-          <g transform="translate(150,-4)"><use href="#midCart" width="40" height="16"/></g>
-          <g transform="translate(150,108)"><use href="#midCart" width="40" height="16"/></g>
-          <g transform="translate(-2,42)"><use href="#sideCart" width="24" height="40"/></g>
-          <g transform="translate(318,42)"><use href="#sideCart" width="24" height="40"/></g>
-        </svg>
-        <div class="menu-hero-inner">
-          <h1 class="brand-title menu-hero-title">دار اللغة</h1>
-          <div class="menu-hero-divider" aria-hidden="true">
-            <svg viewBox="0 0 22 22"><use href="#rosette"/></svg>
-          </div>
-          <p class="menu-hero-sub">Menu Principal</p>
+    <section class="screen px-6 pt-6" id="screen-admin" data-screen="admin">
+      <div class="brand-tiny"><h1 class="font-arabic text-3xl text-gold-200" dir="rtl">دار اللغة</h1></div>
+      <div class="top-nav">
+        <button class="icon-btn" data-action="goto" data-target="home" aria-label="Retour">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18 L9 12 L15 6"/></svg>
+        </button>
+        <div class="top-nav-title">Console <b>Admin</b></div>
+        <div class="w-10"></div>
+      </div>
+      <div id="adminContent" class="mt-2"></div>
+    </section>
+
+    <!-- ============================================================
+         MENU
+    ============================================================ -->
+    <section class="screen px-6 pt-8" id="screen-menu" data-screen="menu">
+      <div class="text-center mb-6 animate-fade-up">
+        <div class="relative w-14 h-14 mx-auto mb-3">
+          <div class="absolute inset-0 rounded-full bg-gold-300/30 blur-2xl"></div>
+          <svg viewBox="0 0 100 100" class="relative w-full h-full">
+            <path d="M 70 20 A 35 35 0 1 0 70 80 A 28 28 0 1 1 70 20 Z" fill="url(#goldGradV)"/>
+          </svg>
         </div>
+        <h1 class="font-arabic text-5xl font-bold gold-text-gradient leading-none" dir="rtl">دار اللغة</h1>
+        <div class="flex items-center justify-center gap-3 mt-3">
+          <span class="h-px w-10 bg-gold-500/50"></span>
+          <span class="w-1 h-1 rotate-45 bg-gold-400"></span>
+          <span class="h-px w-10 bg-gold-500/50"></span>
+        </div>
+        <p class="font-kufi text-xs tracking-[0.4em] uppercase text-ink-muted mt-3">Menu Principal</p>
       </div>
       <div id="menuBaroqueContent"></div>
     </section>
 
-    
- <!-- BOTTOM NAV -->
-  <nav class="nav-bar" id="navBar" aria-label="Navigation principale">
-    <button class="nav-item active" data-action="goto" data-target="home" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12 L12 4 L21 12 M5 10 V20 H19 V10"/></svg>
-      <span>Accueil</span>
-    </button>
-    <button class="nav-item" data-action="goto" data-target="themes" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 5 Q12 2 20 5 V19 Q12 16 4 19 Z M12 4 V18"/></svg>
-      <span>Apprendre</span>
-    </button>
-    <button class="nav-item" data-action="goto" data-target="chat" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 6 Q4 4 6 4 H18 Q20 4 20 6 V14 Q20 16 18 16 H10 L6 20 V16 Q4 16 4 14 Z"/></svg>
-      <span>IA Chat</span>
-    </button>
-    <button class="nav-item" data-action="goto" data-target="profile" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21 Q4 14 12 14 Q20 14 20 21"/></svg>
-      <span>Profil</span>
-    </button>
-    <button class="nav-item" data-action="goto" data-target="menu" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 6 H20 M4 12 H20 M4 18 H20"/></svg>
-      <span>Menu</span>
-    </button>
-  </nav>
+    <!-- BOTTOM NAV -->
+    <nav class="nav-bar" id="navBar" aria-label="Navigation principale">
+      <button class="nav-item active" data-action="goto" data-target="home" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12 L12 4 L21 12 M5 10 V20 H19 V10"/></svg>
+        <span>Accueil</span>
+      </button>
+      <button class="nav-item" data-action="goto" data-target="themes" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5 Q12 2 20 5 V19 Q12 16 4 19 Z M12 4 V18"/></svg>
+        <span>Apprendre</span>
+      </button>
+      <button class="nav-item" data-action="goto" data-target="chat" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6 Q4 4 6 4 H18 Q20 4 20 6 V14 Q20 16 18 16 H10 L6 20 V16 Q4 16 4 14 Z"/></svg>
+        <span>IA Chat</span>
+      </button>
+      <button class="nav-item" data-action="goto" data-target="profile" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21 Q4 14 12 14 Q20 14 20 21"/></svg>
+        <span>Profil</span>
+      </button>
+      <button class="nav-item" data-action="goto" data-target="menu" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6 H20 M4 12 H20 M4 18 H20"/></svg>
+        <span>Menu</span>
+      </button>
+    </nav>
+  </div>
 
   <!-- TOAST -->
   <div class="toast" id="toast" role="status" aria-live="polite">—</div>
@@ -1826,48 +1352,44 @@
   <div class="modal" id="modalBadgeUnlock" hidden aria-modal="true" role="dialog">
     <div class="modal-backdrop" data-action="close-modal" data-modal="modalBadgeUnlock"></div>
     <div class="modal-card">
-      <div class="panel-title">Nouveau badge !</div>
-      <div class="unlock-badge" id="unlockBadgeVisual"></div>
-      <div class="unlock-name" id="unlockBadgeName">—</div>
-      <div class="unlock-desc" id="unlockBadgeDesc">—</div>
-      <button class="btn btn-gold mt-16" data-action="close-modal" data-modal="modalBadgeUnlock" type="button">Merveilleux</button>
+      <div class="section-label text-center mb-3">Nouveau badge</div>
+      <div class="unlock-badge mx-auto" id="unlockBadgeVisual"></div>
+      <div class="font-display text-2xl text-gold-200 text-center mt-3" id="unlockBadgeName">—</div>
+      <div class="text-sm text-ink-soft text-center italic mt-2" id="unlockBadgeDesc">—</div>
+      <button class="btn-primary w-full mt-5" data-action="close-modal" data-modal="modalBadgeUnlock" type="button">Merveilleux</button>
     </div>
   </div>
 
   <div class="modal" id="modalLevelUp" hidden aria-modal="true" role="dialog">
     <div class="modal-backdrop" data-action="close-modal" data-modal="modalLevelUp"></div>
-    <div class="modal-card">
-      <div class="panel-title">Niveau supérieur</div>
-      <div class="level-up-num" id="levelUpNum">—</div>
-      <div class="level-up-title" id="levelUpTitle">—</div>
-      <button class="btn btn-gold mt-16" data-action="close-modal" data-modal="modalLevelUp" type="button">Continuer</button>
+    <div class="modal-card text-center">
+      <div class="section-label mb-3">Niveau supérieur</div>
+      <div class="font-display text-7xl font-bold gold-text-gradient" id="levelUpNum">—</div>
+      <div class="font-display text-xl text-ink mt-2" id="levelUpTitle">—</div>
+      <button class="btn-primary w-full mt-5" data-action="close-modal" data-modal="modalLevelUp" type="button">Continuer</button>
     </div>
   </div>
 
   <div class="modal" id="modalConfirm" hidden aria-modal="true" role="dialog">
     <div class="modal-backdrop" data-action="close-modal" data-modal="modalConfirm"></div>
     <div class="modal-card">
-      <div class="panel-title" id="confirmTitle">Confirmer</div>
-      <p id="confirmMsg">—</p>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" data-action="close-modal" data-modal="modalConfirm" type="button">Annuler</button>
-        <button class="btn btn-gold" id="confirmOkBtn" type="button">Confirmer</button>
+      <div class="section-label mb-3" id="confirmTitle">Confirmer</div>
+      <p class="text-sm text-ink-soft" id="confirmMsg">—</p>
+      <div class="grid grid-cols-2 gap-3 mt-5">
+        <button class="btn-ghost" data-action="close-modal" data-modal="modalConfirm" type="button">Annuler</button>
+        <button class="btn-primary" id="confirmOkBtn" type="button">Confirmer</button>
       </div>
     </div>
   </div>
 
-  <!-- ============================================================ -->
-  <!-- v2.1 NOUVEAU : modale "Regarder une publicité" (rewarded ad) -->
-  <!-- Invisible tant que ADS_ENABLED=false                         -->
-  <!-- ============================================================ -->
   <div class="modal" id="modalAdReward" hidden aria-modal="true" role="dialog">
     <div class="modal-backdrop" data-action="close-modal" data-modal="modalAdReward"></div>
     <div class="modal-card">
-      <div class="panel-title">Publicité récompensée</div>
-      <p id="adRewardDesc">Regardez une courte publicité pour débloquer ce contenu.</p>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" data-action="close-modal" data-modal="modalAdReward" type="button">Plus tard</button>
-        <button class="btn btn-gold" id="watchAdBtn" data-action="watch-rewarded-ad" type="button">Regarder</button>
+      <div class="section-label mb-3">Publicité récompensée</div>
+      <p class="text-sm text-ink-soft" id="adRewardDesc">Regardez une courte publicité pour débloquer ce contenu.</p>
+      <div class="grid grid-cols-2 gap-3 mt-5">
+        <button class="btn-ghost" data-action="close-modal" data-modal="modalAdReward" type="button">Plus tard</button>
+        <button class="btn-primary" id="watchAdBtn" data-action="watch-rewarded-ad" type="button">Regarder</button>
       </div>
     </div>
   </div>
@@ -1882,7 +1404,6 @@
   <script src="js/period-reset.js"></script>
   <script src="js/xp.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/payments.js"></script>
   <script src="js/screens/home.js"></script>
   <script src="js/screens/themes.js"></script>
   <script src="js/screens/vocab.js"></script>
@@ -1891,105 +1412,95 @@
   <script src="js/screens/rapid.js"></script>
   <script src="js/screens/chat.js"></script>
   <script src="js/screens/lists.js"></script>
-  <script src="js/screens/groups.js"></script> 
+  <script src="js/screens/groups.js"></script>
   <script src="js/screens/profile.js"></script>
   <script src="js/screens/badges.js"></script>
   <script src="js/screens/leaderboard.js"></script>
   <script src="js/screens/wotd.js"></script>
   <script src="js/screens/contact.js"></script>
-  <script src="js/screens/premium.js"></script>
   <script src="js/screens/settings.js"></script>
   <script src="js/screens/admin.js"></script>
   <script src="js/baroque-renderer.js"></script>
   <script src="js/main.js"></script>
 
-<script>
-  /* ===== INJECTION DU MENU BAROQUE ===== */
-  document.addEventListener('DOMContentLoaded', function() {
-    const menuItems = [
-      // SECTION 1 : APPRENTISSAGE ET COMMUNAUTÉ
-      { icon:'themes',      title:'Thèmes',           sub:'expressions & vocabulaire', target:'themes' },
-      { icon:'reading',     title:'Apprendre à Lire', sub:"l'alphabet arabe",          target:'reading' },
-      { icon:'groups',      title:'Mes Groupes',      sub:'communauté',                target:'groups' },
-      { icon:'wotd',        title:'Mot du Jour',      sub:'une perle quotidienne',     target:'wotd' },
-      { icon:'lists',       title:'Mes Listes',       sub:'révisions personnalisées',  target:'lists' },
-      { icon:'badges',      title:'Badges',           sub:'récompenses',               target:'badges' },
-      { icon:'leaderboard', title:'Classements',      sub:'défie la communauté',       target:'leaderboard', full:true },
-      // SECTION 2 : VOTRE COMPTE ET INFORMATIONS
-      { icon:'profile',     title:'Profil',           sub:'mon compte',                target:'profile' },
-      { icon:'contenus',    title:'Contenus',         sub:'Déblocables',               target:'contenus-debloquables' },
-      { icon:'dictionnaire',title:'Dictionnaire',     sub:'Étymologique',              target:'dictionnaire' },
-      { icon:'notions',     title:'Notions',          sub:'Étymologiques',             target:'notions-etymo' },
-      { icon:'methode',     title:'Notre Méthode',    sub:'à propos',                  target:'methode' },
-      { icon:'settings',    title:'Paramètres',       sub:'préférences',               target:'settings' },
-      { icon:'contact',     title:'Contact',          sub:'écris-nous',                target:'contact' },
-      { icon:'gear',        title:'Mode Admin',       sub:'console privée',            target:'admin', adminOnly:true, full:true },
-    ];
+  <script>
+    /* ===== MENU + HOME injection ===== */
+    document.addEventListener('DOMContentLoaded', function() {
+      const menuItems = [
+        { icon:'themes',      title:'Thèmes',           sub:'expressions & vocabulaire', target:'themes' },
+        { icon:'reading',     title:'Apprendre à Lire', sub:"l'alphabet arabe",          target:'reading' },
+        { icon:'groups',      title:'Mes Groupes',      sub:'communauté',                target:'groups' },
+        { icon:'wotd',        title:'Mot du Jour',      sub:'une perle quotidienne',     target:'wotd' },
+        { icon:'lists',       title:'Mes Listes',       sub:'révisions personnalisées',  target:'lists' },
+        { icon:'badges',      title:'Badges',           sub:'récompenses',               target:'badges' },
+        { icon:'leaderboard', title:'Classements',      sub:'défie la communauté',       target:'leaderboard', full:true },
+        { icon:'profile',     title:'Profil',           sub:'mon compte',                target:'profile' },
+        { icon:'contenus',    title:'Contenus',         sub:'Déblocables',               target:'contenus-debloquables' },
+        { icon:'dictionnaire',title:'Dictionnaire',     sub:'Étymologique',              target:'dictionnaire' },
+        { icon:'notions',     title:'Notions',          sub:'Étymologiques',             target:'notions-etymo' },
+        { icon:'methode',     title:'Notre Méthode',    sub:'à propos',                  target:'methode' },
+        { icon:'settings',    title:'Paramètres',       sub:'préférences',               target:'settings' },
+        { icon:'contact',     title:'Contact',          sub:'écris-nous',                target:'contact' },
+        { icon:'gear',        title:'Mode Admin',       sub:'console privée',            target:'admin', adminOnly:true, full:true },
+      ];
 
-    function renderMenu() {
-      const container = document.getElementById('menuBaroqueContent');
-      if (!container || !window.Baroque) return;
+      function renderMenu() {
+        const container = document.getElementById('menuBaroqueContent');
+        if (!container || !window.Baroque) return;
+        const html =
+          window.Baroque.makeSection('APPRENTISSAGE & COMMUNAUTÉ') +
+          window.Baroque.makeGrid(menuItems.slice(0, 7)) +
+          window.Baroque.makeSection('VOTRE COMPTE') +
+          window.Baroque.makeGrid(menuItems.slice(7));
+        container.innerHTML = html;
 
-      const html =
-        window.Baroque.makeSection('APPRENTISSAGE ET COMMUNAUTÉ') +
-        window.Baroque.makeGrid(menuItems.slice(0, 7)) +
-        window.Baroque.makeSection('VOTRE COMPTE ET INFORMATIONS') +
-        window.Baroque.makeGrid(menuItems.slice(7));
-      container.innerHTML = html;
+        setTimeout(function() {
+          var isAdmin = false;
+          try {
+            var user = (window.Auth && window.Auth.getUser) ? window.Auth.getUser() : null;
+            if (user && user.email) {
+              var admins = (window.CONFIG && window.CONFIG.ADMIN_EMAILS) || [];
+              isAdmin = admins.map(function(e){ return (e||"").toLowerCase(); })
+                              .indexOf(user.email.toLowerCase()) !== -1;
+            }
+          } catch (e) {}
+          var adminCard = container.querySelector('[data-target="admin"]');
+          if (adminCard) adminCard.style.display = isAdmin ? '' : 'none';
+        }, 300);
+      }
 
-         // Masquer Admin si pas admin (check par email dans ADMIN_EMAILS)
-            setTimeout(function() {
-        var isAdmin = false;
-        try {
-          var user = (window.Auth && window.Auth.getUser) ? window.Auth.getUser() : null;
-          if (user && user.email) {
-            var admins = (window.CONFIG && window.CONFIG.ADMIN_EMAILS) || [];
-            isAdmin = admins.map(function(e){ return (e||"").toLowerCase(); })
-                            .indexOf(user.email.toLowerCase()) !== -1;
-          }
-        } catch (e) {}
-        var adminCard = container.querySelector('[data-target="admin"]');
-        if (adminCard) adminCard.style.display = isAdmin ? '' : 'none';
-      }, 300);
+      document.addEventListener('click', function(e) {
+        var t = e.target.closest('[data-target="menu"]');
+        if (t) setTimeout(renderMenu, 400);
+      });
+      renderMenu();
 
-    }
-  
-        document.addEventListener('click', function(e) {
-      var t = e.target.closest('[data-target="menu"]');
-      if (t) setTimeout(renderMenu, 400);
+      const homeItems = [
+        { icon:'themes',  title:'Thèmes',           sub:'expressions & vocabulaire', target:'themes' },
+        { icon:'reading', title:'Apprendre à Lire', sub:"l'alphabet arabe",          target:'reading' },
+        { icon:'quiz',    title:'Quiz QCM',         sub:'questions-réponses',        target:'quiz' },
+        { icon:'rapid',   title:'Révision Rapide',  sub:'chronométrée',              target:'rapid' },
+        { icon:'chat',    title:'IA Chat',          sub:'conversation & voix',       target:'chat' },
+        { icon:'lists',   title:'Mes Listes',       sub:'mots personnels',           target:'lists' },
+      ];
+
+      const homeMini = [
+        { icon:'wotd',    title:'Mot du Jour', target:'wotd' },
+        { icon:'badge',   title:'Badges',      target:'badges' },
+      ];
+
+      function renderHome() {
+        const container = document.getElementById('homeBaroqueContent');
+        if (!container || !window.Baroque) return;
+        const html =
+          window.Baroque.makeSection("MODULES D'APPRENTISSAGE") +
+          window.Baroque.makeGrid(homeItems) +
+          window.Baroque.makeSection('À DÉCOUVRIR') +
+          window.Baroque.makeGrid(homeMini);
+        container.innerHTML = html;
+      }
+      renderHome();
     });
-
-    renderMenu();
-
-
-    /* ===== INJECTION DU HOME BAROQUE ===== */
-    const homeItems = [
-      { icon:'themes',  title:'Thèmes',           sub:'expressions & vocabulaire', target:'themes' },
-      { icon:'reading', title:'Apprendre à Lire', sub:"l'alphabet arabe",          target:'reading' },
-      { icon:'quiz',    title:'Quiz QCM',         sub:'questions-réponses',        target:'quiz' },
-      { icon:'rapid',   title:'Révision Rapide',  sub:'chronométrée',              target:'rapid' },
-      { icon:'chat',    title:'IA Chat',          sub:'conversation & voix',       target:'chat' },
-      { icon:'lists',   title:'Mes Listes',       sub:'mots personnels',           target:'lists' },
-    ];
-
-    const homeMini = [
-      { icon:'wotd',    title:'Mot du Jour', target:'wotd' },
-      { icon:'badge',   title:'Badges',      target:'badges' },
-      { icon:'premium', title:'Premium',     target:'premium', premium:true },
-    ];
-
-    function renderHome() {
-      const container = document.getElementById('homeBaroqueContent');
-      if (!container || !window.Baroque) return;
-      const html =
-        window.Baroque.makeSection('MODULES D\'APPRENTISSAGE') +
-        window.Baroque.makeGrid(homeItems) +
-        window.Baroque.makeSection('À DÉCOUVRIR') +
-        window.Baroque.makeGrid(homeMini);
-      container.innerHTML = html;
-    }
-    renderHome();
-  });
-</script>
+  </script>
 </body>
 </html>
