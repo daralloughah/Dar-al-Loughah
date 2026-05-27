@@ -328,6 +328,28 @@ const FB = (function() {
     getClient: getClient
   };
 })();
+  // ===== API GEMINI VIA SUPABASE EDGE FUNCTION =====
+  window.askGemini = async function(message, history = []) {
+    await init();
 
+    try {
+      const { data, error } = await supabase.functions.invoke("smooth-function", {
+        body: {
+          message: message,
+          history: history
+        }
+      });
+
+      if (error) {
+        console.error("Erreur Edge Function:", error);
+        return "حدث خطأ أثناء الاتصال.";
+      }
+
+      return data.reply || "لا يوجد رد.";
+    } catch (e) {
+      console.error("Erreur Gemini:", e);
+      return "خطأ في الشبكة.";
+    }
+  };
 window.FB = FB;
 console.log("Supabase connector chargé");
