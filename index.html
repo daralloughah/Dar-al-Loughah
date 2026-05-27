@@ -1990,6 +1990,32 @@
     }
     renderHome();
   });
+
+<!-- SDK Supabase pour appeler l'IA Gemini -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  const SUPABASE_URL = "https://valswafwmjbamttogbfe.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhbHN3YWZ3bWpiYW10dG9nYmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MDEyODMsImV4cCI6MjA5NTI3NzI4M30.dapt8RxNk6_-wer_63pNuaMmjFbU93V-SmorNhJuAA0";
+
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Fonction globale pour appeler l'IA depuis n'importe où dans l'app
+  window.askGemini = async function(message, history = []) {
+    try {
+      const { data, error } = await supabaseClient.functions.invoke("smooth-function", {
+        body: { message, history }
+      });
+      if (error) {
+        console.error("Erreur Gemini:", error);
+        return "حدث خطأ، حاول مرة أخرى.";
+      }
+      return data.reply;
+    } catch (e) {
+      console.error("Erreur réseau:", e);
+      return "خطأ في الاتصال.";
+    }
+  };
 </script>
 </body>
 </html>
