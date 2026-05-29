@@ -2009,12 +2009,28 @@
       });
       if (error) {
         console.error("Erreur Gemini:", error);
-        return "حدث خطأ، حاول مرة أخرى.";
+        return "Désolé, une erreur est survenue. Réessaye.";
       }
       return data.reply;
     } catch (e) {
       console.error("Erreur réseau:", e);
-      return "خطأ في الاتصال.";
+      return "Erreur de connexion.";
+    }
+  };
+
+  window.askGeminiAudio = async function(audioBase64, mimeType, history = []) {
+    try {
+      const { data, error } = await supabaseClient.functions.invoke("gemini-chat", {
+        body: { audio: audioBase64, mimeType: mimeType, history: history }
+      });
+      if (error) {
+        console.error("Erreur Gemini Audio:", error);
+        return "Désolé, je n'ai pas pu traiter ton message vocal. Réessaye.";
+      }
+      return data.reply;
+    } catch (e) {
+      console.error("Erreur réseau audio:", e);
+      return "Erreur de connexion vocale.";
     }
   };
 </script>
