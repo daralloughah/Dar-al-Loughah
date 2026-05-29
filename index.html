@@ -1990,6 +1990,27 @@
     }
     renderHome();
   });
+<script>
+  const SUPABASE_URL = "https://gnchedfcmvnbrwsnkhjq.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImduY2hlZGZjbXZuYnJ3c25raGpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4OTIxNzEsImV4cCI6MjA5NDQ2ODE3MX0.i9y4ajQneG7UmsQL1fUZ8nDszouj5MsIcKqaOyVODeA";
+
+  const supabaseClient = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  window.askGemini = async function(message, history = []) {
+    try {
+      const { data, error } = await supabaseClient.functions.invoke("gemini-chat", {
+        body: { message, history }
+      });
+      if (error) {
+        console.error("Erreur Gemini:", error);
+        return "حدث خطأ، حاول مرة أخرى.";
+      }
+      return data.reply;
+    } catch (e) {
+      console.error("Erreur réseau:", e);
+      return "خطأ في الاتصال.";
+    }
+  };
 </script>
 </body>
 </html>
