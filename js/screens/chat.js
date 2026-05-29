@@ -7,6 +7,7 @@
 
   let chatHistory = [];
   let messagesUsed = 0;
+  let chatInitialized = false;
 
   function $(id) { return document.getElementById(id); }
 
@@ -113,16 +114,33 @@
     }
   }
 
+  /* ---------- Vérifie si on est VRAIMENT sur l'écran chat ---------- */
+  function isChatScreenVisible() {
+    const chatScreen = document.getElementById('screen-chat');
+    if (!chatScreen) return false;
+    // L'écran chat doit avoir la classe "active" pour être visible
+    return chatScreen.classList.contains('active');
+  }
+
+  /* ---------- Initialise SEULEMENT quand on arrive sur le chat ---------- */
   function initChatScreen() {
+    // SÉCURITÉ : ne fait rien si on n'est pas sur l'écran chat
+    if (!isChatScreenVisible()) return;
+
     const sendBtn = $('chatSendBtn');
     const input = $('chatInput');
+    const msgs = $('chatMsgs');
 
-    if (sendBtn && !sendBtn.dataset.geminiBound) {
+    // SÉCURITÉ : ne fait rien si les éléments n'existent pas encore
+    if (!sendBtn || !input || !msgs) return;
+
+    // Attache les écouteurs une seule fois
+    if (!sendBtn.dataset.geminiBound) {
       sendBtn.addEventListener('click', sendMessage);
       sendBtn.dataset.geminiBound = '1';
     }
 
-    if (input && !input.dataset.geminiBound) {
+    if (!input.dataset.geminiBound) {
       input.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
@@ -132,26 +150,36 @@
       input.dataset.geminiBound = '1';
     }
 
-    const msgs = $('chatMsgs');
-    if (msgs && msgs.children.length === 0) {
+    // Message d'accueil UNE SEULE FOIS au premier affichage
+    if (!chatInitialized && msgs.children.length === 0) {
       addAiBubble('السلام عليكم! أنا "معلّم"، مساعدك لتعلّم العربية. اكتب جملة وأنا أصحّحها لك، أو اسألني عن قاعدة، أو اطلب كتابًا يناسب مستواك.');
+      chatInitialized = true;
     }
   }
 
+  /* ---------- Écoute les navigations vers le chat ---------- */
   document.addEventListener('DOMContentLoaded', function() {
-    initChatScreen();
-
+    // Quand l'user clique sur un bouton qui mène au chat
     document.addEventListener('click', function(e) {
       const target = e.target.closest('[data-target="chat"]');
       if (target) {
-        setTimeout(initChatScreen, 200);
+        // Attend que l'écran chat soit affiché avant d'initialiser
+        setTimeout(initChatScreen, 300);
       }
     });
   });
 
+  // Exposé global pour debug
   window.ChatGemini = {
     send: sendMessage,
-    reset: function() { chatHistory = []; messagesUsed = 0; }
+    reset: function() {
+      chatHistory = [];
+      messagesUsed = 0;
+      chatInitialized = false;
+      const msgs = $('chatMsgs');
+      if (msgs) msgs.innerHTML = '';
+    },
+    init: initChatScreen
   };
 
 })();
