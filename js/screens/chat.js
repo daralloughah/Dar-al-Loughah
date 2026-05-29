@@ -29,7 +29,7 @@
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble chat-bubble-user';
     if (isAudio) {
-      bubble.innerHTML = '🎤 <em>Message vocal envoyé</em>';
+      bubble.innerHTML = '<em>Message vocal envoyé</em>';
     } else {
       bubble.textContent = text;
     }
@@ -151,7 +151,7 @@
     } catch (e) {
       console.error('Erreur sendMessage:', e);
       if (typingBubble && typingBubble.parentNode) typingBubble.parentNode.removeChild(typingBubble);
-      addAiBubble('Une erreur est survenue. Réessaye s\'il te plaît.');
+      addAiBubble('Le service IA est très demandé en ce moment, attends quelques secondes et réessaye s\'il te plaît.');
     } finally {
       if (sendBtn) sendBtn.disabled = false;
     }
@@ -251,7 +251,7 @@
     } catch (e) {
       console.error('Erreur audio:', e);
       if (typingBubble && typingBubble.parentNode) typingBubble.parentNode.removeChild(typingBubble);
-      addAiBubble('Je n\'ai pas pu traiter le message vocal. Réessaye.');
+      addAiBubble('Le service IA est très demandé en ce moment, attends quelques secondes et réessaye s\'il te plaît.');
     } finally {
       if (sendBtn) sendBtn.disabled = false;
     }
@@ -316,14 +316,9 @@
 
     if (!chatInitialized && msgs.children.length === 0) {
       addAiBubble(
-        "As-salāmu ʿalaykum ! Je suis Mouallim, ton professeur d'arabe.\n\n" +
-        "Je peux t'aider à :\n" +
-        "• Corriger tes phrases (à l'écrit ou à l'oral 🎤)\n" +
-        "• Expliquer la grammaire (nahw), la morphologie (sarf), le tajwid\n" +
-        "• Te conseiller des livres adaptés à ton niveau\n" +
-        "• Te proposer des matn à mémoriser et des exercices\n" +
-        "• Te raconter l'étymologie des mots\n\n" +
-        "Pour commencer, dis-moi : quel est ton niveau (débutant, intermédiaire, avancé) et quel est ton objectif (lire le Coran, parler, étudier les classiques...) ?"
+        "السَّلامُ عَلَيْكُم ! Je suis Mouallim, ton professeur d'arabe.\n\n" +
+        "Je peux t'aider à corriger tes phrases à l'écrit ou à l'oral, t'expliquer la grammaire, la morphologie et le tajwid. Je peux aussi te conseiller des livres adaptés à ton niveau, te proposer des matn à mémoriser, des exercices, et te raconter l'étymologie des mots.\n\n" +
+        "Pour commencer, dis-moi quel est ton niveau, débutant, intermédiaire ou avancé, et quel est ton objectif. Souhaites-tu lire le Coran, parler, ou étudier les livres classiques ?"
       );
       chatInitialized = true;
     }
