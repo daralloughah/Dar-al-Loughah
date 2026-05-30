@@ -1,3 +1,7 @@
+/* =========================================================
+   DAR AL LOUGHAH - AUTH v2 (avec transfert invité)
+   ========================================================= */
+
 const Auth = (function() {
 
   const CFG = window.CONFIG || {};
@@ -28,9 +32,22 @@ const Auth = (function() {
     return backendReady();
   }
 
+  // ===== Détecte si l'invité actuel a des données qui valent le coup d'être conservées =====
+  function hasGuestProgress() {
+    if (!window.State) return false;
+    const xp = window.State.get("xp") || 0;
+    const words = window.State.get("masteredWords") || 0;
+    const badges = (window.State.get("unlockedBadges") || []).length;
+    const lists = (window.State.get("lists") || []).length;
+    return xp > 0 || words > 0 || badges > 0 || lists > 0;
+  }
+
   async function loginGoogle() {
     const ok = await ensureBackend();
     if (!ok) return { success: false, error: "Backend non disponible" };
+
+    const hadProgress = hasGuestProgress();
+
     const result = await window.FB.signInGoogle();
     if (!result.success) return { success: false, error: result.error || "Erreur Google" };
     const user = {
@@ -41,11 +58,22 @@ const Auth = (function() {
       uid: result.user.uid
     };
     completeLogin(user);
+
+    // Si l'invité avait du progrès, on le transfère au compte
+    if (hadProgress && window.State && window.State.promoteGuestToUser) {
+      try {
+        await window.State.promoteGuestToUser();
+        if (window.Main && window.Main.toast) {
+          window.Main.toast("Progression d'invité conservée !");
+        }
+      } catch (e) { console.warn("Promotion invité échouée:", e); }
+    }
+
     return { success: true, user: user };
   }
 
   async function loginApple() {
-    return { success: false, error: "Apple login non configure" };
+    return { success: false, error: "Apple login non configuré" };
   }
 
   async function loginEmail(email, password) {
@@ -54,6 +82,8 @@ const Auth = (function() {
 
     const ok = await ensureBackend();
     if (!ok) return { success: false, error: "Backend non disponible" };
+
+    const hadProgress = hasGuestProgress();
 
     const result = await window.FB.signIn(email, password);
     if (!result.success) return { success: false, error: result.error || "Identifiants incorrects" };
@@ -66,24 +96,31 @@ const Auth = (function() {
       uid: result.user.uid
     };
     completeLogin(user);
+
+    // Transfert invité -> compte si l'invité avait du progrès
+    if (hadProgress && window.State && window.State.promoteGuestToUser) {
+      try {
+        await window.State.promoteGuestToUser();
+        if (window.Main && window.Main.toast) {
+          window.Main.toast("Progression d'invité conservée !");
+        }
+      } catch (e) { console.warn("Promotion invité échouée:", e); }
+    }
+
     return { success: true, user: user };
   }
 
   async function register(data) {
     if (!data.pseudo || !data.email || !data.password) return { success: false, error: "Tous les champs sont requis" };
     if (!validateEmail(data.email)) return { success: false, error: "Email invalide" };
-    if (data.password.length < 6) return { success: false, error: "Mot de passe trop court (min 6 caracteres)" };
-    if (data.password !== data.passwordConfirm) return { success: false, error: "Mots de passe differents" };
+    if (data.password.length < 6) return { success: false, error: "Mot de passe trop court (min 6 caractères)" };
+    if (data.password !== data.passwordConfirm) return { success: false, error: "Mots de passe différents" };
     if (!data.terms) return { success: false, error: "Acceptez les conditions" };
 
     const ok = await ensureBackend();
     if (!ok) return { success: false, error: "Backend non disponible" };
 
-    // Detection : etait-on en mode invite avec des donnees ?
-    const wasGuestWithData = window.State && window.State.isGuest && window.State.isGuest() &&
-      ((window.State.get("xp") || 0) > 0 ||
-       (window.State.get("lists") || []).length > 0 ||
-       (window.State.get("unlockedBadges") || []).length > 0);
+    const hadProgress = hasGuestProgress();
 
     const result = await window.FB.signUp(data.email, data.password);
     if (!result.success) return { success: false, error: result.error || "Erreur inscription" };
@@ -97,37 +134,44 @@ const Auth = (function() {
     };
     completeLogin(user, !!data.newsletter);
 
-    // Si on avait des donnees en mode invite, on les promeut au cloud
-    if (wasGuestWithData && window.State && window.State.promoteGuestToUser) {
+    // Si l'invité avait du progrès, on le transfère au nouveau compte
+    if (hadProgress && window.State && window.State.promoteGuestToUser) {
       try {
         await window.State.promoteGuestToUser();
-        if (window.Main && window.Main.toast) window.Main.toast("Progression sauvegardee dans le cloud");
-      } catch (e) {
-        console.warn("Promotion invite -> user echouee:", e);
-      }
+        if (window.Main && window.Main.toast) {
+          window.Main.toast("Progression d'invité conservée dans ton nouveau compte !");
+        }
+      } catch (e) { console.warn("Promotion invité échouée:", e); }
     }
 
     return { success: true, user: user };
   }
 
   function loginGuest() {
-    const user = { pseudo: "Invite", email: "", avatar: "", method: "guest" };
-    completeLogin(user);
+    // L'invité existe DÉJÀ via le cookie de state.js
+    // On rafraîchit juste l'UI pour montrer qu'il est en mode invité actif
+    if (window.State) {
+      window.State.update({
+        loggedIn: false,
+        authMethod: "guest"
+      });
+    }
+    const user = { pseudo: (window.State && window.State.get("pseudo")) || "Invité", email: "", avatar: "", method: "guest" };
+    document.dispatchEvent(new CustomEvent("auth-login", { detail: user }));
     if (window.Main && window.Main.toast) {
-      window.Main.toast("Mode invite : progression non sauvegardee");
+      window.Main.toast("Mode invité : progression sauvegardée localement");
     }
     return { success: true, user: user };
   }
 
   async function logout() {
-    // Flush des donnees en attente avant deconnexion
     if (window.State && window.State.flushPending) {
       try { await window.State.flushPending(); } catch (e) {}
     }
     if (backendReady()) {
       try { await window.FB.signOut(); } catch (e) {}
     }
-    if (window.State) window.State.update({ loggedIn: false, authMethod: "guest" });
+    // L'événement firebase-user-changed avec user=null va re-bootstrap l'invité dans state.js
     document.dispatchEvent(new CustomEvent("auth-logout"));
   }
 
@@ -154,7 +198,7 @@ const Auth = (function() {
     }));
 
     if (window.XP && window.XP.checkBadges) {
-      try { window.XP.checkBadges(); } catch (e) { console.warn("checkBadges error:", e); }
+      try { window.XP.checkBadges(); } catch (e) {}
     }
   }
 
@@ -190,4 +234,4 @@ const Auth = (function() {
 })();
 
 window.Auth = Auth;
-console.log("Auth (Supabase-ready) charge");
+console.log("Auth v2 (Supabase + transfert invité) chargé");
