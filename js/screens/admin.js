@@ -1215,30 +1215,63 @@ const AdminScreen = (function() {
   let usersView = "top";
   let usersFilter = "all";
 
-  async function renderUsersTab(container) {
+    async function renderUsersTab(container) {
     container.innerHTML = '<div class="admin-loading">Chargement des utilisateurs...</div>';
-    let users;
-    try { users = await window.FB.getCollection("users") || []; }
-    catch (e) { container.innerHTML = '<div class="panel"><div class="admin-error">Erreur: ' + e.message + '</div></div>'; return; }
-    usersData = users;
+    let profiles = [], guests = [];
+    try {
+      profiles = await window.FB.getCollection("profiles") || [];
+    } catch (e) {
+      // Si la table profiles n'est pas accessible directement, on essaie users
+      try { profiles = await window.FB.getCollection("users") || []; } catch (e2) {}
+    }
+    try { guests = await window.FB.getCollection("guests") || []; }
+    catch (e) { guests = []; }
+
+    // On marque les invités pour les distinguer
+    guests.forEach(function(g){ g._isGuest = true; g.auth_method = "guest"; });
+
+    // Fusion : tout dans un même tableau (les helpers filtrent ensuite)
+    usersData = profiles.concat(guests);
 
     const now = Date.now();
-    const total = users.length;
-    const premium = users.filter(function(u){ return u.is_premium || u.isPremium; }).length;
-    const online = users.filter(function(u){ return isOnline(u, now); }).length;
-    const activeWeek = users.filter(function(u){ return (now - lastSeen(u)) < 7*864e5; }).length;
-    const totalWords = users.reduce(function(s,u){ return s + wordsCount(u); }, 0);
-    const totalTime = users.reduce(function(s,u){ return s + (timePart(u,"total")); }, 0);
+    const totalAccounts = profiles.length;
+    const totalGuests = guests.length;
+    const totalAll = totalAccounts + totalGuests;
+
+    const premium = profiles.filter(function(u){ return u.is_premium || u.isPremium; }).length;
+    const online = usersData.filter(function(u){ return isOnline(u, now); }).length;
+    const activeWeek = usersData.filter(function(u){ return (now - lastSeen(u)) < 7*864e5; }).length;
+    const guestsActiveWeek = guests.filter(function(u){ return (now - lastSeen(u)) < 7*864e5; }).length;
+    const converted = guests.filter(function(g){ return g.promoted_to_user; }).length;
+    const convRate = totalGuests > 0 ? Math.round((converted / totalGuests) * 100) : 0;
+
+    const totalWords = usersData.reduce(function(s,u){ return s + wordsCount(u); }, 0);
+    const totalTime = usersData.reduce(function(s,u){ return s + timePart(u,"total"); }, 0);
 
     container.innerHTML =
       '<div class="panel">' +
         '<div class="panel-title">VUE D\'ENSEMBLE</div>' +
         '<div class="stats-grid">' +
-          '<div class="stat"><b>' + total + '</b><span>Inscrits</span></div>' +
+          '<div class="stat"><b>' + totalAll + '</b><span>Total (comptes + invités)</span></div>' +
+          '<div class="stat"><b>' + totalAccounts + '</b><span>Comptes inscrits</span></div>' +
+          '<div class="stat"><b>' + totalGuests + '</b><span>👤 Invités</span></div>' +
           '<div class="stat"><b class="admin-online-num">' + online + '</b><span>🟢 En ligne</span></div>' +
           '<div class="stat"><b>' + activeWeek + '</b><span>Actifs (7j)</span></div>' +
-          '<div class="stat"><b>' + premium + '</b><span>Premium</span></div>' +
-          '<div class="stat"><b>' + totalWords + '</b><span>Mots appris</span></div>' +
+          '<div class="stat"><b>' + premium + '</b><span>Premium ⭐</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="panel mt-12">' +
+        '<div class="panel-title">CONVERSION INVITÉS</div>' +
+        '<div class="stats-grid">' +
+          '<div class="stat"><b>' + converted + '</b><span>Invités convertis en compte</span></div>' +
+          '<div class="stat"><b>' + convRate + '%</b><span>Taux de conversion</span></div>' +
+          '<div class="stat"><b>' + guestsActiveWeek + '</b><span>Invités actifs (7j)</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="panel mt-12">' +
+        '<div class="panel-title">ENGAGEMENT GLOBAL</div>' +
+        '<div class="stats-grid">' +
+          '<div class="stat"><b>' + totalWords + '</b><span>Mots appris (tous)</span></div>' +
           '<div class="stat"><b>' + fmtDuration(totalTime) + '</b><span>Temps cumulé</span></div>' +
         '</div>' +
         (isSuper() ? '<button class="btn btn-outline mt-12" id="exportCSVBtn" style="width:100%;">Exporter en CSV</button>' : '') +
@@ -1258,9 +1291,11 @@ const AdminScreen = (function() {
         '<input class="input admin-search" type="search" id="usersSearch" placeholder="Rechercher pseudo ou email..."/>' +
         '<div class="sub-tabs">' +
           '<button class="filter-chip active" data-uf="all">Tous</button>' +
+          '<button class="filter-chip" data-uf="accounts">Comptes</button>' +
+          '<button class="filter-chip" data-uf="guest">👤 Invités</button>' +
           '<button class="filter-chip" data-uf="online">🟢 En ligne</button>' +
           '<button class="filter-chip" data-uf="premium">Premium</button>' +
-          '<button class="filter-chip" data-uf="guest">Invités</button>' +
+          '<button class="filter-chip" data-uf="converted">Convertis</button>' +
         '</div>' +
         '<div class="admin-count" id="usersCount">0</div>' +
         '<div id="usersFull" class="admin-list"></div>' +
@@ -1291,6 +1326,7 @@ const AdminScreen = (function() {
     renderUsersRank();
     renderUsersFull();
   }
+
 
   // ---- Helpers données user (gèrent les 2 formats : snake_case DB / camelCase) ----
   function lastSeen(u) {
