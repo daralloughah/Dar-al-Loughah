@@ -2381,3 +2381,16 @@
 .sub-tabs .filter-chip { white-space: nowrap; flex-shrink: 0; }
 .form-hint { font-size: .78rem; color: #c9b682; margin: 6px 0; line-height: 1.4; }
 .toggle-row { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: #c9b682; margin: 8px 0; }
+/* Fil d'Ariane admin */
+.admin-breadcrumb {
+  display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+  padding: 10px 14px; margin: 8px 0 12px;
+  background: linear-gradient(135deg, rgba(212,175,55,.08), rgba(247,220,136,.04));
+  border: 1px solid rgba(212,175,55,.3); border-radius: 10px;
+  font-size: .78rem; color: #f0e2b8; font-family: 'Cinzel', serif;
+}
+.admin-breadcrumb .bc-sep { color: #c89a3a; opacity: .6; margin: 0 2px; }
+.admin-breadcrumb-mini {
+  font-size: .68rem; color: #8a7a4a; margin: 2px 0;
+  font-style: italic; line-height: 1.4;
+}
