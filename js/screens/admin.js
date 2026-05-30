@@ -532,6 +532,110 @@ const AdminScreen = (function() {
     try { await window.FB.setDocument("themes", theme._id, theme); showThemeForm(theme); }
     catch (e) { toast("Erreur: " + e.message); }
   }
+  // ============================================================
+  // ACTIONS NIVEAUX (dans le sous-thème actif)
+  // ============================================================
+  async function addCustomLevel(theme) {
+    const sub = getCurrentSub(theme);
+    if (!sub) { toast("Sélectionne un sous-thème d'abord"); return; }
+    const name = getVal("newLvlName");
+    if (!name) { toast("Nom du niveau requis"); return; }
+    if (!Array.isArray(sub.customLevels)) sub.customLevels = [];
+    const newId = "lvl_" + Date.now() + "_" + Math.random().toString(36).slice(2,6);
+    sub.customLevels.push({
+      id: newId, name: name, emoji: getVal("newLvlEmoji"),
+      access: document.getElementById("newLvlAccess").value,
+      accessValue: parseInt(getVal("newLvlXp"), 10) || 0,
+      adWall: document.getElementById("newLvlAd").checked,
+      words: [], chunks: [], order: sub.customLevels.length + 1
+    });
+    try {
+      await window.FB.setDocument("themes", theme._id, theme);
+      toast("Niveau « " + name + " » créé");
+      currentCustomLevelId = newId;
+      showThemeForm(theme);
+    } catch (e) { toast("Erreur: " + e.message); }
+  }
+
+  function editCustomLevel(theme, lvlId) {
+    const sub = getCurrentSub(theme);
+    if (!sub) return;
+    const lvl = (sub.customLevels||[]).find(function(l){ return l.id === lvlId; });
+    if (!lvl) return;
+    const n = prompt("Nom du niveau :", lvl.name);
+    if (n === null) return;
+    const em = prompt("Emoji (vide = aucun) :", lvl.emoji || "");
+    if (em === null) return;
+    lvl.name = n.trim() || lvl.name;
+    lvl.emoji = em.trim();
+    window.FB.setDocument("themes", theme._id, theme).then(function(){
+      toast("Niveau modifié"); showThemeForm(theme);
+    }).catch(function(e){ toast("Erreur: " + e.message); });
+  }
+
+  async function deleteCustomLevel(theme, lvlId) {
+    const sub = getCurrentSub(theme);
+    if (!sub) return;
+    if (!await confirmAction("Supprimer ce niveau et tous ses mots ?")) return;
+    sub.customLevels = (sub.customLevels||[]).filter(function(l){ return l.id !== lvlId; });
+    if (currentCustomLevelId === lvlId) currentCustomLevelId = null;
+    try {
+      await window.FB.setDocument("themes", theme._id, theme);
+      toast("Niveau supprimé"); showThemeForm(theme);
+    } catch (e) { toast("Erreur: " + e.message); }
+  }
+
+  async function moveCustomLevel(theme, lvlId, dir) {
+    const sub = getCurrentSub(theme);
+    if (!sub) return;
+    const levels = (sub.customLevels||[]).slice().sort(function(a,b){return(a.order||0)-(b.order||0);});
+    const idx = levels.findIndex(function(l){ return l.id === lvlId; });
+    if (idx === -1) return;
+    const sw = idx + dir;
+    if (sw < 0 || sw >= levels.length) return;
+    const t = levels[idx].order; levels[idx].order = levels[sw].order; levels[sw].order = t;
+    try { await window.FB.setDocument("themes", theme._id, theme); showThemeForm(theme); }
+    catch (e) { toast("Erreur: " + e.message); }
+  }
+
+  async function migrateOldLevels(theme) {
+    if (!await confirmAction("Convertir l'ancien contenu en un sous-thème « Général » ?")) return;
+    if (!Array.isArray(theme.subThemes)) theme.subThemes = [];
+    const map = [
+      { key:"debutant", name:"Débutant", emoji:"🌱" },
+      { key:"intermediaire", name:"Intermédiaire", emoji:"🌿" },
+      { key:"avance", name:"Avancé", emoji:"🌳" },
+      { key:"expert", name:"Expert", emoji:"⭐" },
+      { key:"mouallim", name:"Mouallim", emoji:"👑" }
+    ];
+    const migLevels = [];
+    let order = 0;
+    map.forEach(function(m) {
+      const arr = (theme.levels && theme.levels[m.key]) || [];
+      if (arr.length > 0) {
+        order++;
+        migLevels.push({
+          id: "lvl_mig_" + m.key + "_" + Date.now(),
+          name: m.name, emoji: m.emoji,
+          access: m.key === "mouallim" ? "premium" : "free",
+          accessValue: 0, adWall: false,
+          words: arr.slice(), chunks: [], order: order
+        });
+      }
+    });
+    if (migLevels.length === 0) { toast("Rien à migrer"); return; }
+    theme.subThemes.push({
+      id: "sub_general_" + Date.now(),
+      name: "Général", emoji: "📚",
+      customLevels: migLevels,
+      order: theme.subThemes.length + 1
+    });
+    try {
+      await window.FB.setDocument("themes", theme._id, theme);
+      toast("Migration réussie ! Sous-thème « Général » créé.");
+      showThemeForm(theme);
+    } catch (e) { toast("Erreur: " + e.message); }
+  }
 
   // ============================================================
   // ÉDITEUR DE MOTS D'UN NIVEAU (fix: currentCustomLevelId fiable)
