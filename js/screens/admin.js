@@ -1406,8 +1406,9 @@ const AdminScreen = (function() {
 
     if (usersFilter === "online") filtered = filtered.filter(function(u){ return isOnline(u, now); });
     else if (usersFilter === "premium") filtered = filtered.filter(function(u){ return u.is_premium || u.isPremium; });
-    else if (usersFilter === "guest") filtered = filtered.filter(isGuestUser);
-
+    else if (usersFilter === "guest") filtered = filtered.filter(function(u){ return u._isGuest || isGuestUser(u); });
+    else if (usersFilter === "accounts") filtered = filtered.filter(function(u){ return !u._isGuest && !isGuestUser(u); });
+    else if (usersFilter === "converted") filtered = filtered.filter(function(u){ return u.promoted_to_user; });
     if (q) filtered = filtered.filter(function(u){
       return (u.pseudo||"").toLowerCase().indexOf(q)!==-1 || (u.email||"").toLowerCase().indexOf(q)!==-1;
     });
