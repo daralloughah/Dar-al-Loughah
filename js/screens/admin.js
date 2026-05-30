@@ -739,7 +739,6 @@ const AdminScreen = (function() {
   async function deleteWordFromLevel(theme, index) {
     const lvl = getCurrentLevel(theme);
     if (!lvl) return;
-    if (!await confirmAction("Supprimer ce mot ?")) return;
     lvl.words.splice(index, 1);
     try {
       await window.FB.setDocument("themes", theme._id, theme);
