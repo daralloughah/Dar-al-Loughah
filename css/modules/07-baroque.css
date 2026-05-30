@@ -2394,3 +2394,315 @@
   font-size: .68rem; color: #8a7a4a; margin: 2px 0;
   font-style: italic; line-height: 1.4;
 }
+/* =========================================================
+   APPRENDRE — Écran 5 étages baroque
+   ========================================================= */
+.apprendre-screen {
+  padding: 12px 0;
+  animation: apprFadeIn .35s ease-out;
+}
+@keyframes apprFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fil d'Ariane */
+.apprendre-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  padding: 10px 14px;
+  margin: 0 12px 16px;
+  background: linear-gradient(135deg, rgba(212,175,55,.10), rgba(247,220,136,.04));
+  border: 1px solid rgba(212,175,55,.3);
+  border-radius: 12px;
+  font-family: 'Cinzel', serif;
+  font-size: .8rem;
+}
+.apprendre-breadcrumb .bc-link {
+  background: none;
+  border: none;
+  color: #c89a3a;
+  font-family: 'Cinzel', serif;
+  font-size: .8rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background .2s;
+}
+.apprendre-breadcrumb .bc-link:hover {
+  background: rgba(212,175,55,.15);
+  color: #f0e2b8;
+}
+.apprendre-breadcrumb .bc-current {
+  color: #f0e2b8;
+  font-weight: 600;
+  padding: 2px 4px;
+}
+.apprendre-breadcrumb .bc-sep {
+  color: #c89a3a;
+  opacity: .5;
+  margin: 0 2px;
+}
+
+/* Bouton retour */
+.apprendre-back {
+  background: rgba(212,175,55,.08);
+  border: 1px solid rgba(212,175,55,.3);
+  color: #f0e2b8;
+  font-family: 'Cinzel', serif;
+  font-size: .85rem;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin: 0 12px 16px;
+  transition: all .2s;
+}
+.apprendre-back:hover {
+  background: rgba(212,175,55,.18);
+  border-color: rgba(212,175,55,.5);
+}
+
+/* Header */
+.apprendre-header {
+  text-align: center;
+  margin: 18px 12px 22px;
+}
+.apprendre-title {
+  font-family: 'Cinzel', serif;
+  color: #f7dc88;
+  font-size: 1.5rem;
+  margin: 0 0 6px;
+  text-shadow: 0 2px 12px rgba(247,220,136,.2);
+}
+.apprendre-title-ar {
+  font-family: 'Amiri', 'Scheherazade New', serif;
+  color: #f0e2b8;
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+  direction: rtl;
+}
+.apprendre-subtitle {
+  color: #c89a3a;
+  font-size: .9rem;
+  margin: 4px 0 0;
+  font-style: italic;
+}
+
+/* Champ recherche */
+.apprendre-search {
+  display: block;
+  width: calc(100% - 32px);
+  max-width: 420px;
+  margin: 12px auto 0;
+  padding: 10px 14px;
+  background: rgba(10,16,30,.6);
+  border: 1px solid rgba(212,175,55,.3);
+  border-radius: 10px;
+  color: #f0e2b8;
+  font-family: inherit;
+  font-size: .9rem;
+}
+.apprendre-search:focus {
+  outline: none;
+  border-color: rgba(212,175,55,.6);
+  box-shadow: 0 0 0 3px rgba(212,175,55,.1);
+}
+
+/* Grille */
+.apprendre-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 0 12px 24px;
+}
+.apprendre-grid-menu {
+  grid-template-columns: 1fr;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* Carte de base */
+.apprendre-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 18px 12px;
+  min-height: 140px;
+  background: linear-gradient(160deg, rgba(20,28,48,.85), rgba(14,20,38,.95));
+  border: 1px solid rgba(212,175,55,.35);
+  border-radius: 14px;
+  color: #f0e2b8;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all .25s ease;
+  overflow: hidden;
+}
+.apprendre-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(247,220,136,.4), transparent 40%, transparent 60%, rgba(212,175,55,.4));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  opacity: .7;
+}
+.apprendre-card:hover:not([disabled]) {
+  transform: translateY(-2px);
+  border-color: rgba(247,220,136,.6);
+  box-shadow: 0 6px 20px rgba(212,175,55,.18);
+}
+.apprendre-card:active:not([disabled]) {
+  transform: translateY(0);
+}
+.apprendre-card[disabled],
+.apprendre-card.locked {
+  opacity: .55;
+  cursor: not-allowed;
+  filter: grayscale(.4);
+}
+
+/* Carte verrouillée */
+.apprendre-card.locked::before {
+  background: linear-gradient(135deg, rgba(150,150,150,.3), transparent);
+}
+
+/* Contenu carte */
+.apprendre-card-emoji {
+  font-size: 2.2rem;
+  line-height: 1;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 2px 6px rgba(247,220,136,.25));
+}
+.apprendre-card-ar {
+  font-family: 'Amiri', 'Scheherazade New', serif;
+  color: #f7dc88;
+  font-size: 1.15rem;
+  margin-bottom: 2px;
+  direction: rtl;
+}
+.apprendre-card-title {
+  font-family: 'Cinzel', serif;
+  font-size: .95rem;
+  font-weight: 600;
+  color: #f7dc88;
+  margin: 2px 0;
+  line-height: 1.2;
+}
+.apprendre-card-desc {
+  font-size: .72rem;
+  color: #b89a5a;
+  font-style: italic;
+  margin-top: 4px;
+  line-height: 1.3;
+}
+.apprendre-card-count {
+  font-size: .72rem;
+  color: #8a7a4a;
+  margin-top: 6px;
+  font-family: 'Cinzel', serif;
+}
+.apprendre-card-path {
+  font-size: .68rem;
+  color: #8a7a4a;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Variantes par étage */
+.apprendre-card-cat { min-height: 170px; }
+.apprendre-card-cat .apprendre-card-emoji { font-size: 2.6rem; }
+.apprendre-card-cat .apprendre-card-title { font-size: 1.05rem; }
+
+.apprendre-card-empty {
+  opacity: .45;
+  cursor: not-allowed;
+}
+.apprendre-card-empty:hover { transform: none; }
+
+.apprendre-card-domain .apprendre-card-emoji,
+.apprendre-card-branch .apprendre-card-emoji {
+  font-size: 2rem;
+}
+
+.apprendre-card-mode {
+  flex-direction: row;
+  text-align: left;
+  padding: 18px 22px;
+  min-height: auto;
+  gap: 16px;
+}
+.apprendre-card-mode .apprendre-card-emoji {
+  font-size: 2.4rem;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+.apprendre-card-mode .apprendre-card-title,
+.apprendre-card-mode .apprendre-card-desc {
+  text-align: left;
+}
+
+/* Barre de progression sur les cartes */
+.apprendre-card-progress {
+  width: 80%;
+  height: 4px;
+  background: rgba(0,0,0,.4);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.apprendre-card-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c89a3a, #f7dc88);
+  box-shadow: 0 0 8px rgba(247,220,136,.4);
+  transition: width .4s ease;
+}
+.apprendre-card-progress-text {
+  font-size: .68rem;
+  color: #c89a3a;
+  margin-top: 3px;
+  font-family: 'Cinzel', serif;
+}
+
+/* État vide */
+.apprendre-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 20px;
+  color: #8a7a4a;
+  font-style: italic;
+  font-size: .95rem;
+  line-height: 1.6;
+}
+.apprendre-empty small {
+  display: block;
+  margin-top: 8px;
+  color: #6a5a3a;
+  font-size: .8rem;
+}
+
+/* Loading */
+.apprendre-loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: #c89a3a;
+  font-style: italic;
+  font-family: 'Cinzel', serif;
+}
+
+/* Responsive */
+@media (max-width: 360px) {
+  .apprendre-grid { grid-template-columns: 1fr; }
+  .apprendre-card-cat { min-height: 150px; }
+}
+@media (min-width: 700px) {
+  .apprendre-grid { grid-template-columns: repeat(3, 1fr); }
+}
