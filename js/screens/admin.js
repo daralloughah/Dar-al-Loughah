@@ -1,33 +1,33 @@
 /* =========================================================
-   DAR AL LOUGHAH - ADMIN CONSOLE v4 (CMS PRO)
-   - Catégories de thèmes (familles)
-   - Niveaux flexibles (nom, emoji, accès, illimités)
-   - Mode super-admin + mode prof/institut (restreint)
-   - Stats avancées : temps passé, online, mots exacts
-   - Auto-création des champs manquants (zéro SQL)
+   DAR AL LOUGHAH - ADMIN CONSOLE v5 (CMS PRO 5 ÉTAGES)
+   - Hiérarchie : Catégorie > Domaine > Branche (opt) > Thème > Sous-thème > Niveau > Mots
+   - Branche optionnelle (toggle dans le formulaire)
+   - Breadcrumb visuel (fil d'Ariane)
+   - Boutons Dupliquer (thème/sous-thème/niveau)
+   - Aperçu "vue élève"
+   - Suppression de mots SANS confirmation
    ========================================================= */
 
 const AdminScreen = (function() {
 
   let currentTab = "themes";
   let currentTheme = null;
-    let currentSubThemeId = null;      // sous-thème actif
-  let currentCustomLevelId = null;   // niveau actif fiable
+  let currentSubThemeId = null;
+  let currentCustomLevelId = null;
 
   let searchQueries = {};
-  let myRole = "none";               // "super" | "teacher" | "none"
+  let myRole = "none";
 
-  // ===== CATÉGORIES DE THÈMES (familles) =====
+  // ===== CATÉGORIES (étage 1 — fixe) =====
   const THEME_CATEGORIES = [
     { id: "religieux",  name: "Sciences Religieuses", emoji: "🕌", color: "#c89a3a" },
     { id: "quotidien",  name: "Vie Quotidienne",      emoji: "💬", color: "#5EE0A5" },
     { id: "classique",  name: "Langue Classique",     emoji: "📜", color: "#f0c860" },
     { id: "academique", name: "Académique",           emoji: "🎓", color: "#3a6fc4" },
-    { id: "monde",      name: "Monde & Société",       emoji: "🌍", color: "#FF7A9A" },
-    { id: "institut",   name: "Programmes Instituts",  emoji: "⭐", color: "#fdeec3" }
+    { id: "monde",      name: "Monde & Société",      emoji: "🌍", color: "#FF7A9A" },
+    { id: "institut",   name: "Programmes Instituts", emoji: "⭐", color: "#fdeec3" }
   ];
 
-  // ===== TYPES D'ACCÈS À UN NIVEAU =====
   const ACCESS_TYPES = [
     { id: "free",    label: "Gratuit (débloqué)" },
     { id: "premium", label: "Premium uniquement" },
@@ -35,7 +35,7 @@ const AdminScreen = (function() {
     { id: "locked",  label: "Verrouillé (caché)" }
   ];
 
-  // ===== ENTRÉE PRINCIPALE =====
+  // ===== ENTRÉE =====
   async function show() {
     myRole = detectRole();
     if (myRole === "none") {
@@ -48,9 +48,7 @@ const AdminScreen = (function() {
     window.scrollTo({ top: 0, behavior: "instant" });
   }
 
-  // ===== DÉTECTION DU RÔLE =====
   function detectRole() {
-    // Super admin = email dans CONFIG.ADMIN_EMAILS
     try {
       const user = (window.Auth && window.Auth.getUser) ? window.Auth.getUser() : null;
       if (user && user.email) {
@@ -58,24 +56,20 @@ const AdminScreen = (function() {
         const isSuper = admins.map(function(e){ return (e||"").toLowerCase(); })
                               .indexOf(user.email.toLowerCase()) !== -1;
         if (isSuper) return "super";
-        // Prof = champ role dans le state (sera défini via Supabase plus tard)
         const role = window.State && window.State.get ? window.State.get("role") : null;
         if (role === "teacher" || role === "institute_admin") return "teacher";
       }
     } catch (e) {}
-    // Fallback : super admin via State.isAdmin()
     if (window.State && window.State.isAdmin && window.State.isAdmin()) return "super";
     return "none";
   }
-
   function isSuper() { return myRole === "super"; }
 
-  // ===== UI PRINCIPALE (onglets adaptés au rôle) =====
+  // ===== UI PRINCIPALE =====
   function renderAdminUI() {
     const container = document.getElementById("adminContent");
     if (!container) return;
 
-    // Onglets pour super admin (tout)
     const superTabs = [
       { id: "themes",      label: "Thèmes" },
       { id: "letters",     label: "Lettres" },
@@ -88,14 +82,11 @@ const AdminScreen = (function() {
       { id: "config",      label: "Réglages" },
       { id: "tools",       label: "Outils" }
     ];
-
-    // Onglets pour prof/institut (restreint : son contenu + ses élèves)
     const teacherTabs = [
       { id: "themes",  label: "Mon contenu" },
       { id: "users",   label: "Mes élèves" },
       { id: "stats",   label: "Stats" }
     ];
-
     const tabs = isSuper() ? superTabs : teacherTabs;
 
     let tabsHtml = '<div class="admin-role-banner ' + (isSuper() ? "super" : "teacher") + '">' +
@@ -137,28 +128,47 @@ const AdminScreen = (function() {
     }
   }
 
-  // ===== HELPER : normalise un thème (auto-création des champs manquants) =====
-    function normalizeTheme(theme) {
+  // ===== NORMALISATION 5 ÉTAGES =====
+  function normalizeTheme(theme) {
     if (!theme) return theme;
     if (!theme.category) theme.category = "quotidien";
-    if (!Array.isArray(theme.customLevels)) theme.customLevels = [];
-    // NOUVEAU : sous-thèmes
+    if (!theme.domain) theme.domain = "";       // étage 2 (libre)
+    if (theme.branch === undefined) theme.branch = ""; // étage 3 (optionnel)
     if (!Array.isArray(theme.subThemes)) theme.subThemes = [];
-    // Chaque sous-thème a ses propres niveaux
+    if (!Array.isArray(theme.customLevels)) theme.customLevels = [];
     theme.subThemes.forEach(function(st) {
       if (!Array.isArray(st.customLevels)) st.customLevels = [];
     });
     return theme;
   }
 
+  // Récupère tous les domaines / branches DÉJÀ utilisés (pour autocomplétion)
+  let allThemesCache = [];
+  function getKnownDomains(categoryId) {
+    const set = new Set();
+    allThemesCache.forEach(function(t) {
+      if (!categoryId || t.category === categoryId) {
+        if (t.domain) set.add(t.domain);
+      }
+    });
+    return Array.from(set).sort();
+  }
+  function getKnownBranches(categoryId, domain) {
+    const set = new Set();
+    allThemesCache.forEach(function(t) {
+      if (t.category === categoryId && t.domain === domain && t.branch) set.add(t.branch);
+    });
+    return Array.from(set).sort();
+  }
+
   // ============================================================
-  // ONGLET THÈMES — Catégories + Niveaux flexibles
+  // ONGLET THÈMES
   // ============================================================
   async function renderThemesTab(container) {
     container.innerHTML =
       '<div class="panel">' +
         '<div class="panel-title">GESTION DES THÈMES</div>' +
-        '<input class="input admin-search" type="search" id="themesSearch" placeholder="Rechercher un thème..."/>' +
+        '<input class="input admin-search" type="search" id="themesSearch" placeholder="Rechercher un thème, domaine, branche..."/>' +
         '<div class="admin-cat-filter" id="catFilter"></div>' +
         '<div class="admin-count" id="themesCount">0 thèmes</div>' +
         '<div id="themesList" class="admin-list">Chargement...</div>' +
@@ -166,7 +176,6 @@ const AdminScreen = (function() {
       '</div>' +
       '<div id="themeEditor" hidden></div>';
 
-    // Filtres par catégorie
     const catWrap = document.getElementById("catFilter");
     let catHtml = '<button class="filter-chip active" data-cat="all" type="button">Toutes</button>';
     THEME_CATEGORIES.forEach(function(c) {
@@ -191,7 +200,6 @@ const AdminScreen = (function() {
       searchQueries.themes = sb.value;
       loadThemesList();
     });
-
     await loadThemesList();
   }
 
@@ -204,6 +212,7 @@ const AdminScreen = (function() {
     catch (e) { list.innerHTML = '<div class="admin-error">Erreur: ' + e.message + '</div>'; return; }
 
     themes.forEach(normalizeTheme);
+    allThemesCache = themes; // pour autocomplétion
 
     const query = (searchQueries.themes || "").toLowerCase();
     const cat = searchQueries.themeCat || "all";
@@ -212,7 +221,9 @@ const AdminScreen = (function() {
       if (cat !== "all" && t.category !== cat) return false;
       if (!query) return true;
       return (t.name || "").toLowerCase().indexOf(query) !== -1 ||
-             (t._id || "").toLowerCase().indexOf(query) !== -1;
+             (t._id || "").toLowerCase().indexOf(query) !== -1 ||
+             (t.domain || "").toLowerCase().indexOf(query) !== -1 ||
+             (t.branch || "").toLowerCase().indexOf(query) !== -1;
     });
 
     if (count) count.textContent = filtered.length + " thème" + (filtered.length > 1 ? "s" : "");
@@ -224,12 +235,11 @@ const AdminScreen = (function() {
         '</div>';
       const ib = document.getElementById("initThemesBtn");
       if (ib) ib.onclick = async function() {
-        if (!await confirmAction("Créer les 12 thèmes par défaut ?")) return;
+        if (!await confirmAction("Créer les thèmes par défaut ?")) return;
         await initDefaultThemes();
       };
       return;
     }
-
     if (filtered.length === 0) {
       list.innerHTML = '<div class="admin-empty">Aucun résultat</div>';
       return;
@@ -237,15 +247,24 @@ const AdminScreen = (function() {
 
     list.innerHTML = filtered.sort(function(a,b){return(a.order||99)-(b.order||99);}).map(function(t) {
       const catInfo = THEME_CATEGORIES.find(function(c){ return c.id === t.category; }) || THEME_CATEGORIES[1];
-      const lvlCount = (t.customLevels || []).length;
+      const subCount = (t.subThemes || []).length;
       const wordCount = countWordsInTheme(t);
+      // Fil d'Ariane en miniature
+      const path = [
+        catInfo.emoji + " " + catInfo.name,
+        t.domain || "—",
+        t.branch || null,
+        t.name || t._id
+      ].filter(Boolean).join(" › ");
       return '<div class="list-item admin-list-item">' +
         '<div class="admin-item-body">' +
           '<div class="title">' + escapeHTML(t.icon || catInfo.emoji) + ' ' + escapeHTML(t.name || t._id) + '</div>' +
-          '<div class="meta">' + catInfo.emoji + ' ' + catInfo.name + ' · ' + lvlCount + ' niveaux · ' + wordCount + ' mots</div>' +
+          '<div class="admin-breadcrumb-mini">' + escapeHTML(path) + '</div>' +
+          '<div class="meta">' + subCount + ' sous-thèmes · ' + wordCount + ' mots</div>' +
         '</div>' +
         '<div class="admin-item-actions">' +
           '<button class="btn-mini btn-mini-edit" data-edit-theme="' + t._id + '" type="button">Gérer</button>' +
+          (isSuper() ? '<button class="btn-mini" data-dup-theme="' + t._id + '" type="button" title="Dupliquer">📋</button>' : '') +
           (isSuper() ? '<button class="btn-mini btn-mini-del" data-del-theme="' + t._id + '" type="button">X</button>' : '') +
         '</div></div>';
     }).join("");
@@ -256,17 +275,20 @@ const AdminScreen = (function() {
     list.querySelectorAll("[data-del-theme]").forEach(function(btn) {
       btn.onclick = function() { deleteTheme(btn.getAttribute("data-del-theme")); };
     });
+    list.querySelectorAll("[data-dup-theme]").forEach(function(btn) {
+      btn.onclick = function() { duplicateTheme(btn.getAttribute("data-dup-theme")); };
+    });
   }
 
   function countWordsInTheme(theme) {
     let total = 0;
-    // Nouveau format : customLevels
-    if (Array.isArray(theme.customLevels)) {
-      theme.customLevels.forEach(function(lvl) {
-        if (Array.isArray(lvl.words)) total += lvl.words.length;
+    if (Array.isArray(theme.subThemes)) {
+      theme.subThemes.forEach(function(st) {
+        (st.customLevels || []).forEach(function(lvl) {
+          if (Array.isArray(lvl.words)) total += lvl.words.length;
+        });
       });
     }
-    // Ancien format : levels.{debutant..}
     if (theme.levels) {
       ["debutant","intermediaire","avance","expert","mouallim"].forEach(function(l) {
         if (Array.isArray(theme.levels[l])) total += theme.levels[l].length;
@@ -274,9 +296,67 @@ const AdminScreen = (function() {
     }
     return total;
   }
+
+  function openThemeCreator() {
+    currentTheme = null;
+    currentSubThemeId = null;
+    currentCustomLevelId = null;
+    showThemeForm({});
+    const ed = document.getElementById("themeEditor");
+    if (ed) ed.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function openThemeEditor(themeId) {
+    try {
+      const theme = await window.FB.getDocument("themes", themeId);
+      if (!theme) { toast("Thème introuvable"); return; }
+      normalizeTheme(theme);
+      currentTheme = theme;
+      currentSubThemeId = null;
+      currentCustomLevelId = null;
+      showThemeForm(theme);
+      const ed = document.getElementById("themeEditor");
+      if (ed) ed.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (e) { toast("Erreur: " + e.message); }
+  }
+
+  // ===== DUPLIQUER UN THÈME =====
+  async function duplicateTheme(themeId) {
+    try {
+      const original = await window.FB.getDocument("themes", themeId);
+      if (!original) return;
+      normalizeTheme(original);
+      const newId = original._id + "_copy_" + Date.now().toString(36);
+      const copy = JSON.parse(JSON.stringify(original));
+      copy._id = newId; copy.id = newId;
+      copy.name = (original.name || "Sans nom") + " (copie)";
+      copy.createdAt = Date.now();
+      delete copy.created_at;
+      await window.FB.setDocument("themes", newId, copy);
+      toast("Thème dupliqué : " + copy.name);
+      await loadThemesList();
+    } catch (e) { toast("Erreur duplication: " + e.message); }
+  }
+
   // ============================================================
-  // FORMULAIRE THÈME + ÉDITEUR DE NIVEAUX FLEXIBLES
+  // FORMULAIRE THÈME (5 ÉTAGES) + BREADCRUMB
   // ============================================================
+  function buildBreadcrumb(theme) {
+    if (!theme || !theme._id) return "";
+    const catInfo = THEME_CATEGORIES.find(function(c){ return c.id === theme.category; }) || THEME_CATEGORIES[1];
+    let parts = [
+      catInfo.emoji + " " + catInfo.name,
+      theme.domain ? ("📚 " + theme.domain) : null,
+      theme.branch ? ("🌿 " + theme.branch) : null,
+      "📖 " + (theme.name || "")
+    ];
+    const sub = getCurrentSub(theme);
+    if (sub) parts.push("📑 " + sub.name);
+    const lvl = getCurrentLevel(theme);
+    if (lvl) parts.push("🎯 " + lvl.name);
+    return '<div class="admin-breadcrumb">' + parts.filter(Boolean).map(escapeHTML).join(' <span class="bc-sep">›</span> ') + '</div>';
+  }
+
   function showThemeForm(theme) {
     normalizeTheme(theme);
     const editor = document.getElementById("themeEditor");
@@ -289,33 +369,156 @@ const AdminScreen = (function() {
       return '<option value="' + c.id + '"' + sel + '>' + c.emoji + ' ' + c.name + '</option>';
     }).join("");
 
+    // Autocomplétion domaines/branches via datalist
+    const domainList = getKnownDomains(theme.category).map(function(d){
+      return '<option value="' + escapeHTML(d) + '">';
+    }).join("");
+    const branchList = getKnownBranches(theme.category, theme.domain).map(function(b){
+      return '<option value="' + escapeHTML(b) + '">';
+    }).join("");
+
+    const hasBranch = !!theme.branch;
+
     editor.innerHTML =
+      (!isNew ? buildBreadcrumb(theme) : '') +
       '<div class="panel theme-editor-panel">' +
         '<div class="panel-title">' + (isNew ? "NOUVEAU THÈME" : "ÉDITER : " + escapeHTML(theme.name || "")) + '</div>' +
+        (!isNew && isSuper() ? '<button class="btn btn-outline mt-8" id="previewUserBtn" type="button">👁️ Voir comme un élève</button>' : '') +
         '<div class="form-grid">' +
-          '<input class="input" id="thId" placeholder="ID (ex: salat)" value="' + escapeHTML(theme._id || theme.id || "") + '"' + (theme._id ? " disabled" : "") + '/>' +
-          '<input class="input" id="thName" placeholder="Nom français" value="' + escapeHTML(theme.name || "") + '"/>' +
+          '<label class="admin-label">[1] Catégorie<select class="input" id="thCategory">' + catOptions + '</select></label>' +
+          '<label class="admin-label">[2] Domaine (ex: Fiqh, Aqida, Quran...)<input class="input" id="thDomain" list="domainsList" placeholder="Tape ou choisis" value="' + escapeHTML(theme.domain || "") + '"/></label>' +
+          '<datalist id="domainsList">' + domainList + '</datalist>' +
+          '<label class="toggle-row"><input type="checkbox" id="thHasBranch"' + (hasBranch ? " checked" : "") + '/><span>[3] Ce thème a une branche (école juridique, courant...)</span></label>' +
+          '<div id="branchBlock"' + (hasBranch ? "" : ' style="display:none"') + '>' +
+            '<label class="admin-label">Branche (ex: Shafi\'i, Hanafi...)<input class="input" id="thBranch" list="branchesList" placeholder="Tape ou choisis" value="' + escapeHTML(theme.branch || "") + '"/></label>' +
+            '<datalist id="branchesList">' + branchList + '</datalist>' +
+          '</div>' +
+          '<input class="input" id="thId" placeholder="ID technique (ex: oumdat_fiqh)" value="' + escapeHTML(theme._id || theme.id || "") + '"' + (theme._id ? " disabled" : "") + '/>' +
+          '<input class="input" id="thName" placeholder="[4] Nom du thème (ex: Comprendre Oumdat al Fiqh)" value="' + escapeHTML(theme.name || "") + '"/>' +
           '<input class="input" id="thNameAr" placeholder="Nom arabe" value="' + escapeHTML(theme.nameAr || "") + '" dir="rtl"/>' +
           '<input class="input" id="thIcon" placeholder="Emoji illustration" value="' + escapeHTML(theme.icon || "") + '" maxlength="4"/>' +
-          '<label class="admin-label">Catégorie<select class="input" id="thCategory">' + catOptions + '</select></label>' +
-          '<input class="input" id="thDesc" placeholder="Description" value="' + escapeHTML(theme.description || "") + '"/>' +
+          '<input class="input" id="thDesc" placeholder="Description (optionnel)" value="' + escapeHTML(theme.description || "") + '"/>' +
           '<input class="input" id="thOrder" type="number" placeholder="Ordre" value="' + (theme.order || 99) + '"/>' +
         '</div>' +
-        '<button class="btn btn-gold mt-12" id="saveThBtn">' + (isNew ? "Créer" : "Enregistrer les infos") + '</button>' +
+        '<button class="btn btn-gold mt-12" id="saveThBtn">' + (isNew ? "Créer ce thème" : "Enregistrer les infos") + '</button>' +
         '<button class="btn btn-outline mt-8" id="cancelThBtn">Fermer</button>' +
       '</div>' +
-      (!isNew ? renderLevelsManager(theme) : '<div class="panel mt-12"><div class="admin-empty">Crée le thème d\'abord, puis ajoute des niveaux.</div></div>');
+      (!isNew ? renderLevelsManager(theme) : '<div class="panel mt-12"><div class="admin-empty">Crée le thème d\'abord, puis ajoute des sous-thèmes.</div></div>');
+
+    // Toggle branche
+    const cb = document.getElementById("thHasBranch");
+    const block = document.getElementById("branchBlock");
+    if (cb && block) {
+      cb.onchange = function() {
+        block.style.display = cb.checked ? "" : "none";
+        if (!cb.checked) document.getElementById("thBranch").value = "";
+      };
+    }
+
+    // Re-charge la datalist des branches quand on change de domaine
+    const dom = document.getElementById("thDomain");
+    if (dom) dom.addEventListener("change", function() {
+      const dl = document.getElementById("branchesList");
+      if (!dl) return;
+      dl.innerHTML = getKnownBranches(document.getElementById("thCategory").value, dom.value)
+        .map(function(b){ return '<option value="' + escapeHTML(b) + '">'; }).join("");
+    });
 
     document.getElementById("saveThBtn").onclick = function() { saveTheme(isNew); };
     document.getElementById("cancelThBtn").onclick = function() { editor.hidden = true; };
+    const pv = document.getElementById("previewUserBtn");
+    if (pv) pv.onclick = function() { previewAsUser(theme); };
 
     if (!isNew) bindLevelsManager(theme);
   }
 
-  // ===== GESTIONNAIRE DE NIVEAUX FLEXIBLES =====
-    // ===== HELPERS sous-thème / niveau actifs =====
+  // ===== APERÇU "VUE ÉLÈVE" (placeholder — branche selon ton fichier user) =====
+  function previewAsUser(theme) {
+    if (window.Main && window.Main.goto) {
+      // Tu peux brancher ça sur ton vrai écran user plus tard
+      toast("Aperçu : ouvre l'app dans un autre onglet en mode invité pour voir " + theme.name);
+    } else {
+      alert("Aperçu utilisateur pour : " + theme.name + "\n(connectera bientôt à l'écran Apprendre)");
+    }
+  }
+
+  // ===== SAUVEGARDE / SUPPRESSION THÈME =====
+  async function saveTheme(isNew) {
+    const id = getVal("thId"), name = getVal("thName");
+    if (!id || !name) { toast("ID et nom requis"); return; }
+    const hasBranchCb = document.getElementById("thHasBranch");
+    const data = {
+      id: id, name: name,
+      nameAr: getVal("thNameAr"),
+      icon: getVal("thIcon"),
+      category: document.getElementById("thCategory").value,
+      domain: getVal("thDomain"),
+      branch: (hasBranchCb && hasBranchCb.checked) ? getVal("thBranch") : "",
+      description: getVal("thDesc"),
+      order: parseInt(getVal("thOrder"), 10) || 99
+    };
+    if (isNew) {
+      data.subThemes = [];
+      data.customLevels = [];
+      data.createdAt = Date.now();
+    } else if (currentTheme) {
+      data.subThemes = currentTheme.subThemes || [];
+      data.customLevels = currentTheme.customLevels || [];
+      data.levels = currentTheme.levels;
+    }
+    try {
+      await window.FB.setDocument("themes", id, data);
+      toast("Thème enregistré");
+      if (isNew) {
+        currentTheme = await window.FB.getDocument("themes", id);
+        normalizeTheme(currentTheme);
+        showThemeForm(currentTheme);
+      } else {
+        currentTheme = data;
+        await loadThemesList();
+        showThemeForm(data);
+      }
+    } catch (e) { toast("Erreur: " + e.message); }
+  }
+
+  async function deleteTheme(themeId) {
+    if (!await confirmAction("Supprimer ce thème et tout son contenu ?")) return;
+    try {
+      await window.FB.deleteDocument("themes", themeId);
+      toast("Thème supprimé");
+      const ed = document.getElementById("themeEditor");
+      if (ed) ed.hidden = true;
+      await loadThemesList();
+    } catch (e) { toast("Erreur: " + e.message); }
+  }
+
+  async function initDefaultThemes() {
+    const defaults = [
+      { id:"quotidien", name:"Les Mots du Quotidien", nameAr:"الحياة اليومية", icon:"💬", category:"quotidien", domain:"Vie courante", order:1 },
+      { id:"foi",       name:"La Foi",                nameAr:"الإيمان",        icon:"🕌", category:"religieux", domain:"Aqida", order:2 },
+      { id:"coran",     name:"Le Coran",              nameAr:"القرآن",         icon:"📖", category:"religieux", domain:"Quran", order:3 },
+      { id:"famille",   name:"La Famille",            nameAr:"العائلة",        icon:"👨", category:"quotidien", domain:"Vie courante", order:4 },
+      { id:"voyage",    name:"En Voyage",             nameAr:"في السفر",       icon:"✈️", category:"quotidien", domain:"Vie courante", order:5 }
+    ];
+    const listEl = document.getElementById("themesList");
+    if (listEl) listEl.innerHTML = '<div class="admin-loading">Initialisation...</div>';
+    let ok = 0;
+    for (let i = 0; i < defaults.length; i++) {
+      try {
+        await window.FB.setDocument("themes", defaults[i].id, Object.assign({}, defaults[i], {
+          subThemes: [], customLevels: [], createdAt: Date.now(), branch: ""
+        }));
+        ok++;
+      } catch (e) {}
+    }
+    toast(ok + " thèmes créés");
+    await loadThemesList();
+  }
+// ============================================================
+  // HELPERS sous-thème / niveau actifs
+  // ============================================================
   function getCurrentSub(theme) {
-    if (!currentSubThemeId) return null;
+    if (!theme || !currentSubThemeId) return null;
     return (theme.subThemes || []).find(function(s){ return s.id === currentSubThemeId; });
   }
   function getCurrentLevel(theme) {
@@ -324,22 +527,27 @@ const AdminScreen = (function() {
     return (sub.customLevels || []).find(function(l){ return l.id === currentCustomLevelId; });
   }
 
-  // ===== GESTIONNAIRE SOUS-THÈMES =====
+  // ============================================================
+  // GESTIONNAIRE SOUS-THÈMES + NIVEAUX (étages 5 et 6)
+  // ============================================================
   function renderLevelsManager(theme) {
     const subs = (theme.subThemes || []).slice().sort(function(a,b){return(a.order||0)-(b.order||0);});
 
     let subsHtml = subs.map(function(st) {
       const lvlCount = (st.customLevels || []).length;
+      let wc = 0;
+      (st.customLevels || []).forEach(function(l){ wc += (l.words||[]).length; });
       const active = (st.id === currentSubThemeId) ? " admin-level-active" : "";
       return '<div class="admin-level-row' + active + '">' +
         '<div class="admin-level-body" data-pick-sub="' + st.id + '">' +
           '<div class="admin-level-name">' + escapeHTML(st.emoji || "📑") + ' ' + escapeHTML(st.name) + '</div>' +
-          '<div class="admin-level-meta">' + lvlCount + ' niveau(x)</div>' +
+          '<div class="admin-level-meta">' + lvlCount + ' niveau(x) · ' + wc + ' mots</div>' +
         '</div>' +
         '<div class="admin-level-actions">' +
           '<button class="btn-mini" data-sub-up="' + st.id + '" type="button">↑</button>' +
           '<button class="btn-mini" data-sub-down="' + st.id + '" type="button">↓</button>' +
           '<button class="btn-mini btn-mini-edit" data-sub-edit="' + st.id + '" type="button">✎</button>' +
+          '<button class="btn-mini" data-sub-dup="' + st.id + '" type="button" title="Dupliquer">📋</button>' +
           '<button class="btn-mini btn-mini-del" data-sub-del="' + st.id + '" type="button">X</button>' +
         '</div>' +
       '</div>';
@@ -380,6 +588,7 @@ const AdminScreen = (function() {
             '<button class="btn-mini" data-lvl-up="' + lvl.id + '" type="button">↑</button>' +
             '<button class="btn-mini" data-lvl-down="' + lvl.id + '" type="button">↓</button>' +
             '<button class="btn-mini btn-mini-edit" data-lvl-edit="' + lvl.id + '" type="button">✎</button>' +
+            '<button class="btn-mini" data-lvl-dup="' + lvl.id + '" type="button" title="Dupliquer">📋</button>' +
             '<button class="btn-mini btn-mini-del" data-lvl-del="' + lvl.id + '" type="button">X</button>' +
           '</div>' +
         '</div>';
@@ -408,13 +617,13 @@ const AdminScreen = (function() {
     }
 
     return '<div class="panel mt-12">' +
-        '<div class="panel-title">SOUS-THÈMES</div>' +
-        '<p class="form-hint">Ex : Aqida, Fiqh Shafi\'i, Fiqh Hanafi... Clique un sous-thème pour gérer ses niveaux.</p>' +
+        '<div class="panel-title">SOUS-THÈMES (étage 5)</div>' +
+        '<p class="form-hint">Ex : Purification, Prière, Zakat... Clique un sous-thème pour gérer ses niveaux.</p>' +
         '<div class="admin-levels-list">' + subsHtml + '</div>' +
         '<div class="panel sub-panel mt-12">' +
           '<div class="panel-title">+ AJOUTER UN SOUS-THÈME</div>' +
           '<div class="form-grid">' +
-            '<input class="input" id="newSubName" placeholder="Nom (ex: Fiqh Shafi\'i)"/>' +
+            '<input class="input" id="newSubName" placeholder="Nom (ex: Purification)"/>' +
             '<input class="input" id="newSubEmoji" placeholder="Emoji (optionnel)" maxlength="4"/>' +
           '</div>' +
           '<button class="btn btn-gold mt-8" id="addSubBtn">+ Créer ce sous-thème</button>' +
@@ -425,7 +634,6 @@ const AdminScreen = (function() {
   }
 
   function bindLevelsManager(theme) {
-    // --- Sous-thèmes ---
     const addSubBtn = document.getElementById("addSubBtn");
     if (addSubBtn) addSubBtn.onclick = function() { addSubTheme(theme); };
     const migBtn = document.getElementById("migrateBtn");
@@ -450,8 +658,10 @@ const AdminScreen = (function() {
     document.querySelectorAll("[data-sub-down]").forEach(function(b) {
       b.onclick = function() { moveSubTheme(theme, b.getAttribute("data-sub-down"), 1); };
     });
+    document.querySelectorAll("[data-sub-dup]").forEach(function(b) {
+      b.onclick = function() { duplicateSubTheme(theme, b.getAttribute("data-sub-dup")); };
+    });
 
-    // --- Niveaux (du sous-thème actif) ---
     const addLvlBtn = document.getElementById("addLvlBtn");
     if (addLvlBtn) addLvlBtn.onclick = function() { addCustomLevel(theme); };
     document.querySelectorAll("[data-pick-level]").forEach(function(el) {
@@ -474,6 +684,9 @@ const AdminScreen = (function() {
     });
     document.querySelectorAll("[data-lvl-down]").forEach(function(b) {
       b.onclick = function() { moveCustomLevel(theme, b.getAttribute("data-lvl-down"), 1); };
+    });
+    document.querySelectorAll("[data-lvl-dup]").forEach(function(b) {
+      b.onclick = function() { duplicateLevel(theme, b.getAttribute("data-lvl-dup")); };
     });
 
     if (currentCustomLevelId) renderLevelWordsEditor(theme);
@@ -532,9 +745,27 @@ const AdminScreen = (function() {
     try { await window.FB.setDocument("themes", theme._id, theme); showThemeForm(theme); }
     catch (e) { toast("Erreur: " + e.message); }
   }
-  // ============================================================
-  // ACTIONS NIVEAUX (dans le sous-thème actif)
-  // ============================================================
+
+  async function duplicateSubTheme(theme, subId) {
+    const orig = (theme.subThemes||[]).find(function(s){ return s.id === subId; });
+    if (!orig) return;
+    const copy = JSON.parse(JSON.stringify(orig));
+    copy.id = "sub_" + Date.now() + "_" + Math.random().toString(36).slice(2,6);
+    copy.name = orig.name + " (copie)";
+    copy.order = theme.subThemes.length + 1;
+    // Régénérer les IDs des niveaux dans la copie
+    (copy.customLevels || []).forEach(function(l) {
+      l.id = "lvl_" + Date.now() + "_" + Math.random().toString(36).slice(2,4);
+    });
+    theme.subThemes.push(copy);
+    try {
+      await window.FB.setDocument("themes", theme._id, theme);
+      toast("Sous-thème dupliqué");
+      showThemeForm(theme);
+    } catch (e) { toast("Erreur: " + e.message); }
+  }
+
+  // ===== ACTIONS NIVEAUX =====
   async function addCustomLevel(theme) {
     const sub = getCurrentSub(theme);
     if (!sub) { toast("Sélectionne un sous-thème d'abord"); return; }
@@ -598,6 +829,23 @@ const AdminScreen = (function() {
     catch (e) { toast("Erreur: " + e.message); }
   }
 
+  async function duplicateLevel(theme, lvlId) {
+    const sub = getCurrentSub(theme);
+    if (!sub) return;
+    const orig = (sub.customLevels||[]).find(function(l){ return l.id === lvlId; });
+    if (!orig) return;
+    const copy = JSON.parse(JSON.stringify(orig));
+    copy.id = "lvl_" + Date.now() + "_" + Math.random().toString(36).slice(2,6);
+    copy.name = orig.name + " (copie)";
+    copy.order = sub.customLevels.length + 1;
+    sub.customLevels.push(copy);
+    try {
+      await window.FB.setDocument("themes", theme._id, theme);
+      toast("Niveau dupliqué");
+      showThemeForm(theme);
+    } catch (e) { toast("Erreur: " + e.message); }
+  }
+
   async function migrateOldLevels(theme) {
     if (!await confirmAction("Convertir l'ancien contenu en un sous-thème « Général » ?")) return;
     if (!Array.isArray(theme.subThemes)) theme.subThemes = [];
@@ -638,9 +886,8 @@ const AdminScreen = (function() {
   }
 
   // ============================================================
-  // ÉDITEUR DE MOTS D'UN NIVEAU (fix: currentCustomLevelId fiable)
+  // ÉDITEUR DE MOTS (suppression SANS confirmation comme demandé)
   // ============================================================
-  
   function renderLevelWordsEditor(theme) {
     const container = document.getElementById("levelWordsEditor");
     if (!container) return;
@@ -684,7 +931,6 @@ const AdminScreen = (function() {
         '</div>' +
       '</div>';
 
-    // Ajouter un mot — DANS LE BON NIVEAU (fix)
     document.getElementById("addWBtn").onclick = function() { addWordToLevel(theme); };
     document.getElementById("bulkWBtn").onclick = function() { bulkImportToLevel(theme); };
     container.querySelectorAll("[data-del-w]").forEach(function(btn) {
@@ -707,7 +953,7 @@ const AdminScreen = (function() {
     try {
       await window.FB.setDocument("themes", theme._id, theme);
       ["wAr","wFr","wEx","wExFr"].forEach(clearVal);
-      toast("Mot ajouté dans « " + lvl.name + " »");
+      toast("Mot ajouté");
       renderLevelWordsEditor(theme);
     } catch (e) { toast("Erreur: " + e.message); }
   }
@@ -731,87 +977,20 @@ const AdminScreen = (function() {
     try {
       await window.FB.setDocument("themes", theme._id, theme);
       clearVal("wBulk");
-      toast(lines.length + " mots importés dans « " + lvl.name + " »");
+      toast(lines.length + " mots importés");
       renderLevelWordsEditor(theme);
     } catch (e) { toast("Erreur: " + e.message); }
   }
 
+  // SUPPRESSION SANS CONFIRMATION (comme demandé)
   async function deleteWordFromLevel(theme, index) {
     const lvl = getCurrentLevel(theme);
     if (!lvl) return;
     lvl.words.splice(index, 1);
     try {
       await window.FB.setDocument("themes", theme._id, theme);
-      toast("Mot supprimé");
       renderLevelWordsEditor(theme);
     } catch (e) { toast("Erreur: " + e.message); }
-  }
-
-  // ===== SAUVEGARDE / SUPPRESSION THÈME =====
-  async function saveTheme(isNew) {
-    const id = getVal("thId"), name = getVal("thName");
-    if (!id || !name) { toast("ID et nom requis"); return; }
-    const data = {
-      id: id, name: name,
-      nameAr: getVal("thNameAr"),
-      icon: getVal("thIcon"),
-      category: document.getElementById("thCategory").value,
-      description: getVal("thDesc"),
-      order: parseInt(getVal("thOrder"), 10) || 99
-    };
-    if (isNew) {
-      data.customLevels = [];
-      data.createdAt = Date.now();
-    } else if (currentTheme) {
-      // On préserve les niveaux existants
-      data.customLevels = currentTheme.customLevels || [];
-      data.levels = currentTheme.levels; // ancien format en secours
-    }
-    try {
-      await window.FB.setDocument("themes", id, data);
-      toast("Thème enregistré");
-      if (isNew) {
-        currentTheme = await window.FB.getDocument("themes", id);
-        normalizeTheme(currentTheme);
-        showThemeForm(currentTheme);
-      } else {
-        await loadThemesList();
-      }
-    } catch (e) { toast("Erreur: " + e.message); }
-  }
-
-  async function deleteTheme(themeId) {
-    if (!await confirmAction("Supprimer ce thème et tout son contenu ?")) return;
-    try {
-      await window.FB.deleteDocument("themes", themeId);
-      toast("Thème supprimé");
-      const ed = document.getElementById("themeEditor");
-      if (ed) ed.hidden = true;
-      await loadThemesList();
-    } catch (e) { toast("Erreur: " + e.message); }
-  }
-
-  async function initDefaultThemes() {
-    const defaults = [
-      { id:"quotidien", name:"Les Mots du Quotidien", nameAr:"الحياة اليومية", icon:"💬", category:"quotidien", order:1 },
-      { id:"foi",       name:"La Foi",                nameAr:"الإيمان",        icon:"🕌", category:"religieux", order:2 },
-      { id:"coran",     name:"Le Coran",              nameAr:"القرآن",         icon:"📖", category:"religieux", order:3 },
-      { id:"famille",   name:"La Famille",            nameAr:"العائلة",        icon:"👨", category:"quotidien", order:4 },
-      { id:"voyage",    name:"En Voyage",             nameAr:"في السفر",       icon:"✈️", category:"quotidien", order:5 }
-    ];
-    const listEl = document.getElementById("themesList");
-    if (listEl) listEl.innerHTML = '<div class="admin-loading">Initialisation...</div>';
-    let ok = 0;
-    for (let i = 0; i < defaults.length; i++) {
-      try {
-        await window.FB.setDocument("themes", defaults[i].id, Object.assign({}, defaults[i], {
-          customLevels: [], createdAt: Date.now()
-        }));
-        ok++;
-      } catch (e) {}
-    }
-    toast(ok + " thèmes créés");
-    await loadThemesList();
   }
 
   // ============================================================
@@ -868,7 +1047,7 @@ const AdminScreen = (function() {
   }
 
   // ============================================================
-  // ONGLET DÉFINITIONS ÉTYMOLOGIQUES
+  // ONGLET DÉFINITIONS
   // ============================================================
   async function renderDefinitionsTab(container) {
     container.innerHTML =
@@ -928,7 +1107,6 @@ const AdminScreen = (function() {
     }).join("");
     list.querySelectorAll("[data-del-def]").forEach(function(btn) {
       btn.onclick = async function() {
-        if (!await confirmAction("Supprimer ?")) return;
         try { await window.FB.deleteDocument("definitions", btn.getAttribute("data-del-def")); toast("Supprimé"); loadDefsList(); }
         catch (e) { toast("Erreur: " + e.message); }
       };
@@ -995,7 +1173,6 @@ const AdminScreen = (function() {
     }).join("");
     list.querySelectorAll("[data-del-n]").forEach(function(btn) {
       btn.onclick = async function() {
-        if (!await confirmAction("Supprimer ?")) return;
         try { await window.FB.deleteDocument("notions", btn.getAttribute("data-del-n")); toast("Supprimé"); loadNotionsList(); }
         catch (e) { toast("Erreur: " + e.message); }
       };
@@ -1059,7 +1236,6 @@ const AdminScreen = (function() {
     }).join("");
     list.querySelectorAll("[data-del-u]").forEach(function(btn) {
       btn.onclick = async function() {
-        if (!await confirmAction("Supprimer ?")) return;
         try { await window.FB.deleteDocument("unlocks", btn.getAttribute("data-del-u")); toast("Supprimé"); loadUnlocksList(); }
         catch (e) { toast("Erreur: " + e.message); }
       };
@@ -1083,8 +1259,9 @@ const AdminScreen = (function() {
       loadUnlocksList();
     } catch (e) { toast("Erreur: " + e.message); }
   }
+
   // ============================================================
-  // ONGLET CONTENUS (Mot du jour + Listes officielles)
+  // ONGLET CONTENUS (Mot du jour + Listes)
   // ============================================================
   function renderContenusTab(container) {
     container.innerHTML =
@@ -1143,7 +1320,6 @@ const AdminScreen = (function() {
     }).join("");
     c.querySelectorAll("[data-del-wotd]").forEach(function(btn) {
       btn.onclick = async function() {
-        if (!await confirmAction("Supprimer ?")) return;
         try { await window.FB.deleteDocument("wotd", btn.getAttribute("data-del-wotd")); toast("Supprimé"); loadWotdList(); }
         catch (e) { toast("Erreur: " + e.message); }
       };
@@ -1200,7 +1376,6 @@ const AdminScreen = (function() {
     }).join("");
     c.querySelectorAll("[data-del-ol]").forEach(function(btn) {
       btn.onclick = async function() {
-        if (!await confirmAction("Supprimer ?")) return;
         try { await window.FB.deleteDocument("officialLists", btn.getAttribute("data-del-ol")); toast("Supprimé"); loadOffLists(); }
         catch (e) { toast("Erreur: " + e.message); }
       };
@@ -1208,42 +1383,32 @@ const AdminScreen = (function() {
   }
 
   // ============================================================
-  // ONGLET USERS — Temps passé, Online, Dernière co, Mots exacts
+  // ONGLET USERS (comptes + invités)
   // ============================================================
   let usersData = [];
   let usersView = "top";
   let usersFilter = "all";
 
-    async function renderUsersTab(container) {
+  async function renderUsersTab(container) {
     container.innerHTML = '<div class="admin-loading">Chargement des utilisateurs...</div>';
     let profiles = [], guests = [];
-    try {
-      profiles = await window.FB.getCollection("profiles") || [];
-    } catch (e) {
-      // Si la table profiles n'est pas accessible directement, on essaie users
-      try { profiles = await window.FB.getCollection("users") || []; } catch (e2) {}
-    }
+    try { profiles = await window.FB.getCollection("profiles") || []; }
+    catch (e) { try { profiles = await window.FB.getCollection("users") || []; } catch (e2) {} }
     try { guests = await window.FB.getCollection("guests") || []; }
     catch (e) { guests = []; }
-
-    // On marque les invités pour les distinguer
     guests.forEach(function(g){ g._isGuest = true; g.auth_method = "guest"; });
-
-    // Fusion : tout dans un même tableau (les helpers filtrent ensuite)
     usersData = profiles.concat(guests);
 
     const now = Date.now();
     const totalAccounts = profiles.length;
     const totalGuests = guests.length;
     const totalAll = totalAccounts + totalGuests;
-
     const premium = profiles.filter(function(u){ return u.is_premium || u.isPremium; }).length;
     const online = usersData.filter(function(u){ return isOnline(u, now); }).length;
     const activeWeek = usersData.filter(function(u){ return (now - lastSeen(u)) < 7*864e5; }).length;
     const guestsActiveWeek = guests.filter(function(u){ return (now - lastSeen(u)) < 7*864e5; }).length;
     const converted = guests.filter(function(g){ return g.promoted_to_user; }).length;
     const convRate = totalGuests > 0 ? Math.round((converted / totalGuests) * 100) : 0;
-
     const totalWords = usersData.reduce(function(s,u){ return s + wordsCount(u); }, 0);
     const totalTime = usersData.reduce(function(s,u){ return s + timePart(u,"total"); }, 0);
 
@@ -1251,8 +1416,8 @@ const AdminScreen = (function() {
       '<div class="panel">' +
         '<div class="panel-title">VUE D\'ENSEMBLE</div>' +
         '<div class="stats-grid">' +
-          '<div class="stat"><b>' + totalAll + '</b><span>Total (comptes + invités)</span></div>' +
-          '<div class="stat"><b>' + totalAccounts + '</b><span>Comptes inscrits</span></div>' +
+          '<div class="stat"><b>' + totalAll + '</b><span>Total</span></div>' +
+          '<div class="stat"><b>' + totalAccounts + '</b><span>Comptes</span></div>' +
           '<div class="stat"><b>' + totalGuests + '</b><span>👤 Invités</span></div>' +
           '<div class="stat"><b class="admin-online-num">' + online + '</b><span>🟢 En ligne</span></div>' +
           '<div class="stat"><b>' + activeWeek + '</b><span>Actifs (7j)</span></div>' +
@@ -1262,7 +1427,7 @@ const AdminScreen = (function() {
       '<div class="panel mt-12">' +
         '<div class="panel-title">CONVERSION INVITÉS</div>' +
         '<div class="stats-grid">' +
-          '<div class="stat"><b>' + converted + '</b><span>Invités convertis en compte</span></div>' +
+          '<div class="stat"><b>' + converted + '</b><span>Convertis en compte</span></div>' +
           '<div class="stat"><b>' + convRate + '%</b><span>Taux de conversion</span></div>' +
           '<div class="stat"><b>' + guestsActiveWeek + '</b><span>Invités actifs (7j)</span></div>' +
         '</div>' +
@@ -1270,7 +1435,7 @@ const AdminScreen = (function() {
       '<div class="panel mt-12">' +
         '<div class="panel-title">ENGAGEMENT GLOBAL</div>' +
         '<div class="stats-grid">' +
-          '<div class="stat"><b>' + totalWords + '</b><span>Mots appris (tous)</span></div>' +
+          '<div class="stat"><b>' + totalWords + '</b><span>Mots appris</span></div>' +
           '<div class="stat"><b>' + fmtDuration(totalTime) + '</b><span>Temps cumulé</span></div>' +
         '</div>' +
         (isSuper() ? '<button class="btn btn-outline mt-12" id="exportCSVBtn" style="width:100%;">Exporter en CSV</button>' : '') +
@@ -1287,7 +1452,7 @@ const AdminScreen = (function() {
       '</div>' +
       '<div class="panel mt-12">' +
         '<div class="panel-title">LISTE COMPLÈTE</div>' +
-        '<input class="input admin-search" type="search" id="usersSearch" placeholder="Rechercher pseudo ou email..."/>' +
+        '<input class="input admin-search" type="search" id="usersSearch" placeholder="Rechercher..."/>' +
         '<div class="sub-tabs">' +
           '<button class="filter-chip active" data-uf="all">Tous</button>' +
           '<button class="filter-chip" data-uf="accounts">Comptes</button>' +
@@ -1302,7 +1467,6 @@ const AdminScreen = (function() {
 
     const exp = document.getElementById("exportCSVBtn");
     if (exp) exp.onclick = exportUsersCSV;
-
     container.querySelectorAll("[data-uv]").forEach(function(btn) {
       btn.onclick = function() {
         usersView = btn.getAttribute("data-uv");
@@ -1321,20 +1485,12 @@ const AdminScreen = (function() {
     });
     const sb = document.getElementById("usersSearch");
     if (sb) sb.addEventListener("input", renderUsersFull);
-
     renderUsersRank();
     renderUsersFull();
   }
 
-
-  // ---- Helpers données user (gèrent les 2 formats : snake_case DB / camelCase) ----
-  function lastSeen(u) {
-    return u.last_active_at || u.lastActiveAt || u.last_session || u.lastSession || 0;
-  }
-  function isOnline(u, now) {
-    now = now || Date.now();
-    return (now - lastSeen(u)) < 5 * 60 * 1000; // actif dans les 5 dernières minutes
-  }
+  function lastSeen(u) { return u.last_active_at || u.lastActiveAt || u.last_session || u.lastSession || 0; }
+  function isOnline(u, now) { now = now || Date.now(); return (now - lastSeen(u)) < 5*60*1000; }
   function wordsCount(u) {
     if (typeof u.mastered_words === "number") return u.mastered_words;
     if (typeof u.masteredWords === "number") return u.masteredWords;
@@ -1343,24 +1499,20 @@ const AdminScreen = (function() {
     return 0;
   }
   function timePart(u, part) {
-    // temps en secondes ; champs créés par le futur tracker
     const t = u.time_spent || u.timeSpent || {};
     if (part === "total") return Number(t.total || u.time_total || 0);
-    if (part === "day")   return Number(t.day || 0);
-    if (part === "week")  return Number(t.week || 0);
+    if (part === "day") return Number(t.day || 0);
+    if (part === "week") return Number(t.week || 0);
     if (part === "month") return Number(t.month || 0);
     return 0;
   }
-  function isGuestUser(u) {
-    return (u.auth_method || u.authMethod) === "guest" || !(u.email);
-  }
+  function isGuestUser(u) { return (u.auth_method || u.authMethod) === "guest" || !(u.email); }
   function fmtDuration(sec) {
     sec = Number(sec) || 0;
     if (sec < 60) return sec + "s";
     const m = Math.floor(sec / 60);
     if (m < 60) return m + "min";
-    const h = Math.floor(m / 60);
-    const rm = m % 60;
+    const h = Math.floor(m / 60); const rm = m % 60;
     return h + "h" + (rm > 0 ? String(rm).padStart(2,"0") : "");
   }
 
@@ -1372,7 +1524,6 @@ const AdminScreen = (function() {
     else if (usersView === "words") sorted.sort(function(a,b){ return wordsCount(b)-wordsCount(a); });
     else if (usersView === "time") sorted.sort(function(a,b){ return timePart(b,"total")-timePart(a,"total"); });
     else if (usersView === "streak") sorted.sort(function(a,b){ return (b.streak||0)-(a.streak||0); });
-
     const top = sorted.slice(0, 10);
     if (top.length === 0) { list.innerHTML = '<div class="admin-empty">Aucun utilisateur</div>'; return; }
     list.innerHTML = top.map(function(u, i) {
@@ -1402,7 +1553,6 @@ const AdminScreen = (function() {
     const sb = document.getElementById("usersSearch");
     const q = (sb ? sb.value : "").toLowerCase();
     let filtered = usersData.slice();
-
     if (usersFilter === "online") filtered = filtered.filter(function(u){ return isOnline(u, now); });
     else if (usersFilter === "premium") filtered = filtered.filter(function(u){ return u.is_premium || u.isPremium; });
     else if (usersFilter === "guest") filtered = filtered.filter(function(u){ return u._isGuest || isGuestUser(u); });
@@ -1412,10 +1562,8 @@ const AdminScreen = (function() {
       return (u.pseudo||"").toLowerCase().indexOf(q)!==-1 || (u.email||"").toLowerCase().indexOf(q)!==-1;
     });
     filtered.sort(function(a,b){ return (b.xp||0)-(a.xp||0); });
-
     if (count) count.textContent = filtered.length + " utilisateur" + (filtered.length>1?"s":"");
     if (filtered.length === 0) { list.innerHTML = '<div class="admin-empty">Aucun résultat</div>'; return; }
-
     list.innerHTML = filtered.slice(0, 100).map(function(u) {
       const on = isOnline(u, now);
       const seen = lastSeen(u);
@@ -1460,13 +1608,13 @@ const AdminScreen = (function() {
           '<div class="stat"><b>' + (u.streak||0) + '</b><span>Streak</span></div>' +
         '</div>' +
         '<div class="stats-grid mt-12">' +
-          '<div class="stat"><b>' + fmtDuration(timePart(u,"day")) + '</b><span>Temps / jour</span></div>' +
-          '<div class="stat"><b>' + fmtDuration(timePart(u,"week")) + '</b><span>Temps / semaine</span></div>' +
-          '<div class="stat"><b>' + fmtDuration(timePart(u,"month")) + '</b><span>Temps / mois</span></div>' +
-          '<div class="stat"><b>' + fmtDuration(timePart(u,"total")) + '</b><span>Temps total</span></div>' +
+          '<div class="stat"><b>' + fmtDuration(timePart(u,"day")) + '</b><span>/ jour</span></div>' +
+          '<div class="stat"><b>' + fmtDuration(timePart(u,"week")) + '</b><span>/ semaine</span></div>' +
+          '<div class="stat"><b>' + fmtDuration(timePart(u,"month")) + '</b><span>/ mois</span></div>' +
+          '<div class="stat"><b>' + fmtDuration(timePart(u,"total")) + '</b><span>Total</span></div>' +
         '</div>' +
         '<div class="admin-meta-tiny" style="margin-top:12px;line-height:1.7;">' +
-          'Statut : ' + (on ? "🟢 en ligne maintenant" : "⚫ hors ligne") + '<br>' +
+          'Statut : ' + (on ? "🟢 en ligne" : "⚫ hors ligne") + '<br>' +
           'Dernière activité : ' + (seen ? new Date(seen).toLocaleString("fr-FR") : "jamais") + '<br>' +
           'Compte : ' + ((u.is_premium||u.isPremium) ? "Premium ⭐" : "Gratuit") +
         '</div>' +
@@ -1496,37 +1644,44 @@ const AdminScreen = (function() {
     URL.revokeObjectURL(url);
     toast(usersData.length + " users exportés");
   }
+
   // ============================================================
-  // ONGLET STATS — Vue d'ensemble + IA + temps + contenu
+  // ONGLET STATS
   // ============================================================
   async function renderStatsTab(container) {
     container.innerHTML = '<div class="admin-loading">Calcul des stats...</div>';
-    let themes, defs, notions, unlocks, wotd, users, iaGlobal, cfg;
+    let themes, defs, notions, unlocks, wotd, profiles, guests, iaGlobal, cfg;
     try {
-      themes  = await window.FB.getCollection("themes") || [];
-      defs    = await window.FB.getCollection("definitions") || [];
+      themes = await window.FB.getCollection("themes") || [];
+      defs = await window.FB.getCollection("definitions") || [];
       notions = await window.FB.getCollection("notions") || [];
       unlocks = await window.FB.getCollection("unlocks") || [];
-      wotd    = await window.FB.getCollection("wotd") || [];
-      users   = await window.FB.getCollection("users") || [];
-      iaGlobal= await window.FB.getCollection("ia_usage") || [];
-      cfg     = await window.FB.getDocument("config", "global") || {};
+      wotd = await window.FB.getCollection("wotd") || [];
+      profiles = await window.FB.getCollection("profiles") || [];
+      guests = await window.FB.getCollection("guests") || [];
+      iaGlobal = await window.FB.getCollection("ia_usage") || [];
+      cfg = await window.FB.getDocument("config", "global") || {};
     } catch (e) {
       container.innerHTML = '<div class="panel"><div class="admin-error">Erreur: ' + e.message + '</div></div>';
       return;
     }
-
     themes.forEach(normalizeTheme);
-    let totalWords = 0, totalLevels = 0;
-    themes.forEach(function(t){ totalWords += countWordsInTheme(t); totalLevels += (t.customLevels||[]).length; });
+    const allUsers = profiles.concat(guests);
+
+    let totalWords = 0, totalLevels = 0, totalSubs = 0;
+    themes.forEach(function(t){
+      totalWords += countWordsInTheme(t);
+      totalSubs += (t.subThemes||[]).length;
+      (t.subThemes||[]).forEach(function(st){ totalLevels += (st.customLevels||[]).length; });
+    });
 
     const now = Date.now();
-    const online = users.filter(function(u){ return isOnline(u, now); }).length;
-    const activeWeek = users.filter(function(u){ return (now - lastSeen(u)) < 7*864e5; }).length;
-    const activeMonth = users.filter(function(u){ return (now - lastSeen(u)) < 30*864e5; }).length;
-    const totalTime = users.reduce(function(s,u){ return s + timePart(u,"total"); }, 0);
-    const avgTime = users.length ? Math.round(totalTime / users.length) : 0;
-    const totalLearned = users.reduce(function(s,u){ return s + wordsCount(u); }, 0);
+    const online = allUsers.filter(function(u){ return isOnline(u, now); }).length;
+    const activeWeek = allUsers.filter(function(u){ return (now - lastSeen(u)) < 7*864e5; }).length;
+    const activeMonth = allUsers.filter(function(u){ return (now - lastSeen(u)) < 30*864e5; }).length;
+    const totalTime = allUsers.reduce(function(s,u){ return s + timePart(u,"total"); }, 0);
+    const avgTime = allUsers.length ? Math.round(totalTime / allUsers.length) : 0;
+    const totalLearned = allUsers.reduce(function(s,u){ return s + wordsCount(u); }, 0);
 
     const today = todayKeyAdmin();
     const todayIa = iaGlobal.find(function(d){ return d._id === today; });
@@ -1535,19 +1690,18 @@ const AdminScreen = (function() {
     const iaPct = Math.min(100, Math.round((iaCount/iaLimit)*100));
     const aiOn = cfg.aiEnabled !== false;
 
-    // Répartition par catégorie
     const byCat = {};
     THEME_CATEGORIES.forEach(function(c){ byCat[c.id] = 0; });
     themes.forEach(function(t){ if (byCat[t.category] !== undefined) byCat[t.category]++; });
 
     container.innerHTML =
       '<div class="panel">' +
-        '<div class="panel-title">ACTIVITÉ EN TEMPS RÉEL</div>' +
+        '<div class="panel-title">ACTIVITÉ TEMPS RÉEL</div>' +
         '<div class="stats-grid">' +
           '<div class="stat"><b class="admin-online-num">' + online + '</b><span>🟢 En ligne</span></div>' +
           '<div class="stat"><b>' + activeWeek + '</b><span>Actifs (7j)</span></div>' +
           '<div class="stat"><b>' + activeMonth + '</b><span>Actifs (30j)</span></div>' +
-          '<div class="stat"><b>' + users.length + '</b><span>Inscrits</span></div>' +
+          '<div class="stat"><b>' + allUsers.length + '</b><span>Total users</span></div>' +
         '</div>' +
       '</div>' +
       '<div class="panel mt-12">' +
@@ -1572,11 +1726,11 @@ const AdminScreen = (function() {
         '<div class="panel-title">CONTENU</div>' +
         '<div class="stats-grid">' +
           '<div class="stat"><b>' + themes.length + '</b><span>Thèmes</span></div>' +
+          '<div class="stat"><b>' + totalSubs + '</b><span>Sous-thèmes</span></div>' +
           '<div class="stat"><b>' + totalLevels + '</b><span>Niveaux</span></div>' +
           '<div class="stat"><b>' + totalWords + '</b><span>Mots</span></div>' +
           '<div class="stat"><b>' + defs.length + '</b><span>Définitions</span></div>' +
           '<div class="stat"><b>' + notions.length + '</b><span>Notions</span></div>' +
-          '<div class="stat"><b>' + wotd.length + '</b><span>Mots du jour</span></div>' +
         '</div>' +
       '</div>' +
       '<div class="panel mt-12">' +
@@ -1590,7 +1744,7 @@ const AdminScreen = (function() {
 
     const resetBtn = document.getElementById("resetIaBtn");
     if (resetBtn) resetBtn.onclick = async function() {
-      if (!await confirmAction("Reset les compteurs IA d'aujourd'hui ? (urgence uniquement)")) return;
+      if (!await confirmAction("Reset les compteurs IA d'aujourd'hui ?")) return;
       try {
         await window.FB.setDocument("ia_usage", today, { count: 0, date: today, lastUpdated: Date.now() });
         toast("Compteurs reset");
@@ -1605,13 +1759,11 @@ const AdminScreen = (function() {
   }
 
   // ============================================================
-  // ONGLET RÉGLAGES — Noms niveaux, seuils, premium, IA
+  // ONGLET RÉGLAGES
   // ============================================================
   async function renderConfigTab(container) {
     let cfg = {};
     try { cfg = await window.FB.getDocument("config", "global") || {}; } catch (e) {}
-
-    // Noms de niveaux globaux par défaut (legacy) — éditables
     const lvlNames = cfg.levelNames || {
       debutant: "Débutant", intermediaire: "Intermédiaire",
       avance: "Avancé", expert: "Expert", mouallim: "Mouallim"
@@ -1621,17 +1773,17 @@ const AdminScreen = (function() {
       '<div class="panel">' +
         '<div class="panel-title">NIVEAU MOUALLIM (accès)</div>' +
         '<div class="form-grid">' +
-          '<label class="admin-label">Condition d\'accès Mouallim<select class="input" id="cfgMouallimAccess">' +
+          '<label class="admin-label">Condition Mouallim<select class="input" id="cfgMouallimAccess">' +
             '<option value="premium">Premium uniquement</option>' +
             '<option value="xp">Palier XP</option>' +
             '<option value="free">Libre (tout le monde)</option>' +
           '</select></label>' +
-          '<label class="admin-label">Seuil XP Mouallim (si palier XP)<input class="input" id="cfgMouallimXp" type="number" value="' + (cfg.mouallimThreshold || 12000) + '"/></label>' +
+          '<label class="admin-label">Seuil XP Mouallim<input class="input" id="cfgMouallimXp" type="number" value="' + (cfg.mouallimThreshold || 12000) + '"/></label>' +
         '</div>' +
       '</div>' +
       '<div class="panel mt-12">' +
         '<div class="panel-title">NOMS DES NIVEAUX (legacy)</div>' +
-        '<p class="form-hint">Renomme les anciens niveaux fixes. (Les nouveaux niveaux flexibles ont déjà leur propre nom.)</p>' +
+        '<p class="form-hint">Renomme les anciens niveaux fixes.</p>' +
         '<div class="form-grid">' +
           '<input class="input" id="lvlN1" placeholder="Débutant" value="' + escapeHTML(lvlNames.debutant) + '"/>' +
           '<input class="input" id="lvlN2" placeholder="Intermédiaire" value="' + escapeHTML(lvlNames.intermediaire) + '"/>' +
@@ -1643,12 +1795,22 @@ const AdminScreen = (function() {
       '<div class="panel mt-12">' +
         '<div class="panel-title">CONTRÔLE IA</div>' +
         '<div class="form-grid">' +
-          '<label class="admin-label">IA activée (kill switch)<select class="input" id="cfgAiEnabled">' +
-            '<option value="true">OUI — active</option><option value="false">NON — désactivée</option>' +
+          '<label class="admin-label">IA activée<select class="input" id="cfgAiEnabled">' +
+            '<option value="true">OUI</option><option value="false">NON</option>' +
           '</select></label>' +
-          '<label class="admin-label">Limite msg / gratuit / jour<input class="input" id="cfgChat" type="number" value="' + (cfg.chatDailyLimit || 10) + '"/></label>' +
-          '<label class="admin-label">Limite msg / premium / jour<input class="input" id="cfgChatPrem" type="number" value="' + (cfg.chatDailyLimitPremium || 100) + '"/></label>' +
-          '<label class="admin-label">Limite globale / jour<input class="input" id="cfgChatGlobal" type="number" value="' + (cfg.chatGlobalDailyLimit || 5000) + '"/></label>' +
+          '<label class="admin-label">Limite gratuit/jour<input class="input" id="cfgChat" type="number" value="' + (cfg.chatDailyLimit || 10) + '"/></label>' +
+          '<label class="admin-label">Limite premium/jour<input class="input" id="cfgChatPrem" type="number" value="' + (cfg.chatDailyLimitPremium || 100) + '"/></label>' +
+          '<label class="admin-label">Limite globale/jour<input class="input" id="cfgChatGlobal" type="number" value="' + (cfg.chatGlobalDailyLimit || 5000) + '"/></label>' +
+        '</div>' +
+      '</div>' +
+      '<div class="panel mt-12">' +
+        '<div class="panel-title">XP & RÉCOMPENSES</div>' +
+        '<div class="form-grid">' +
+          '<label class="admin-label">XP bonne réponse QCM<input class="input" id="cfgXpQcm" type="number" value="' + (cfg.xpQcm || 10) + '"/></label>' +
+          '<label class="admin-label">XP par mot maîtrisé<input class="input" id="cfgXpWord" type="number" value="' + (cfg.xpWord || 10) + '"/></label>' +
+          '<label class="admin-label">XP par lettre apprise<input class="input" id="cfgXpLetter" type="number" value="' + (cfg.xpLetter || 15) + '"/></label>' +
+          '<label class="admin-label">XP base révision rapide<input class="input" id="cfgXpRapid" type="number" value="' + (cfg.xpRapid || 5) + '"/></label>' +
+          '<label class="admin-label">Multiplicateur XP Premium<input class="input" id="cfgMult" type="number" step="0.5" value="' + (cfg.premiumMultiplier || 2) + '"/></label>' +
         '</div>' +
       '</div>' +
       '<div class="panel mt-12">' +
@@ -1656,20 +1818,17 @@ const AdminScreen = (function() {
         '<div class="form-grid">' +
           '<label class="admin-label">Prix Premium (EUR)<input class="input" id="cfgPrice" type="number" step="0.01" value="' + (cfg.premiumPrice || 7.99) + '"/></label>' +
           '<label class="admin-label">Premium visible<select class="input" id="cfgPremVisible">' +
-            '<option value="true">OUI</option><option value="false">NON (caché)</option>' +
+            '<option value="true">OUI</option><option value="false">NON</option>' +
           '</select></label>' +
           '<label class="admin-label">Pubs activées<select class="input" id="cfgAds">' +
             '<option value="true">OUI</option><option value="false">NON</option>' +
           '</select></label>' +
-          '<label class="admin-label">XP par bonne réponse<input class="input" id="cfgXpQcm" type="number" value="' + (cfg.xpQcm || 10) + '"/></label>' +
-          '<label class="admin-label">Multiplicateur XP Premium<input class="input" id="cfgMult" type="number" step="0.5" value="' + (cfg.premiumMultiplier || 2) + '"/></label>' +
           '<label class="admin-label">Message d\'accueil<input class="input" id="cfgWelcome" value="' + escapeHTML(cfg.welcomeMessage||"") + '"/></label>' +
-          '<label class="admin-label">Texte « Notre méthode »<textarea class="textarea admin-textarea" id="cfgMethode">' + escapeHTML(cfg.methodeText||"") + '</textarea></label>' +
+          '<label class="admin-label">Texte Notre méthode<textarea class="textarea admin-textarea" id="cfgMethode">' + escapeHTML(cfg.methodeText||"") + '</textarea></label>' +
         '</div>' +
       '</div>' +
       '<button class="btn btn-gold mt-12" id="saveCfgBtn" style="width:100%;padding:14px;">ENREGISTRER TOUS LES RÉGLAGES</button>';
 
-    // Pré-sélection des selects
     document.getElementById("cfgMouallimAccess").value = cfg.mouallimAccess || "premium";
     document.getElementById("cfgAiEnabled").value = (cfg.aiEnabled === false) ? "false" : "true";
     document.getElementById("cfgPremVisible").value = (cfg.premiumVisible === true) ? "true" : "false";
@@ -1695,16 +1854,21 @@ const AdminScreen = (function() {
           premiumVisible: getVal("cfgPremVisible") === "true",
           adsEnabled: getVal("cfgAds") === "true",
           xpQcm: parseInt(getVal("cfgXpQcm"),10) || 10,
+          xpWord: parseInt(getVal("cfgXpWord"),10) || 10,
+          xpLetter: parseInt(getVal("cfgXpLetter"),10) || 15,
+          xpRapid: parseInt(getVal("cfgXpRapid"),10) || 5,
           premiumMultiplier: parseFloat(getVal("cfgMult")) || 2,
           welcomeMessage: getVal("cfgWelcome"),
-          methodeText: getVal("cfgMethode")
+          methodeText: getVal("cfgMethode"),
+          updatedAt: Date.now()
         });
         toast("Réglages enregistrés");
       } catch (e) { toast("Erreur: " + e.message); }
     };
   }
+
   // ============================================================
-  // ONGLET OUTILS — Exports + actions
+  // ONGLET OUTILS
   // ============================================================
   function renderToolsTab(container) {
     container.innerHTML =
@@ -1719,13 +1883,12 @@ const AdminScreen = (function() {
         '<button class="btn btn-outline mt-8" id="reloadBtn">Recharger l\'application</button>' +
         '<button class="btn btn-outline mt-8" id="announceBtn">Envoyer une annonce</button>' +
       '</div>';
-
     document.getElementById("exportAllBtn").onclick = exportAll;
     document.getElementById("exportThemesBtn").onclick = function(){ exportCollection("themes"); };
     document.getElementById("exportDefsBtn").onclick = function(){ exportCollection("definitions"); };
     document.getElementById("reloadBtn").onclick = function(){ location.reload(); };
     document.getElementById("announceBtn").onclick = async function() {
-      const msg = prompt("Message à envoyer à tous les utilisateurs :");
+      const msg = prompt("Message à envoyer :");
       if (!msg) return;
       try {
         await window.FB.addDocument("announcements", { message: msg, createdAt: Date.now() });
@@ -1738,14 +1901,14 @@ const AdminScreen = (function() {
     toast("Export en cours...");
     try {
       const data = {
-        themes:        await window.FB.getCollection("themes") || [],
-        letters:       await window.FB.getCollection("letters") || [],
-        definitions:   await window.FB.getCollection("definitions") || [],
-        notions:       await window.FB.getCollection("notions") || [],
-        unlocks:       await window.FB.getCollection("unlocks") || [],
-        wotd:          await window.FB.getCollection("wotd") || [],
+        themes: await window.FB.getCollection("themes") || [],
+        letters: await window.FB.getCollection("letters") || [],
+        definitions: await window.FB.getCollection("definitions") || [],
+        notions: await window.FB.getCollection("notions") || [],
+        unlocks: await window.FB.getCollection("unlocks") || [],
+        wotd: await window.FB.getCollection("wotd") || [],
         officialLists: await window.FB.getCollection("officialLists") || [],
-        config:        await window.FB.getDocument("config", "global") || {},
+        config: await window.FB.getDocument("config", "global") || {},
         exportedAt: Date.now()
       };
       downloadJSON(data, "dar-al-loughah-backup-" + new Date().toISOString().slice(0,10) + ".json");
@@ -1777,15 +1940,12 @@ const AdminScreen = (function() {
       return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
     });
   }
-
   function getVal(id) { const el = document.getElementById(id); return el ? el.value.trim() : ""; }
   function clearVal(id) { const el = document.getElementById(id); if (el) el.value = ""; }
-
   function toast(msg) {
     if (window.Main && window.Main.toast) window.Main.toast(msg);
     else console.log(msg);
   }
-
   function confirmAction(msg) {
     return new Promise(function(resolve) {
       if (window.Main && window.Main.confirm) {
@@ -1797,14 +1957,10 @@ const AdminScreen = (function() {
     });
   }
 
-  // ============================================================
-  // API PUBLIQUE
-  // ============================================================
-  return {
-    show: show
-  };
+  // API publique
+  return { show: show };
 
 })();
 
 window.AdminScreen = AdminScreen;
-console.log("✓ AdminScreen v4 chargé (CMS pro — catégories, niveaux flexibles, stats avancées)");
+console.log("✓ AdminScreen v5 (5 étages + breadcrumb + dupliquer + aperçu user) chargé");
