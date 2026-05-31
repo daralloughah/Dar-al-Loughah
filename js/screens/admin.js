@@ -1612,7 +1612,12 @@ const AdminScreen = (function() {
     renderUsersFull();
   }
 
-  function lastSeen(u) { return u.last_active_at || u.lastActiveAt || u.last_session || u.lastSession || 0; }
+    function lastSeen(u) {
+    // Pour les comptes : fallback sur updated_at ou created_at si jamais last_active_at n'a été enregistré
+    return u.last_active_at || u.lastActiveAt || u.last_session || u.lastSession ||
+           u.updated_at || u.updatedAt || u.created_at || u.createdAt || 0;
+  }
+
   function isOnline(u, now) { now = now || Date.now(); return (now - lastSeen(u)) < 5*60*1000; }
   function wordsCount(u) {
     if (typeof u.mastered_words === "number") return u.mastered_words;
@@ -1705,14 +1710,17 @@ const AdminScreen = (function() {
     });
   }
 
-  function timeAgo(ms) {
+    function timeAgo(ms) {
+    if (!ms || isNaN(ms) || ms < 0) return "jamais";
     const min = Math.floor(ms / 60000);
+    if (min < 1) return "à l'instant";
     if (min < 60) return "il y a " + min + " min";
     const h = Math.floor(min / 60);
     if (h < 24) return "il y a " + h + "h";
     const d = Math.floor(h / 24);
     return "il y a " + d + "j";
   }
+
 
   function showUserDetail(userId) {
     const u = usersData.find(function(x){ return (x._id===userId)||(x.uid===userId); });
