@@ -2852,3 +2852,29 @@
   font-size: 1rem;
   filter: drop-shadow(0 0 4px rgba(247,220,136,.5));
 }
+/* Fix ornements baroques aux coins — empêche le débordement à gauche */
+.ornament-top-left,
+.ornament-top-right,
+.ornament-bottom-left,
+.ornament-bottom-right,
+[class*="ornament"],
+[class*="corner-deco"] {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Si l'ornement est positionné absolu, on le contraint */
+.home-screen,
+.start-screen,
+.welcome-screen,
+.app-container,
+.screen {
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Empêche TOUT débordement horizontal de la page */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
