@@ -147,7 +147,7 @@ const Auth = (function() {
     return { success: true, user: user };
   }
 
-  function loginGuest() {
+    function loginGuest(showToast) {
     // L'invité existe DÉJÀ via le cookie de state.js
     // On rafraîchit juste l'UI pour montrer qu'il est en mode invité actif
     if (window.State) {
@@ -158,11 +158,13 @@ const Auth = (function() {
     }
     const user = { pseudo: (window.State && window.State.get("pseudo")) || "Invité", email: "", avatar: "", method: "guest" };
     document.dispatchEvent(new CustomEvent("auth-login", { detail: user }));
-    if (window.Main && window.Main.toast) {
+    // Le toast ne s'affiche QUE si l'utilisateur a cliqué volontairement sur "Mode invité"
+    if (showToast === true && window.Main && window.Main.toast) {
       window.Main.toast("Mode invité : progression sauvegardée localement");
     }
     return { success: true, user: user };
   }
+
 
   async function logout() {
     if (window.State && window.State.flushPending) {
