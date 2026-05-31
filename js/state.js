@@ -44,6 +44,10 @@ const State = (function() {
     weekKey: "",
     monthKey: "",
     unlocksTotal: 0,
+       lastActiveAt: 0,
+    timeSpent: { total: 0, day: 0, week: 0, month: 0 },
+    dailyActivity: {},
+    lastTrackDay: "", 
     settings: {
       tapSound: true, feedbackSound: true, ambientSound: false,
       streakNotif: true, wotdNotif: true, showTranslit: true,
@@ -166,9 +170,13 @@ const State = (function() {
       theme_progress: state.themeProgress,
       unlocked_badges: state.unlockedBadges,
       stats: state.stats,
-      preferences: state.settings
+            preferences: state.settings,
+      last_active_at: state.lastActiveAt || Date.now(),
+      time_spent: state.timeSpent || { total: 0, day: 0, week: 0, month: 0 },
+      daily_activity: state.dailyActivity || {}
     };
   }
+
 
   function stateToGuestPayload() {
     return {
@@ -192,9 +200,12 @@ const State = (function() {
       quiz_validations: state.quizValidations,
       theme_progress: state.themeProgress,
       unlocked_badges: state.unlockedBadges,
-      stats: state.stats
+            stats: state.stats,
+      time_spent: state.timeSpent || { total: 0, day: 0, week: 0, month: 0 },
+      daily_activity: state.dailyActivity || {}
     };
   }
+
 
   function rowToState(row) {
     if (!row) return;
@@ -227,8 +238,12 @@ const State = (function() {
     state.themeProgress = row.theme_progress || {};
     state.unlockedBadges = Array.isArray(row.unlocked_badges) ? row.unlocked_badges : [];
     if (row.stats) state.stats = Object.assign({}, DEFAULT_STATE.stats, row.stats);
-    if (row.preferences) state.settings = Object.assign({}, DEFAULT_STATE.settings, row.preferences);
+        if (row.preferences) state.settings = Object.assign({}, DEFAULT_STATE.settings, row.preferences);
+    state.lastActiveAt = Number(row.last_active_at) || Date.now();
+    state.timeSpent = row.time_spent || { total: 0, day: 0, week: 0, month: 0 };
+    state.dailyActivity = row.daily_activity || {};
   }
+
 
   // ============================================================
   // PULL
@@ -291,10 +306,14 @@ const State = (function() {
         state.quizValidations = data.quiz_validations || {};
         state.themeProgress = data.theme_progress || {};
         state.unlockedBadges = Array.isArray(data.unlocked_badges) ? data.unlocked_badges : [];
-        if (data.stats) state.stats = Object.assign({}, DEFAULT_STATE.stats, data.stats);
+                if (data.stats) state.stats = Object.assign({}, DEFAULT_STATE.stats, data.stats);
+        state.lastActiveAt = data.last_active_at ? new Date(data.last_active_at).getTime() : Date.now();
+        state.timeSpent = data.time_spent || { total: 0, day: 0, week: 0, month: 0 };
+        state.dailyActivity = data.daily_activity || {};
         refreshBindings();
         return true;
       }
+
       return false;
     } catch (e) {
       console.warn("pullGuestFromCloud exception:", e);
@@ -730,8 +749,10 @@ const State = (function() {
     isAdmin: isAdmin, exportData: exportData, importData: importData,
     pullFromCloud: pullFromCloud, pullGuestFromCloud: pullGuestFromCloud,
     flushPending: flushPending, promoteGuestToUser: promoteGuestToUser,
-    isGuest: isGuest, isCloudSyncing: isCloudSyncing, loadUserLists: loadUserLists
+        isGuest: isGuest, isCloudSyncing: isCloudSyncing, loadUserLists: loadUserLists,
+    schedulePush: schedulePush
   };
+
 })();
 
 window.State = State;
