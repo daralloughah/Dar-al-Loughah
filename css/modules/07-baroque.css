@@ -2731,3 +2731,124 @@
   padding: 12px !important;
   box-shadow: 0 0 16px rgba(247,220,136,.15);
 }
+/* Badge "Priorité" sur la carte vocab */
+.vocab-priority-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #c89a3a, #f7dc88);
+  color: #14213d;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: .7rem;
+  font-weight: 700;
+  font-family: 'Cinzel', serif;
+  box-shadow: 0 2px 8px rgba(247,220,136,.4);
+}
+
+/* Bouton "Réviser en priorité" */
+.vocab-priority-btn {
+  background: rgba(212,175,55,.08);
+  border: 1px solid rgba(212,175,55,.35);
+  color: #f0e2b8;
+  font-family: 'Cinzel', serif;
+  font-size: .85rem;
+  padding: 8px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .25s;
+}
+.vocab-priority-btn:hover {
+  background: rgba(212,175,55,.18);
+  border-color: rgba(212,175,55,.6);
+}
+.vocab-priority-btn.on {
+  background: linear-gradient(135deg, rgba(200,154,58,.3), rgba(247,220,136,.15));
+  border-color: rgba(247,220,136,.7);
+  color: #f7dc88;
+  box-shadow: 0 0 12px rgba(247,220,136,.2);
+}
+
+/* Liste des mots d'un niveau */
+.apprendre-words-list {
+  padding: 0 12px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.apprendre-word-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: linear-gradient(160deg, rgba(20,28,48,.85), rgba(14,20,38,.95));
+  border: 1px solid rgba(212,175,55,.3);
+  border-radius: 12px;
+  transition: all .2s;
+}
+.apprendre-word-item:hover {
+  border-color: rgba(247,220,136,.5);
+  transform: translateX(2px);
+}
+.apprendre-word-item.mastered {
+  border-color: rgba(94,224,165,.4);
+  background: linear-gradient(160deg, rgba(20,40,30,.6), rgba(14,28,22,.85));
+}
+.apprendre-word-main {
+  flex: 1;
+  min-width: 0;
+}
+.apprendre-word-ar {
+  font-family: 'Amiri', serif;
+  font-size: 1.4rem;
+  color: #f7dc88;
+  line-height: 1.3;
+  margin-bottom: 2px;
+}
+.apprendre-word-fr {
+  color: #f0e2b8;
+  font-size: .95rem;
+  font-weight: 500;
+}
+.apprendre-word-example {
+  font-family: 'Amiri', serif;
+  color: #c89a3a;
+  font-size: .9rem;
+  margin-top: 6px;
+  opacity: .85;
+}
+.apprendre-word-example-fr {
+  color: #8a7a4a;
+  font-size: .78rem;
+  font-style: italic;
+  margin-top: 2px;
+}
+.apprendre-word-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.badge-mastered {
+  background: rgba(94,224,165,.2);
+  color: #5EE0A5;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: .72rem;
+  font-weight: 600;
+  font-family: 'Cinzel', serif;
+}
+.badge-progress {
+  background: rgba(212,175,55,.15);
+  color: #c89a3a;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: .72rem;
+  font-weight: 600;
+  font-family: 'Cinzel', serif;
+}
+.badge-priority {
+  font-size: 1rem;
+  filter: drop-shadow(0 0 4px rgba(247,220,136,.5));
+}
