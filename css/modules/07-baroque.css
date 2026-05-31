@@ -2706,3 +2706,28 @@
 @media (min-width: 700px) {
   .apprendre-grid { grid-template-columns: repeat(3, 1fr); }
 }
+/* Sélection multiple mots admin */
+.admin-sel-bar {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  padding: 10px 12px; margin: 8px 0;
+  background: linear-gradient(135deg, rgba(212,175,55,.15), rgba(247,220,136,.05));
+  border: 1px solid rgba(212,175,55,.4); border-radius: 10px;
+  font-size: .85rem; color: #f0e2b8;
+}
+.admin-sel-bar span { flex: 1; }
+.word-select {
+  display: flex; align-items: center; padding: 0 8px;
+}
+.word-select input[type="checkbox"] {
+  width: 20px; height: 20px; cursor: pointer; accent-color: #c89a3a;
+}
+.admin-word-selected {
+  background: rgba(212,175,55,.12) !important;
+  border-color: rgba(212,175,55,.5) !important;
+}
+.admin-word-editing {
+  background: rgba(20,28,48,.95) !important;
+  border: 1px solid rgba(247,220,136,.6) !important;
+  padding: 12px !important;
+  box-shadow: 0 0 16px rgba(247,220,136,.15);
+}
