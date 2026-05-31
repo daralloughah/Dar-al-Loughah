@@ -738,43 +738,6 @@ const ThemesScreen = (function() {
     if (back) back.onclick = function() { renderLearningMenu(); };
   }
 
-    const wc = (lvl.words || []).length;
-
-    root.innerHTML =
-      buildBreadcrumb() +
-      buildBackButton() +
-      '<div class="apprendre-header">' +
-        '<h2 class="apprendre-title">' + escapeHTML(lvl.emoji || "🎯") + ' ' + escapeHTML(lvl.name) + '</h2>' +
-        '<p class="apprendre-subtitle">' + wc + ' mot' + (wc>1?"s":"") + ' · Choisis ton mode</p>' +
-      '</div>' +
-      '<div class="apprendre-grid apprendre-grid-menu">' +
-        '<button class="apprendre-card apprendre-card-mode" data-mode="cards" type="button">' +
-          '<div class="apprendre-card-emoji">📚</div>' +
-          '<div class="apprendre-card-title">Apprendre</div>' +
-          '<div class="apprendre-card-desc">Cartes mot par mot pour découvrir et mémoriser</div>' +
-        '</button>' +
-        '<button class="apprendre-card apprendre-card-mode" data-mode="qcm" type="button">' +
-          '<div class="apprendre-card-emoji">🎯</div>' +
-          '<div class="apprendre-card-title">Quiz QCM</div>' +
-          '<div class="apprendre-card-desc">Tester ce que tu as retenu</div>' +
-        '</button>' +
-        '<button class="apprendre-card apprendre-card-mode" data-mode="rapid" type="button">' +
-          '<div class="apprendre-card-emoji">⚡</div>' +
-          '<div class="apprendre-card-title">Révision rapide</div>' +
-          '<div class="apprendre-card-desc">Mode chrono pour réviser ce que tu as appris</div>' +
-        '</button>' +
-      '</div>';
-
-    bindBreadcrumb();
-
-    root.querySelectorAll("[data-mode]").forEach(function(b) {
-      b.onclick = function() {
-        const mode = b.getAttribute("data-mode");
-        launchPractice(mode, theme, sub, lvl);
-      };
-    });
-  }
-
   /* =========================================================
      LANCEMENT D'UN MODE (Vocab / QCM / Rapide)
      ========================================================= */
