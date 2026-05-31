@@ -630,7 +630,7 @@ const ThemesScreen = (function() {
   /* =========================================================
      ÉTAGE 7 — MENU APPRENTISSAGE (Vocab / QCM / Rapide)
      ========================================================= */
-  function renderLearningMenu() {
+ function renderLearningMenu() {
     const root = getRoot();
     if (!root) return;
     const theme = allThemes.find(function(t){ return t._id === currentPath.themeId; });
@@ -638,6 +638,105 @@ const ThemesScreen = (function() {
     const sub = (theme.subThemes||[]).find(function(s){ return s.id === currentPath.subThemeId; });
     const lvl = sub && (sub.customLevels||[]).find(function(l){ return l.id === currentPath.levelId; });
     if (!lvl) { renderLevelsView(); return; }
+
+    const wc = (lvl.words || []).length;
+
+    root.innerHTML =
+      buildBreadcrumb() +
+      buildBackButton() +
+      '<div class="apprendre-header">' +
+        '<h2 class="apprendre-title">' + escapeHTML(lvl.emoji || "🎯") + ' ' + escapeHTML(lvl.name) + '</h2>' +
+        '<p class="apprendre-subtitle">' + wc + ' mot' + (wc>1?"s":"") + ' · Choisis ton mode</p>' +
+      '</div>' +
+      '<div class="apprendre-grid apprendre-grid-menu">' +
+        '<button class="apprendre-card apprendre-card-mode" data-mode="cards" type="button">' +
+          '<div class="apprendre-card-emoji">📚</div>' +
+          '<div class="apprendre-card-title">Apprendre</div>' +
+          '<div class="apprendre-card-desc">Cartes mot par mot pour découvrir et mémoriser</div>' +
+        '</button>' +
+        '<button class="apprendre-card apprendre-card-mode" data-mode="qcm" type="button">' +
+          '<div class="apprendre-card-emoji">🎯</div>' +
+          '<div class="apprendre-card-title">Quiz QCM</div>' +
+          '<div class="apprendre-card-desc">Tester ce que tu as retenu</div>' +
+        '</button>' +
+        '<button class="apprendre-card apprendre-card-mode" data-mode="rapid" type="button">' +
+          '<div class="apprendre-card-emoji">⚡</div>' +
+          '<div class="apprendre-card-title">Révision rapide</div>' +
+          '<div class="apprendre-card-desc">Mode chrono pour réviser ce que tu as appris</div>' +
+        '</button>' +
+        '<button class="apprendre-card apprendre-card-mode" data-mode="list" type="button">' +
+          '<div class="apprendre-card-emoji">📋</div>' +
+          '<div class="apprendre-card-title">Voir la liste</div>' +
+          '<div class="apprendre-card-desc">Tous les mots du niveau d\'un coup d\'œil</div>' +
+        '</button>' +
+      '</div>';
+
+    bindBreadcrumb();
+
+    root.querySelectorAll("[data-mode]").forEach(function(b) {
+      b.onclick = function() {
+        const mode = b.getAttribute("data-mode");
+        if (mode === "list") {
+          renderWordsList(theme, sub, lvl);
+        } else {
+          launchPractice(mode, theme, sub, lvl);
+        }
+      };
+    });
+  }
+
+  /* =========================================================
+     ÉCRAN "VOIR LA LISTE" — tous les mots du niveau
+     ========================================================= */
+  function renderWordsList(theme, sub, lvl) {
+    const root = getRoot();
+    if (!root) return;
+
+    const words = lvl.words || [];
+    const quizValidations = (window.State && window.State.get("quizValidations")) || {};
+    const priorityIds = (window.State && window.State.get("priorityWords")) || {};
+
+    let listHtml = "";
+    if (words.length === 0) {
+      listHtml = '<div class="apprendre-empty">Aucun mot dans ce niveau 🌱</div>';
+    } else {
+      listHtml = '<div class="apprendre-words-list">';
+      words.forEach(function(w, i) {
+        const wid = w.id || (theme._id + ":" + sub.id + ":" + lvl.id + ":" + i);
+        const validations = quizValidations[wid] || 0;
+        const mastered = validations >= 3;
+        const priority = !!priorityIds[wid];
+        listHtml += '<div class="apprendre-word-item' + (mastered ? ' mastered' : '') + '">' +
+          '<div class="apprendre-word-main">' +
+            '<div class="apprendre-word-ar" dir="rtl">' + escapeHTML(w.ar || "") + '</div>' +
+            '<div class="apprendre-word-fr">' + escapeHTML(w.fr || "") + '</div>' +
+            (w.example ? '<div class="apprendre-word-example" dir="rtl">' + escapeHTML(w.example) + '</div>' : '') +
+            (w.exFr ? '<div class="apprendre-word-example-fr">' + escapeHTML(w.exFr) + '</div>' : '') +
+          '</div>' +
+          '<div class="apprendre-word-status">' +
+            (mastered ? '<span class="badge-mastered">✓ Appris</span>' :
+              '<span class="badge-progress">' + validations + '/3</span>') +
+            (priority ? '<span class="badge-priority">⭐</span>' : '') +
+          '</div>' +
+        '</div>';
+      });
+      listHtml += '</div>';
+    }
+
+    root.innerHTML =
+      buildBreadcrumb() +
+      '<button class="apprendre-back" id="apprBackBtn" type="button">← Retour au menu</button>' +
+      '<div class="apprendre-header">' +
+        '<h2 class="apprendre-title">📋 Liste : ' + escapeHTML(lvl.name) + '</h2>' +
+        '<p class="apprendre-subtitle">' + words.length + ' mot' + (words.length>1?"s":"") + ' au total</p>' +
+      '</div>' +
+      listHtml;
+
+    bindBreadcrumb();
+    // Le bouton "Retour" revient au menu d'apprentissage du niveau
+    const back = document.getElementById("apprBackBtn");
+    if (back) back.onclick = function() { renderLearningMenu(); };
+  }
 
     const wc = (lvl.words || []).length;
 
