@@ -1710,7 +1710,7 @@ const AdminScreen = (function() {
     });
   }
 
-    function timeAgo(ms) {
+      function timeAgo(ms) {
     if (!ms || isNaN(ms) || ms < 0) return "jamais";
     const min = Math.floor(ms / 60000);
     if (min < 1) return "à l'instant";
@@ -1720,6 +1720,7 @@ const AdminScreen = (function() {
     const d = Math.floor(h / 24);
     return "il y a " + d + "j";
   }
+
 
 
   function showUserDetail(userId) {
