@@ -306,14 +306,17 @@ const AdminScreen = (function() {
     if (ed) ed.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  async function openThemeEditor(themeId) {
+ async function openThemeEditor(themeId) {
     try {
       const theme = await window.FB.getDocument("themes", themeId);
       if (!theme) { toast("Thème introuvable"); return; }
       normalizeTheme(theme);
       currentTheme = theme;
-      currentSubThemeId = null;
-      currentCustomLevelId = null;
+      // Auto-sélection du premier sous-thème et premier niveau (sinon on peut pas ajouter de mots)
+      const firstSub = (theme.subThemes || []).slice().sort(function(a,b){return(a.order||0)-(b.order||0);})[0];
+      currentSubThemeId = firstSub ? firstSub.id : null;
+      const firstLvl = firstSub && (firstSub.customLevels || []).slice().sort(function(a,b){return(a.order||0)-(b.order||0);})[0];
+      currentCustomLevelId = firstLvl ? firstLvl.id : null;
       showThemeForm(theme);
       const ed = document.getElementById("themeEditor");
       if (ed) ed.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -888,6 +891,11 @@ const AdminScreen = (function() {
   // ============================================================
   // ÉDITEUR DE MOTS (suppression SANS confirmation comme demandé)
   // ============================================================
+ // Mémoire de la sélection multiple par session
+  let selectedWordIndexes = [];
+  // Mémoire de l'index du mot en cours d'édition (-1 = aucun)
+  let editingWordIndex = -1;
+
   function renderLevelWordsEditor(theme) {
     const container = document.getElementById("levelWordsEditor");
     if (!container) return;
@@ -896,22 +904,52 @@ const AdminScreen = (function() {
 
     const words = lvl.words || [];
     let wordsHtml = words.map(function(w, i) {
-      return '<div class="word-row admin-word-row">' +
-        '<div class="word-body">' +
+      const checked = selectedWordIndexes.indexOf(i) !== -1;
+      const isEditing = editingWordIndex === i;
+
+      if (isEditing) {
+        // Mode édition pour ce mot
+        return '<div class="word-row admin-word-row admin-word-editing">' +
+          '<div class="word-body" style="flex:1;">' +
+            '<input class="input" id="edit-w-ar-' + i + '" value="' + escapeAttr(w.ar||"") + '" dir="rtl" placeholder="Mot arabe"/>' +
+            '<input class="input mt-8" id="edit-w-fr-' + i + '" value="' + escapeAttr(w.fr||"") + '" placeholder="Traduction"/>' +
+            '<input class="input mt-8" id="edit-w-ex-' + i + '" value="' + escapeAttr(w.example||"") + '" dir="rtl" placeholder="Exemple (optionnel)"/>' +
+            '<input class="input mt-8" id="edit-w-exfr-' + i + '" value="' + escapeAttr(w.exFr||"") + '" placeholder="Traduction exemple (optionnel)"/>' +
+          '</div>' +
+          '<div class="admin-item-actions" style="flex-direction:column;">' +
+            '<button class="btn-mini btn-mini-edit" data-save-w="' + i + '" type="button">✓</button>' +
+            '<button class="btn-mini" data-cancel-w="' + i + '" type="button">✕</button>' +
+          '</div></div>';
+      }
+
+      return '<div class="word-row admin-word-row' + (checked ? ' admin-word-selected' : '') + '">' +
+        '<label class="word-select"><input type="checkbox" data-sel-w="' + i + '"' + (checked?' checked':'') + '/></label>' +
+        '<div class="word-body" data-edit-w-tap="' + i + '" style="flex:1;cursor:pointer;">' +
           '<div class="word-ar">' + escapeHTML(w.ar || "") + '</div>' +
           '<div class="word-fr">' + escapeHTML(w.fr || "") + '</div>' +
           (w.example ? '<div class="admin-meta-tiny">' + escapeHTML(w.example) + '</div>' : '') +
         '</div>' +
         '<div class="admin-item-actions">' +
+          '<button class="btn-mini btn-mini-edit" data-edit-w="' + i + '" type="button">✎</button>' +
           '<button class="btn-mini btn-mini-del" data-del-w="' + i + '" type="button">X</button>' +
         '</div></div>';
     }).join("");
     if (words.length === 0) wordsHtml = '<div class="admin-empty">Aucun mot dans ce niveau</div>';
 
+    // Barre de sélection multiple
+    const selBar = selectedWordIndexes.length > 0
+      ? '<div class="admin-sel-bar">' +
+          '<span><b>' + selectedWordIndexes.length + '</b> mot' + (selectedWordIndexes.length>1?"s":"") + ' sélectionné' + (selectedWordIndexes.length>1?"s":"") + '</span>' +
+          '<button class="btn-mini btn-mini-del" id="delSelBtn" type="button">Supprimer la sélection</button>' +
+          '<button class="btn-mini" id="clearSelBtn" type="button">Tout désélectionner</button>' +
+        '</div>'
+      : '';
+
     container.innerHTML =
       '<div class="panel mt-12 admin-level-editor">' +
         '<div class="panel-title">📝 MOTS DU NIVEAU : ' + escapeHTML(lvl.emoji || "") + ' ' + escapeHTML(lvl.name) + '</div>' +
-        '<div class="admin-count">' + words.length + ' mot' + (words.length>1?"s":"") + '</div>' +
+        '<div class="admin-count">' + words.length + ' mot' + (words.length>1?"s":"") + ' · Touche un mot pour l\'éditer · Coche pour sélection multiple</div>' +
+        selBar +
         '<div id="lvlWordsList">' + wordsHtml + '</div>' +
         '<div class="panel sub-panel mt-12">' +
           '<div class="panel-title">+ AJOUTER UN MOT</div>' +
@@ -933,11 +971,96 @@ const AdminScreen = (function() {
 
     document.getElementById("addWBtn").onclick = function() { addWordToLevel(theme); };
     document.getElementById("bulkWBtn").onclick = function() { bulkImportToLevel(theme); };
+
+    // Sélection multiple
+    container.querySelectorAll("[data-sel-w]").forEach(function(cb) {
+      cb.onchange = function() {
+        const idx = parseInt(cb.getAttribute("data-sel-w"), 10);
+        const pos = selectedWordIndexes.indexOf(idx);
+        if (cb.checked && pos === -1) selectedWordIndexes.push(idx);
+        else if (!cb.checked && pos !== -1) selectedWordIndexes.splice(pos, 1);
+        renderLevelWordsEditor(theme);
+      };
+    });
+    const delSel = document.getElementById("delSelBtn");
+    if (delSel) delSel.onclick = function() { deleteSelectedWords(theme); };
+    const clearSel = document.getElementById("clearSelBtn");
+    if (clearSel) clearSel.onclick = function() {
+      selectedWordIndexes = [];
+      renderLevelWordsEditor(theme);
+    };
+
+    // Suppression individuelle (toujours sans confirmation comme demandé)
     container.querySelectorAll("[data-del-w]").forEach(function(btn) {
-      btn.onclick = function() { deleteWordFromLevel(theme, parseInt(btn.getAttribute("data-del-w"), 10)); };
+      btn.onclick = function(e) {
+        e.stopPropagation();
+        deleteWordFromLevel(theme, parseInt(btn.getAttribute("data-del-w"), 10));
+      };
+    });
+
+    // Édition : clic sur le mot OU sur le bouton ✎
+    function startEdit(i) {
+      editingWordIndex = i;
+      selectedWordIndexes = []; // reset sélection pendant édition
+      renderLevelWordsEditor(theme);
+    }
+    container.querySelectorAll("[data-edit-w]").forEach(function(btn) {
+      btn.onclick = function(e) {
+        e.stopPropagation();
+        startEdit(parseInt(btn.getAttribute("data-edit-w"), 10));
+      };
+    });
+    container.querySelectorAll("[data-edit-w-tap]").forEach(function(el) {
+      el.onclick = function() { startEdit(parseInt(el.getAttribute("data-edit-w-tap"), 10)); };
+    });
+
+    // Sauvegarde / annulation édition
+    container.querySelectorAll("[data-save-w]").forEach(function(btn) {
+      btn.onclick = function() { saveWordEdit(theme, parseInt(btn.getAttribute("data-save-w"), 10)); };
+    });
+    container.querySelectorAll("[data-cancel-w]").forEach(function(btn) {
+      btn.onclick = function() { editingWordIndex = -1; renderLevelWordsEditor(theme); };
     });
   }
 
+  async function saveWordEdit(theme, idx) {
+    const lvl = getCurrentLevel(theme);
+    if (!lvl || !lvl.words || !lvl.words[idx]) return;
+    const ar = (document.getElementById("edit-w-ar-" + idx) || {}).value || "";
+    const fr = (document.getElementById("edit-w-fr-" + idx) || {}).value || "";
+    const ex = (document.getElementById("edit-w-ex-" + idx) || {}).value || "";
+    const exFr = (document.getElementById("edit-w-exfr-" + idx) || {}).value || "";
+    if (!ar.trim() || !fr.trim()) { toast("Arabe et français requis"); return; }
+    lvl.words[idx].ar = ar.trim();
+    lvl.words[idx].fr = fr.trim();
+    lvl.words[idx].example = ex.trim();
+    lvl.words[idx].exFr = exFr.trim();
+    try {
+      await window.FB.setDocument("themes", theme._id, theme);
+      editingWordIndex = -1;
+      toast("Mot modifié");
+      renderLevelWordsEditor(theme);
+    } catch (e) { toast("Erreur: " + e.message); }
+  }
+
+  async function deleteSelectedWords(theme) {
+    const lvl = getCurrentLevel(theme);
+    if (!lvl || selectedWordIndexes.length === 0) return;
+    // Supprime du plus grand au plus petit pour pas décaler les indexes
+    const sorted = selectedWordIndexes.slice().sort(function(a,b){ return b - a; });
+    sorted.forEach(function(i) { lvl.words.splice(i, 1); });
+    selectedWordIndexes = [];
+    try {
+      await window.FB.setDocument("themes", theme._id, theme);
+      toast(sorted.length + " mot(s) supprimé(s)");
+      renderLevelWordsEditor(theme);
+    } catch (e) { toast("Erreur: " + e.message); }
+  }
+
+  // Helper d'échappement pour les attributs HTML (différent d'escapeHTML)
+  function escapeAttr(s) {
+    return (s + "").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
   async function addWordToLevel(theme) {
     const lvl = getCurrentLevel(theme);
     if (!lvl) { toast("Sélectionne un niveau d'abord"); return; }
